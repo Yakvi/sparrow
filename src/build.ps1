@@ -45,23 +45,22 @@ $c = '-nologo','-FC'                   #Display full path of source code
 $c += '-fp:fast'                       #Floating point behaviour. Precise behaviour usually unnecessary.
 $c += '-fp:except-'                    #Floating point behaviour. Precise behaviour usually unnecessary.
 $c += '-Gm-'                           #Enables minimal rebuild. For faster compile.
-$c += '-GR-'                           #Disables run-time type information. For faster compile.
 $c += '-Oi'                            #Generates intrinsic functions. For faster runtime.
-# NOTE: Preprocessor directives
-$c += '-Dsparrow_DEV=1'            #For debug stuff
-$c += '-DSPARROW_WIN32=1'          #Compiles for Win32
-# NOTE: other
 $c += '-EHa-'                          #Disable exception handling, -EHsc for c++
+# NOTE: Preprocessor directives
+$c += '-DSPARROW_DEV=1'            #For debug stuff
+$c += '-DSPARROW_WIN32=1'          #Compiles for Win32
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
+$debug += '-GR-'                       #Disables run-time type information. For faster compile.
 $debug += '-Od'                        #Optimizations disabled
 $debug += '-MTd'                       #Creates debug multithreaded executable
 $debug += '-Zo'                        #Enhance Optimized Debugging
 $debug += '-Z7'                        #Generates C 7.0–compatible debugging information.
 $debug += '-WX'                        #Treats all warnings as errors (except the ones below).
-$debug += '-W4'                        #Displays all warnings (except the ones below).
+$debug += '-Wall'                        #Displays all warnings (except the ones below).
 # NOTE: Ignoring selected warnings:
-# $debug += '-wd4100'                  #Unreferenced variable
+$debug += '-wd4100'                  #Unreferenced variable
 # $debug += '-wd4189'                  #Local variable initialized but not used
 # $debug += '-wd4505'                  #Unreferenced local function
 # $debug += '-wd4201'                  #Nonstandard extension used: nameless struct/union
@@ -85,8 +84,8 @@ $linker += '-opt:ref'                  #Eliminates functions and data that are n
 # $openGL += '-LIBPATH:H:\C\_Deps\Lib\GLFW'               #Extra library path: GLFW
 # $openGL += '-LIBPATH:H:\C\_Deps\Lib\GLEW'               #Extra library path: GLEW
 # NOTE: Extra parameters for sparrow.dll linker
-$dlllinker = '-FmSPARROW', '-LD'      #Creates a map file
-# $linkerflags = '-EXPORT:MainLoop'
+$dlllinker = '-FmSPARROW', '-LD'      #Creates a map file and output DLL
+# $linkerflags = '-EXPORT:MainLoop'     #Functions to export
 
 #timeout /t 1
 
@@ -104,7 +103,7 @@ $win32file = "win32_" + $project + ".c"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-$win32executable = & cl -O2 $c $debug ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c $debug ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
 #echo "WAITING FOR PDB" > lock.tmp
