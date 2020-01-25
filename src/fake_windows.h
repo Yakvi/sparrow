@@ -7,6 +7,9 @@ s64 __stdcall DefWindowProcA(void* Window, u32 Message, u32 WParam, s64 LParam);
 // NOTE: Entry handles
 #define CS_OWNDC 0x40
 #define CS_VREDRAW 0x1
+#define CS_HREDRAW 0x2
+#define CW_USEDEFAULT ((int)0x80000000)
+
 struct win_class
 {
     u32 style;
@@ -59,7 +62,7 @@ u8* RegisterClassA(const struct win_class* WindowClass);
                              WS_MINIMIZEBOX | \
                              WS_MAXIMIZEBOX)
 
-struct point
+struct v2
 {
     u32 x;
     u32 y;
@@ -72,7 +75,7 @@ struct message
     u32 WParam;
     s64 LParam;
     u32 time;
-    struct point point;
+    struct v2 point;
     u32 unused;
 };
 

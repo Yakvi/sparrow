@@ -61,12 +61,14 @@ Render(struct screen_buffer* Buffer)
 {
 }
 
-s64 __stdcall WindowProc(void* Window, u32 Message, u32 WParam, s64 LParam)
+s64 __stdcall 
+WindowProc(void* Window, u32 Message, u32 WParam, s64 LParam)
 {
     return DefWindowProcA(Window, Message, WParam, LParam);
 }
 
-int __stdcall WinMain(
+int __stdcall 
+WinMain(
     void* Instance,
     void* PrevInstance,
     char* CmdLine,
@@ -74,23 +76,21 @@ int __stdcall WinMain(
 {
     struct win_class WindowClass = {0};
     WindowClass.instance = Instance;
-    WindowClass.className = "Project Sparrow";
-    WindowClass.style = CS_OWNDC | CS_VREDRAW;
+    WindowClass.className = "ProjectSparrowWindowClass";
+    WindowClass.style = CS_HREDRAW | CS_VREDRAW;
     WindowClass.windowProc = WindowProc;
-    RegisterClassA(&WindowClass);
+    Assert(RegisterClassA(&WindowClass));
 
     void* Window = CreateWindowExA(0,
-        "Project Sparrow", 
+        WindowClass.className, 
         "Sparrow", 
-        WS_OVERLAPPEDWINDOW, 
-        0x80000000, 
-        0x80000000, 
-        800, 
-        600, 
+        WS_OVERLAPPEDWINDOW | WS_VISIBLE, 
+        CW_USEDEFAULT, 
+        CW_USEDEFAULT, 
+        CW_USEDEFAULT, 
+        CW_USEDEFAULT, 
         0, 0, Instance, 0);
     Assert(Window);
-
-    ShowWindow(Window, ShowCmd);
 
     struct screen_buffer* Buffer = RequestScreenBuffer(1920, 1080);
     struct user_input* Input = InitializeInput();
@@ -99,7 +99,7 @@ int __stdcall WinMain(
     
     b32 Running = true;
     struct message Message = {0};
-    while (Running)
+    while (Running) // TODO: break after I close the window
     {
         GetMessageA(&Message, 0, 0, 0);
         TranslateMessage(&Message);
