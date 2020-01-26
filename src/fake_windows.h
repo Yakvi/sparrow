@@ -1,16 +1,18 @@
 #if !defined(FAKE_WINDOWS)
 #ifndef _WINDOWS_
 
-typedef s64(__stdcall* window_proc)(void* Window, u32 Message, u32 WParam, s64 LParam);
-s64 __stdcall DefWindowProcA(void* Window, u32 Message, u32 WParam, s64 LParam);
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "gdi32.lib")
 
-// NOTE: Entry handles
+// NOTE: Window Class flags
 #define CS_OWNDC 0x40
 #define CS_VREDRAW 0x1
 #define CS_HREDRAW 0x2
 #define CW_USEDEFAULT ((int)0x80000000)
 
-struct win_class
+void* __stdcall DefWindowProcA(void* Window, u32 Message, u32 WParam, s64 LParam);
+typedef void*(__stdcall* window_proc)(void* Window, u32 Message, u32 WParam, s64 LParam);
+typedef struct
 {
     u32 style;
     u32 unused;
@@ -22,8 +24,9 @@ struct win_class
     void* background;
     char* menuName;
     char* className;
-};
-u8* RegisterClassA(const struct win_class* WindowClass);
+} win_class;
+
+u8* RegisterClassA(win_class* WindowClass);
 
 #define WS_OVERLAPPED 0x00000000L
 #define WS_POPUP 0x80000000L
@@ -62,29 +65,62 @@ u8* RegisterClassA(const struct win_class* WindowClass);
                              WS_MINIMIZEBOX | \
                              WS_MAXIMIZEBOX)
 
-struct v2
+typedef struct
 {
     u32 x;
     u32 y;
-};
+    u32 pad;
+} v2;
 
-struct message
+typedef struct
 {
     void* window;
-    u32 message;
-    u32 WParam;
+    u64 message;
+    void* WParam;
     s64 LParam;
     u32 time;
-    struct v2 point;
-    u32 unused;
-};
+    v2 point;
+} message;
+
+typedef struct
+{
+    long left;
+    long top;
+    long right;
+    long bottom;
+} rect;
 
 void* __stdcall CreateWindowExA(u32 ExStyle, char* ClassName, char* WindowName, u32 Style, s32 X, s32 Y, s32 Width, s32 Height, void* ParentWindow, void* Menu, void* Instance, s64 LParam);
 b32 __stdcall ShowWindow(void* Window, u32 ShowCmd);
 
-b32 __stdcall GetMessageA(struct message* mess, void* window, u32 unused, u32 unused2);
-void __stdcall TranslateMessage(struct message* mess);
-void __stdcall DispatchMessageA(struct message* mess);
+#define IDC_ARROW ((char*)((unsigned long long*)32512))
+void* __stdcall LoadCursorA(int, char* lpCursorName);
+
+// NOTE: Windows messages
+#define WM_DESTROY 0x0002
+#define WM_CLOSE 0x10
+#define WM_QUIT 0x12
+#define WM_PAINT 0x15
+
+b32 __stdcall GetMessageA(message* mess, void* window, u32 unused, u32 unused2);
+b32 __stdcall PeekMessageA(message* mess, void* window, u32 unused, u32 unused2, b32 RemoveMessage);
+void __stdcall TranslateMessage(message* mess);
+void __stdcall DispatchMessageA(message* mess);
+void __stdcall PostQuitMessage(int exit_code);
+
+// NOTE: Painting
+typedef struct
+{
+    void* hdc;
+    b32 fErase;
+    rect rcPaint;
+    b32 fRestore;
+    b32 fIncUpdate;
+    u32 rgbReserved;
+} paint_struct;
+
+void *__stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
+void *__stdcall EndPaint(void* Window, paint_struct* PaintStruct);
 
 // NOTE: Memory
 #define MEM_RESERVE 0x2000

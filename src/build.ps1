@@ -74,7 +74,7 @@ $debug += '-wd4100'                  #Unreferenced variable
 $linker = '/link', '-incremental:no'   #Passes linker parameters from here; Disables incremental linking of the linker
 $linker += '-opt:ref'                  #Eliminates functions and data that are never referenced
 # NOTE: Extra libraries for win32
-$32linker = 'user32.lib','gdi32.lib'   #Creates and manipulates the standard elements of the Windows GUI. #Graphics Device Interface, used for primitive drawing functions.
+# $32linker = 'user32.lib','gdi32.lib'   #Creates and manipulates the standard elements of the Windows GUI. #Graphics Device Interface, used for primitive drawing functions.
 # $32linker += 'kernel32.lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
