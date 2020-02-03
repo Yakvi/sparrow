@@ -5,10 +5,13 @@
 #pragma comment(lib, "gdi32.lib")
 
 // NOTE: Window Class flags
-#define CS_OWNDC 0x40
-#define CS_VREDRAW 0x1
-#define CS_HREDRAW 0x2
-#define CW_USEDEFAULT ((int)0x80000000)
+enum WindowClass
+{
+    CS_VREDRAW = 0x1,
+    CS_HREDRAW = 0x2,
+    CS_OWNDC = 0x40,
+    CW_USEDEFAULT = 0x80000000
+};
 
 void* __stdcall DefWindowProcA(void* Window, u32 Message, u32 WParam, s64 LParam);
 typedef void*(__stdcall* window_proc)(void* Window, u32 Message, u32 WParam, s64 LParam);
@@ -28,58 +31,33 @@ typedef struct
 
 u8* RegisterClassA(win_class* WindowClass);
 
-#define WS_OVERLAPPED 0x00000000L
-#define WS_POPUP 0x80000000L
-#define WS_CHILD 0x40000000L
-#define WS_MINIMIZE 0x20000000L
-#define WS_VISIBLE 0x10000000L
-#define WS_DISABLED 0x08000000L
-#define WS_CLIPSIBLINGS 0x04000000L
-#define WS_CLIPCHILDREN 0x02000000L
-#define WS_MAXIMIZE 0x01000000L
-#define WS_CAPTION 0x00C00000L /* WS_BORDER | WS_DLGFRAME  */
-#define WS_BORDER 0x00800000L
-#define WS_DLGFRAME 0x00400000L
-#define WS_VSCROLL 0x00200000L
-#define WS_HSCROLL 0x00100000L
-#define WS_SYSMENU 0x00080000L
-#define WS_THICKFRAME 0x00040000L
-#define WS_GROUP 0x00020000L
-#define WS_TABSTOP 0x00010000L
-
-#define WS_MINIMIZEBOX 0x00020000L
-#define WS_MAXIMIZEBOX 0x00010000L
-
-#define WS_TILED WS_OVERLAPPED
-#define WS_ICONIC WS_MINIMIZE
-#define WS_SIZEBOX WS_THICKFRAME
-#define WS_TILEDWINDOW WS_OVERLAPPEDWINDOW
-
-/*
- * Common Window Styles
- */
-#define WS_OVERLAPPEDWINDOW (WS_OVERLAPPED |  \
-                             WS_CAPTION |     \
-                             WS_SYSMENU |     \
-                             WS_THICKFRAME |  \
-                             WS_MINIMIZEBOX | \
-                             WS_MAXIMIZEBOX)
+enum WindowProperties
+{
+    WS_OVERLAPPED = 0,
+    WS_MAXIMIZEBOX = 0x10000L,
+    WS_MINIMIZEBOX = 0x20000L,
+    WS_THICKFRAME = 0x40000,
+    WS_SYSMENU = 0x80000,
+    WS_CAPTION = 0xC00000,
+    WS_OVERLAPPEDWINDOW = 0xCF0000, // WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+    WS_VISIBLE = 0x10000000
+};
 
 typedef struct
 {
     u32 x;
     u32 y;
-    u32 pad;
-} v2;
+} v2, p;
 
 typedef struct
 {
     void* window;
     u64 message;
-    void* WParam;
+    u64 WParam;
     s64 LParam;
     u32 time;
     v2 point;
+    u8 __pad[4];
 } message;
 
 typedef struct
@@ -93,21 +71,39 @@ typedef struct
 void* __stdcall CreateWindowExA(u32 ExStyle, char* ClassName, char* WindowName, u32 Style, s32 X, s32 Y, s32 Width, s32 Height, void* ParentWindow, void* Menu, void* Instance, s64 LParam);
 b32 __stdcall ShowWindow(void* Window, u32 ShowCmd);
 
-#define IDC_ARROW ((char*)((unsigned long long*)32512))
-void* __stdcall LoadCursorA(int, char* lpCursorName);
+#define IDC_ARROW (u8 *)32512
+void* __stdcall LoadCursorA(int, u8* CursorRef);
 
 // NOTE: Windows messages
-#define WM_DESTROY 0x0002
-#define WM_CLOSE 0x10
-#define WM_QUIT 0x12
-#define WM_PAINT 0x15
+enum WindowMessage
+{
+    WM_DESTROY = 0x0002,
+    WM_CLOSE = 0x10,
+    WM_QUIT = 0x12,
+    WM_PAINT = 0x15,
+    WM_KEYUP = 0x0101,
+    WM_SYSKEYUP = 0x105,
+    WM_MOUSEMOVE = 0x200,
+    WM_MBUTTONDOWN = 0x207,
+    WM_MBUTTONUP = 0x208,
+};
 
 b32 __stdcall GetMessageA(message* mess, void* window, u32 unused, u32 unused2);
 b32 __stdcall PeekMessageA(message* mess, void* window, u32 unused, u32 unused2, b32 RemoveMessage);
 void __stdcall TranslateMessage(message* mess);
 void __stdcall DispatchMessageA(message* mess);
 void __stdcall PostQuitMessage(int exit_code);
-
+// NOTE: Key presses
+enum KeyPress
+{
+    VK_ESCAPE = 0x1B,
+};
+enum Mouse
+{
+    MK_LBUTTON = 0x1,
+    MK_MBUTTON = 0x10,
+    MK_RBUTTON = 0x2,
+};
 // NOTE: Painting
 typedef struct
 {
@@ -119,13 +115,16 @@ typedef struct
     u32 rgbReserved;
 } paint_struct;
 
-void *__stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
-void *__stdcall EndPaint(void* Window, paint_struct* PaintStruct);
+void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
+void* __stdcall EndPaint(void* Window, paint_struct* PaintStruct);
 
 // NOTE: Memory
-#define MEM_RESERVE 0x2000
-#define MEM_COMMIT 0x1000
-#define PAGE_READWRITE 0x4
+enum MemoryFlags
+{
+    PAGE_READWRITE = 0x4,
+    MEM_RESERVE = 0x2000,
+    MEM_COMMIT = 0x1000,
+};
 void* __stdcall VirtualAlloc(void* address, memory_index size, u32 type, u32 protect);
 
 // NOTE: Debug calls
@@ -135,6 +134,6 @@ void __stdcall OutputDebugStringA(char* string);
 #define OutputDebugStringA
 #endif
 
-#endif // !WINDOWS
+#endif // !_WINDOWS_
 #define FAKE_WINDOWS
 #endif

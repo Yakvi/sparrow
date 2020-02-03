@@ -89,13 +89,12 @@ $dlllinker = '-FmSPARROW', '-LD'      #Creates a map file and output DLL
 
 #timeout /t 1
 
-Remove-Item -Path ..\$buildDir -Force -Recurse # NOTE: Clean build
+# Remove-Item -Path ..\$buildDir -Force -Recurse # NOTE: Clean build
 if(!(Test-Path -Path ..\$buildDir)) { mkdir ..\$buildDir }
 pushd ..\$buildDir
 Clear
 Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine 
 Write-Host "Compilation started." -ForegroundColor "Cyan"
-H:\C\vcvars.ps1
 Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
