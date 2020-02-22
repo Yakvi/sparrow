@@ -7,6 +7,7 @@
             "command": "multiCommand.compile",
             "sequence": [
                 "workbench.action.terminal.clear",
+                "workbench.action.files.save",
                 {
                     "command": "runInTerminal.run", 
                     "args": {

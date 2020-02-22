@@ -61,6 +61,7 @@ $debug += '-WX'                        #Treats all warnings as errors (except th
 $debug += '-Wall'                        #Displays all warnings (except the ones below).
 # NOTE: Ignoring selected warnings:
 $debug += '-wd4100'                  #Unreferenced variable
+# $debug += '-wd4711'                  #Function inlined by optimizer
 # $debug += '-wd4189'                  #Local variable initialized but not used
 # $debug += '-wd4505'                  #Unreferenced local function
 # $debug += '-wd4201'                  #Nonstandard extension used: nameless struct/union
@@ -74,7 +75,6 @@ $debug += '-wd4100'                  #Unreferenced variable
 $linker = '/link', '-incremental:no'   #Passes linker parameters from here; Disables incremental linking of the linker
 $linker += '-opt:ref'                  #Eliminates functions and data that are never referenced
 # NOTE: Extra libraries for win32
-# $32linker = 'user32.lib','gdi32.lib'   #Creates and manipulates the standard elements of the Windows GUI. #Graphics Device Interface, used for primitive drawing functions.
 # $32linker += 'kernel32.lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
@@ -98,11 +98,11 @@ Write-Host "Compilation started." -ForegroundColor "Cyan"
 Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
-$win32file = "win32_" + $project + ".c"
+$win32file = "win32_sparrow.c"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c -O2 ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
 #echo "WAITING FOR PDB" > lock.tmp
