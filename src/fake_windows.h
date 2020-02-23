@@ -71,16 +71,18 @@ typedef struct
 void* __stdcall CreateWindowExA(u32 ExStyle, char* ClassName, char* WindowName, u32 Style, s32 X, s32 Y, s32 Width, s32 Height, void* ParentWindow, void* Menu, void* Instance, s64 LParam);
 b32 __stdcall ShowWindow(void* Window, u32 ShowCmd);
 
-#define IDC_ARROW (u8 *)32512
+#define IDC_ARROW (u8*)32512
 void* __stdcall LoadCursorA(int, u8* CursorRef);
 
 // NOTE: Windows messages
 enum WindowMessage
 {
     WM_DESTROY = 0x0002,
+    WM_SIZE = 0x5,
     WM_CLOSE = 0x10,
     WM_QUIT = 0x12,
-    WM_PAINT = 0x15,
+    WM_PAINT = 0xF,
+    WM_ACTIVATEAPP = 0x1C,
     WM_KEYUP = 0x0101,
     WM_SYSKEYUP = 0x105,
     WM_MOUSEMOVE = 0x200,
@@ -105,18 +107,24 @@ enum Mouse
     MK_RBUTTON = 0x2,
 };
 // NOTE: Painting
+enum RasterOp
+{
+    BLACKNESS = 0x00000042,
+    WHITENESS = 0x00FF0062
+};
 typedef struct
 {
     void* hdc;
-    b32 fErase;
-    rect rcPaint;
-    b32 fRestore;
-    b32 fIncUpdate;
-    u32 rgbReserved;
+    b32 eraseBg;
+    rect paintRect;
+    b32 reserved0;
+    b32 reserved1;
+    u8 reserved2[36];
 } paint_struct;
 
 void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
 void* __stdcall EndPaint(void* Window, paint_struct* PaintStruct);
+b32 PatBlt(void* Hdc, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
 
 // NOTE: Memory
 enum MemoryFlags

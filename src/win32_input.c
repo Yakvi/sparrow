@@ -41,6 +41,7 @@ Win32_ProcessWindowMessages(struct user_input* Input)
 {
     // TODO: Input should be processed via GetKeyState() stdcall,
     // instead of waiting for message to pop
+    // TODO: Move this function out back to winmain area
 
     message Message;
     while (PeekMessageA(&Message, 0, 0, 0, true)) {

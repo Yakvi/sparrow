@@ -12,14 +12,19 @@ Win32_MemoryAlloc(memory_index Size)
     return (Result);
 }
 
-#include "scratch.c" // TODO: reimplement dummy functions! 
+#include "scratch.c" // TODO: reimplement dummy functions!
 #include "win32_input.c"
-
 void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s64 LParam)
 {
     void* Result = 0;
 
     switch (Message) {
+
+    case WM_SIZE: {
+    } break;
+
+    case WM_ACTIVATEAPP: {
+    } break;
 
     case WM_CLOSE:
     case WM_DESTROY: {
@@ -29,6 +34,11 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
     case WM_PAINT: {
         paint_struct ps;
         void* DeviceContext = BeginPaint(Window, &ps);
+        u32 x = ps.paintRect.left;
+        u32 y = ps.paintRect.top;
+        u32 width = ps.paintRect.right - x;
+        u32 height = ps.paintRect.bottom - y;
+        PatBlt(DeviceContext, x, y, width, height, WHITENESS);
         Assert(DeviceContext);
         EndPaint(Window, &ps);
     } break;

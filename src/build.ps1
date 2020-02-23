@@ -78,11 +78,6 @@ $linker += '-opt:ref'                  #Eliminates functions and data that are n
 # $32linker += 'kernel32.lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
-# NOTE: OpenGL GLFW and GLEW libraries
-# $openGL += 'glfw3.lib'             
-# $openGL += 'glew32.lib'
-# $openGL += '-LIBPATH:H:\C\_Deps\Lib\GLFW'               #Extra library path: GLFW
-# $openGL += '-LIBPATH:H:\C\_Deps\Lib\GLEW'               #Extra library path: GLEW
 # NOTE: Extra parameters for sparrow.dll linker
 $dlllinker = '-FmSPARROW', '-LD'      #Creates a map file and output DLL
 # $linkerflags = '-EXPORT:MainLoop'     #Functions to export
@@ -102,7 +97,7 @@ $win32file = "win32_sparrow.c"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-$win32executable = & cl $c -O2 ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c $debug ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
 #echo "WAITING FOR PDB" > lock.tmp

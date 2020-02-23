@@ -5,3 +5,4 @@
 3.  Jan 26, 2020 - Callbacks and Messages
 4.  Feb 03, 2020 - Hello Mouse
 5.  Feb 07, 2020 - Code refactoring and bug hunting
+6.  Feb 23, 2020 - Work on the primary output buffer
