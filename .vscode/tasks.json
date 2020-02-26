@@ -6,7 +6,7 @@
     {
         "type": "process",
         "label": "Debug file",
-        "command": "H:/apps/release/remedyBG.exe",
+        "command": "H:/apps/release/remedy/remedyBG.exe",
         "args": [
             "${workspaceFolder}\\src\\sparrow.rdbg"
         ],

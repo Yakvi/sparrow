@@ -36,7 +36,6 @@ function Output-Logs([String[]]$data, [string]$title = "") {
 ### BOOKMARK: End helper function
 
 $project = "sparrow"
-$srcDir = "src"
 $buildDir = "build"
 
 # NOTE: Compiler flags
@@ -83,6 +82,7 @@ $dlllinker = '-FmSPARROW', '-LD'      #Creates a map file and output DLL
 # $linkerflags = '-EXPORT:MainLoop'     #Functions to export
 
 #timeout /t 1
+$srcDir = "..\src"
 
 # Remove-Item -Path ..\$buildDir -Force -Recurse # NOTE: Clean build
 if(!(Test-Path -Path ..\$buildDir)) { mkdir ..\$buildDir }
@@ -97,8 +97,9 @@ $win32file = "win32_sparrow.c"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug ..\$srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
+
 
 #echo "WAITING FOR PDB" > lock.tmp
 # sparrow DLL

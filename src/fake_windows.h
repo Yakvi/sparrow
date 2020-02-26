@@ -62,10 +62,10 @@ typedef struct
 
 typedef struct
 {
-    long left;
-    long top;
-    long right;
-    long bottom;
+    u32 left;
+    u32 top;
+    u32 right;
+    u32 bottom;
 } rect;
 
 void* __stdcall CreateWindowExA(u32 ExStyle, char* ClassName, char* WindowName, u32 Style, s32 X, s32 Y, s32 Width, s32 Height, void* ParentWindow, void* Menu, void* Instance, s64 LParam);
@@ -112,6 +112,14 @@ enum RasterOp
     BLACKNESS = 0x00000042,
     WHITENESS = 0x00FF0062
 };
+
+enum DIBColors
+{
+    DIB_RGB_COLORS = 0x00,
+    DIB_PAL_COLORS = 0x01,
+    DIB_PAL_INDICES = 0x02
+};
+
 typedef struct
 {
     void* hdc;
@@ -122,9 +130,52 @@ typedef struct
     u8 reserved2[36];
 } paint_struct;
 
+typedef struct
+{
+    u32 type;
+    u32 width;
+    u32 height;
+    u32 widthBytes;
+    u32 planes;
+    u32 bitsPerPixel;
+    void* data;
+} bitmap;
+
+typedef struct
+{
+    u32 size;
+    u32 width;
+    u32 height;
+    u32 planes;
+    u32 bitCount;
+    u32 compression;
+    u32 sizeImage;
+    u32 xPPM;
+    u32 yPPM;
+    u32 clrUsed;
+    u32 clrImportant;
+} bitmap_info_header;
+
+typedef struct tagRGBQUAD
+{
+    u8 blue;
+    u8 green;
+    u8 red;
+    u8 reserved;
+} rbg_quad;
+
+typedef struct
+{
+    bitmap_info_header header;
+    rbg_quad colors[1];
+} bitmap_info;
+
 void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
 void* __stdcall EndPaint(void* Window, paint_struct* PaintStruct);
+b32 __stdcall GetClientRect(void* Window, rect* OutRect);
 b32 PatBlt(void* Hdc, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
+bitmap CreateDIBSection(void* HDC, bitmap_info* info, u32, void** bits, void* section, u32 offset);
+s32 StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 usage, u32 rop);
 
 // NOTE: Memory
 enum MemoryFlags
@@ -139,7 +190,7 @@ void* __stdcall VirtualAlloc(void* address, memory_index size, u32 type, u32 pro
 #if defined(SPARROW_DEV)
 void __stdcall OutputDebugStringA(char* string);
 #else
-#define OutputDebugStringA
+#define OutputDebugStringA(string)
 #endif
 
 #endif // !_WINDOWS_
