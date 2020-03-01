@@ -4,6 +4,11 @@
 
 global_variable u8 GlobalRunning;
 
+global_variable bitmap_info Win32_BitmapInfo;
+global_variable void* Win32_BitmapMemory;
+global_variable void* Win32_BitmapHandle;
+global_variable void* Win32_DeviceContext;
+
 local void*
 Win32_MemoryAlloc(memory_index Size)
 {
@@ -18,22 +23,38 @@ Win32_MemoryAlloc(memory_index Size)
 local struct screen_buffer*
 Win32_RequestFrameBuffer(u32 width, u32 height)
 {
-    // struct screen_buffer* Result = Win32_MemoryAlloc(sizeof(struct screen_buffer) +
-    //                                                  (width * height * sizeof(u32)));
+    if (Win32_BitmapHandle) {
+        DeleteObject(Win32_BitmapHandle);
+    }
+
+    if (!Win32_DeviceContext) {
+        Win32_DeviceContext = CreateCompatibleDC(0);
+    }
+
+    // u32 PixelSize = height * AlignedWidth(width);
+    // struct screen_buffer* Result = Win32_MemoryAlloc(sizeof(struct screen_buffer) + PixelSize);
     // Result->Width = width;
     // Result->Height = height;
     // Result->Pixels = (void*)(Result + sizeof(struct screen_buffer));
     // return (Result);
-    // bitmap CreateDIBSection();
+    Win32_BitmapInfo.header.size = sizeof(Win32_BitmapInfo.header);
+    Win32_BitmapInfo.header.width = width;
+    Win32_BitmapInfo.header.height = height;
+    Win32_BitmapInfo.header.planes = 1;
+    Win32_BitmapInfo.header.pixelSize = 32;
+    Win32_BitmapInfo.header.compression = BI_RGB;
+
+    Win32_BitmapHandle = CreateDIBSection(Win32_DeviceContext, &Win32_BitmapInfo,
+                                          DIB_RGB_COLORS, &Win32_BitmapMemory, 0, 0);
     return 0;
 }
-
 local void
 Win32_UpdateFrameBuffer(void* DeviceContext, u32 X, u32 Y, u32 Width, u32 Height)
 {
-    // StretchDIBits(DeviceContext, X, Y, Width, Height,
-    //                              X, Y, Width, Height,
-    //                              DIB_RGB_COLORS);
+    StretchDIBits(DeviceContext, X, Y, Width, Height,
+                  X, Y, Width, Height,
+                  &Win32_BitmapHandle, &Win32_BitmapInfo,
+                  DIB_RGB_COLORS, SRCCOPY);
 }
 
 void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s64 LParam)

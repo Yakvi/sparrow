@@ -7,3 +7,4 @@
 5.  Feb 07, 2020 - Code refactoring and bug hunting
 6.  Feb 23, 2020 - Work on the primary output buffer
 7.  Feb 26, 2020 - Back to handmade hero
+8.  Feb 27, 2020 - Debugging fake Bitmap info 

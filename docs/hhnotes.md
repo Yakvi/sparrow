@@ -9,3 +9,11 @@ I'm rewatching some of Handmade Hero at the beginning. Here below are some my no
 21:00 "static variables are zeroed out automatically"
 22:40 "GDI is Windows' graphic API, and we want to interface with it as little as possible"
 23:51 "DIB stands for 'Device-independent Bitmap'"
+
+So far the workflow is:
+1. Introduce main windows callback function, with referring back to DefWindowProc by default
+2. Introduce and register Window Class, link callback function
+3. Introduce and show Window
+4. Create main loop
+5. Callback function: handle WM_CLOSE, WM_DESTROY
+6. Callback function @ WM_SIZE: create frame buffer

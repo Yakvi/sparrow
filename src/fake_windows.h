@@ -110,6 +110,7 @@ enum Mouse
 enum RasterOp
 {
     BLACKNESS = 0x00000042,
+    SRCCOPY = 0x00CC0020,
     WHITENESS = 0x00FF0062
 };
 
@@ -118,6 +119,16 @@ enum DIBColors
     DIB_RGB_COLORS = 0x00,
     DIB_PAL_COLORS = 0x01,
     DIB_PAL_INDICES = 0x02
+};
+
+enum BitmapCompression
+{
+    BI_RGB = 0,
+    BI_RLE8 = 1,
+    BI_RLE4 = 2,
+    BI_BITFIELDS = 3,
+    BI_JPEG = 4,
+    BI_PNG = 5,
 };
 
 typedef struct
@@ -146,8 +157,8 @@ typedef struct
     u32 size;
     u32 width;
     u32 height;
-    u32 planes;
-    u32 bitCount;
+    u16 planes;
+    u16 pixelSize;
     u32 compression;
     u32 sizeImage;
     u32 xPPM;
@@ -156,7 +167,7 @@ typedef struct
     u32 clrImportant;
 } bitmap_info_header;
 
-typedef struct tagRGBQUAD
+typedef struct
 {
     u8 blue;
     u8 green;
@@ -173,10 +184,12 @@ typedef struct
 void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
 void* __stdcall EndPaint(void* Window, paint_struct* PaintStruct);
 b32 __stdcall GetClientRect(void* Window, rect* OutRect);
-b32 PatBlt(void* Hdc, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
-bitmap CreateDIBSection(void* HDC, bitmap_info* info, u32, void** bits, void* section, u32 offset);
-s32 StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 usage, u32 rop);
-
+b32 __stdcall PatBlt(void* HDC, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
+void* __stdcall CreateDIBSection(void* HDC, bitmap_info* info, u32 mode, void** bits, void* section, u32 offset);
+s32 __stdcall StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 mode, u32 rop);
+b32 __stdcall DeleteObject(void* GDIHandle);
+void* __stdcall CreateCompatibleDC(s32);
+s32 __stdcall ReleaseDC(void* Window, void* HDC);
 // NOTE: Memory
 enum MemoryFlags
 {
