@@ -156,9 +156,9 @@ typedef struct
 {
     u32 size;
     u32 width;
-    u32 height;
+    s32 height;
     u16 planes;
-    u16 pixelSize;
+    u16 bitsPerPixel;
     u32 compression;
     u32 sizeImage;
     u32 xPPM;
@@ -194,10 +194,14 @@ s32 __stdcall ReleaseDC(void* Window, void* HDC);
 enum MemoryFlags
 {
     PAGE_READWRITE = 0x4,
-    MEM_RESERVE = 0x2000,
     MEM_COMMIT = 0x1000,
+    MEM_RESERVE = 0x2000,
+    MEM_RELEASE = 0x8000,
 };
+#define Align32(bits) ((((bits) + 31) & (~31)) / 8)
 void* __stdcall VirtualAlloc(void* address, memory_index size, u32 type, u32 protect);
+b32 __stdcall VirtualFree(void* address, memory_index size, u32 type);
+b32 __stdcall VirtualProtect(void* address, memory_index size, u32 newProtect, u32* oldProtect);
 
 // NOTE: Debug calls
 #if defined(SPARROW_DEV)
