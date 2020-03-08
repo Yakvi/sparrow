@@ -189,7 +189,9 @@ void* __stdcall CreateDIBSection(void* HDC, bitmap_info* info, u32 mode, void** 
 s32 __stdcall StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 mode, u32 rop);
 b32 __stdcall DeleteObject(void* GDIHandle);
 void* __stdcall CreateCompatibleDC(s32);
+void* __stdcall GetDC(void* Window);
 s32 __stdcall ReleaseDC(void* Window, void* HDC);
+
 // NOTE: Memory
 enum MemoryFlags
 {

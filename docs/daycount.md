@@ -9,3 +9,4 @@
 7.  Feb 26, 2020 - Back to handmade hero
 8.  Feb 27, 2020 - Debugging fake Bitmap info 
 9.  Feb 29, 2020 - Back to 2018! 
+10. Mar 08, 2020 - Fighting Windows API

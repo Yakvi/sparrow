@@ -17,3 +17,10 @@ So far the workflow is:
 4. Create main loop
 5. Callback function: handle WM_CLOSE, WM_DESTROY
 6. Callback function @ WM_SIZE: create frame buffer
+
+## HH Day 4
+
+So overall the process changed slightly. As of now, the program was working only when it received specific windows messages: WM_PAINT, WM_RESIZE namely. Also we were creating a device context to get access to the bitmap memory. 
+
+The latter is not really necessary. You can just allocate some memory yourself, fill it out and throw into the blitter (for now it's StretchDIBits). Provided the bitmapinfo is filled out appropriately, it will be read correctly anyway. 
+

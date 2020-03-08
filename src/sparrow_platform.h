@@ -12,7 +12,11 @@ struct user_input
 {
     b32 LeftMouseClick;
 };
-struct memory;
+struct memory
+{
+    memory_index Size;
+    void* Data;
+};
 
 #define SPARROW_PLATFORM
 #endif

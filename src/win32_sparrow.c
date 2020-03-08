@@ -2,19 +2,26 @@
 #include "sparrow_platform.h"
 #include "fake_windows.h"
 
+#include "sparrow.c" // TODO: Move this away!
+
 global_variable u8 GlobalRunning;
 
 global_variable struct frame_buffer Win32_FrameBuffer;
+global_variable struct memory* Win32_MainMemory;
 
 local void*
 Win32_MemoryAlloc(memory_index Size)
 {
     void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     Assert(Result);
+#if SPARROW_DEV
     *((u8*)Result + (Size - 1)) = 0;
+#endif
 
     return (Result);
 }
+
+#include "win32_input.c"
 
 local b32
 Win32_MemoryFree(void* address)
@@ -23,9 +30,6 @@ Win32_MemoryFree(void* address)
     Assert(Result);
     return (Result);
 }
-
-#include "scratch.c" // TODO: reimplement dummy functions!
-#include "win32_input.c"
 
 local void
 Win32_AllocateFrameBuffer(u16 width, u16 height)
@@ -42,19 +46,19 @@ Win32_AllocateFrameBuffer(u16 width, u16 height)
     Win32_FrameBuffer.BytesPerPixel = BytesPerPixel;
     Win32_FrameBuffer.Pixels = Win32_MemoryAlloc(PixelSize);
 
-    Render(&Win32_FrameBuffer);
+    Render(Win32_MainMemory, &Win32_FrameBuffer);
 }
 
 local void
-Win32_UpdateWindow(void* DeviceContext, rect* Window)
+Win32_UpdateBuffer(void* DeviceContext, rect WindowRect)
 {
     Assert(Win32_FrameBuffer.Pixels);
 
     s32 BitmapWidth = Win32_FrameBuffer.Width;
     s32 BitmapHeight = Win32_FrameBuffer.Height;
 
-    u32 WindowWidth = Window->right - Window->left;
-    u32 WindowHeight = Window->bottom - Window->top;
+    u32 WindowWidth = WindowRect.right - WindowRect.left;
+    u32 WindowHeight = WindowRect.bottom - WindowRect.top;
 
     bitmap_info bi = {0};
 
@@ -107,10 +111,10 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
             // u32 y = ps.paintRect.top;
             // u32 width = ps.paintRect.right - x;
             // u32 height = ps.paintRect.bottom - y;
-            rect clientRect;
-            GetClientRect(Window, &clientRect);
+            // rect clientRect;
+            // GetClientRect(Window, &clientRect);
 
-            Win32_UpdateWindow(DeviceContext, &clientRect);
+            Win32_UpdateBuffer(DeviceContext, ps.paintRect);
             EndPaint(Window, &ps);
         } break;
 
@@ -163,11 +167,20 @@ Win32_ProcessMessages(void)
 }
 
 local struct memory*
-MainMemoryRequest(memory_index Size)
+Win32_MainMemoryInit(memory_index Size)
 {
-    struct memory* Result = Win32_MemoryAlloc(Size);
-    // TODO: shape up memory
+    struct memory* Result = Win32_MemoryAlloc(Size + sizeof(struct memory));
+    Result->Size = Size;
+    Result->Data = &Result + sizeof(struct memory);
+    // TODO: shape up memory?
+
     return (Result);
+}
+
+local b32
+Win32_IsTimeToRender(void)
+{
+    return true;
 }
 
 int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int ShowCmd)
@@ -195,18 +208,25 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     // TODO: implement custom size buffers
     //  struct frame_buffer* Buffer = {0}; //RequestScreenBuffer(1920, 1080);
     struct user_input* Input = InitializeInput();
-    struct memory* Memory = MainMemoryRequest(KiB(10));
+    Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
 
     GlobalRunning = true;
     while (GlobalRunning) {
         Win32_ProcessMessages();
         ReadInput(Input);
-        UpdateState(Memory, &Win32_FrameBuffer, Input);
 
         // TODO: Render asynchronously?
-        if (IsTimeToRender()) {
-            Render(&Win32_FrameBuffer);
-        }
+        // if (Win32_IsTimeToRender()) {
+        // TODO: Reimplement handles
+        UpdateState(Win32_MainMemory, Input);
+        Render(Win32_MainMemory, &Win32_FrameBuffer);
+
+        void* DeviceContext = GetDC(Window);
+        rect WindowRect;
+        GetClientRect(Window, &WindowRect);
+        Win32_UpdateBuffer(DeviceContext, WindowRect);
+        ReleaseDC(Window, DeviceContext);
+        // }
     }
 
     return (0);

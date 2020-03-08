@@ -3,39 +3,107 @@
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
+struct frame_buffer
+{
+    u16 Width;
+    u16 Height;
+    u16 BytesPerPixel;
+    u16 Pad;
+    u8* Pixels;
+};
 
 static b32 GlobalRunning;
+global_variable struct frame_buffer Win32_FrameBuffer;
+static s32 Offset;
 
-static HDC Win32_DeviceContext;
-static void* Win32_BitmapMemory;
-static HBITMAP Win32_BitmapHandle;
-static BITMAPINFO Win32_BitmapInfo;
+local void*
+Win32_MemoryAlloc(memory_index Size)
+{
+    void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    Assert(Result);
+#if SPARROW_DEV
+    *((u8*)Result + (Size - 1)) = 0;
+#endif
+
+    return (Result);
+}
+
+local b32
+Win32_MemoryFree(void* address)
+{
+    b32 Result = VirtualFree(address, 0, MEM_RELEASE);
+    Assert(Result);
+    return (Result);
+}
+
+local void
+Render(frame_buffer* Buffer)
+{
+    if (Buffer) {
+        u32 Pitch = Buffer->Width * Buffer->BytesPerPixel;
+        u8* Row = Buffer->Pixels;
+        for (u32 y = 0;
+             y < Buffer->Height;
+             ++y) {
+            u32* Pixel = (u32*)Row;
+            for (u32 x = 0;
+                 x < Buffer->Width;
+                 ++x) {
+                u8 Red = (u8)(y + Offset);
+                u8 Green = (u8)(x + y);
+                u8 Blue = (u8)(x + Offset);
+
+                *Pixel++ = ((Red << 0) | (Green << 8) | (Blue << 16) | 0);
+            }
+            Row += Pitch;
+        }
+    }
+    ++Offset;
+}
 
 static void
 Win32_RequestFrameBuffer(u16 width, u16 height)
 {
-    if (Win32_BitmapHandle) {
-        DeleteObject(Win32_BitmapHandle);
+    u16 BytesPerPixel = 4;
+
+    if (Win32_FrameBuffer.Pixels) {
+        Win32_MemoryFree(Win32_FrameBuffer.Pixels);
     }
 
-    if (!Win32_DeviceContext) {
-        Win32_DeviceContext = CreateCompatibleDC(0);
-    }
+    u32 PixelSize = height * width * BytesPerPixel;
+    Win32_FrameBuffer.Width = width;
+    Win32_FrameBuffer.Height = height;
+    Win32_FrameBuffer.BytesPerPixel = BytesPerPixel;
+    Win32_FrameBuffer.Pixels = (u8*)Win32_MemoryAlloc(PixelSize);
 
-    // struct screen_buffer* Result = Win32_MemoryAlloc(sizeof(struct screen_buffer) + PixelSize);
-    // Result->Width = width;
-    // Result->Height = height;
-    // Result->Pixels = (void*)(Result + sizeof(struct screen_buffer));
-    // return (Result);
-    Win32_BitmapInfo.bmiHeader.biSize = sizeof(Win32_BitmapInfo.bmiHeader);
-    Win32_BitmapInfo.bmiHeader.biWidth = width;
-    Win32_BitmapInfo.bmiHeader.biHeight = height;
-    Win32_BitmapInfo.bmiHeader.biPlanes = 1;
-    Win32_BitmapInfo.bmiHeader.biBitCount = 32;
-    Win32_BitmapInfo.bmiHeader.biCompression = BI_RGB;
+    Render(&Win32_FrameBuffer);
+}
 
-    Win32_BitmapHandle = CreateDIBSection(Win32_DeviceContext, &Win32_BitmapInfo,
-                                          DIB_RGB_COLORS, &Win32_BitmapMemory, 0, 0);
+local void
+Win32_UpdateBuffer(HDC DeviceContext, RECT WindowRect)
+{
+    Assert(Win32_FrameBuffer.Pixels);
+
+    s32 BitmapWidth = Win32_FrameBuffer.Width;
+    s32 BitmapHeight = Win32_FrameBuffer.Height;
+
+    u32 WindowWidth = WindowRect.right - WindowRect.left;
+    u32 WindowHeight = WindowRect.bottom - WindowRect.top;
+
+    BITMAPINFO bi = {0};
+
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = BitmapWidth;
+    bi.bmiHeader.biHeight = BitmapHeight; // rows will go top-down
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = Win32_FrameBuffer.BytesPerPixel * 8;
+    bi.bmiHeader.biCompression = BI_RGB;
+
+    StretchDIBits(DeviceContext,
+                  0, 0, BitmapWidth, BitmapHeight,
+                  0, 0, WindowWidth, WindowHeight,
+                  Win32_FrameBuffer.Pixels, &bi,
+                  DIB_RGB_COLORS, SRCCOPY);
 }
 
 LRESULT __stdcall Win32_DefaultWindowProc(HWND Window, u32 Message, WPARAM WParam, LPARAM LParam)
@@ -100,27 +168,17 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance,
     while (GlobalRunning) {
         MSG Message;
         while (PeekMessageA(&Message, 0, 0, 0, true)) {
-            switch (Message.message) {
-
-                case WM_MOUSEMOVE:
-                case WM_MBUTTONDOWN:
-                case WM_MBUTTONUP: {
-                    // TODO: Do we even want to handle any mouse code here?
-                } break;
-
-                case WM_SYSKEYUP:
-                case WM_KEYUP: {
-                    if (Message.wParam == VK_ESCAPE) {
-                        GlobalRunning = false;
-                    }
-                } break;
-
-                default: {
-                    TranslateMessage(&Message);
-                    DispatchMessageA(&Message);
-                } break;
-            }
+            TranslateMessage(&Message);
+            DispatchMessageA(&Message);
         }
+        Render(&Win32_FrameBuffer);
+
+        HDC DeviceContext = GetDC(Window);
+        RECT WindowRect;
+        GetClientRect(Window, &WindowRect);
+        Win32_UpdateBuffer(DeviceContext, WindowRect);
+
+        ReleaseDC(Window, DeviceContext);
     }
     return (0);
 }
