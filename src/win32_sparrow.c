@@ -9,12 +9,12 @@ global_variable u8 GlobalRunning;
 global_variable struct frame_buffer Win32_FrameBuffer;
 global_variable struct memory* Win32_MainMemory;
 
-local void*
+inline void*
 Win32_MemoryAlloc(memory_index Size)
 {
     void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    Assert(Result);
 #if SPARROW_DEV
+    Assert(Result);
     *((u8*)Result + (Size - 1)) = 0;
 #endif
 
@@ -46,7 +46,7 @@ Win32_AllocateFrameBuffer(u16 width, u16 height)
     Win32_FrameBuffer.BytesPerPixel = BytesPerPixel;
     Win32_FrameBuffer.Pixels = Win32_MemoryAlloc(PixelSize);
 
-    Render(Win32_MainMemory, &Win32_FrameBuffer);
+    // Render(0, 0, &Win32_FrameBuffer); // TODO: Do we even want to bother?
 }
 
 local void
@@ -171,8 +171,7 @@ Win32_MainMemoryInit(memory_index Size)
 {
     struct memory* Result = Win32_MemoryAlloc(Size + sizeof(struct memory));
     Result->Size = Size;
-    Result->Data = &Result + sizeof(struct memory);
-    // TODO: shape up memory?
+    Result->Data = Result + sizeof(struct memory);
 
     return (Result);
 }
@@ -208,6 +207,8 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     // TODO: implement custom size buffers
     //  struct frame_buffer* Buffer = {0}; //RequestScreenBuffer(1920, 1080);
     struct user_input* Input = InitializeInput();
+    // TODO: Allocate main buffer!
+    // Win32_AllocateFrameBuffer(u16 width, u16 height);
     Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
 
     GlobalRunning = true;
@@ -216,17 +217,18 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
         ReadInput(Input);
 
         // TODO: Render asynchronously?
-        // if (Win32_IsTimeToRender()) {
-        // TODO: Reimplement handles
-        UpdateState(Win32_MainMemory, Input);
-        Render(Win32_MainMemory, &Win32_FrameBuffer);
+        if (Win32_IsTimeToRender()) {
+            UpdateState(Win32_MainMemory, Input);
+            Render(Win32_MainMemory, &Win32_FrameBuffer);
 
-        void* DeviceContext = GetDC(Window);
-        rect WindowRect;
-        GetClientRect(Window, &WindowRect);
-        Win32_UpdateBuffer(DeviceContext, WindowRect);
-        ReleaseDC(Window, DeviceContext);
-        // }
+            Assert(Window);
+            void* DeviceContext = GetDC(Window);
+            Assert(DeviceContext);
+            rect WindowRect;
+            GetClientRect(Window, &WindowRect);
+            Win32_UpdateBuffer(DeviceContext, WindowRect);
+            ReleaseDC(Window, DeviceContext);
+        }
     }
 
     return (0);
