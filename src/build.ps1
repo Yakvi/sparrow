@@ -93,17 +93,16 @@ Write-Host "Compilation started." -ForegroundColor "Cyan"
 Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
-# $win32file = "win32_sparrow.c"
+$win32file = "win32_sparrow.c"
 # $win32file = "wintest.cpp"
-$win32file = "experiments\confps.cpp"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-# $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
-# Output-Logs -data $win32executable -title "win32 platform layer"
-
-$win32executable = & cl $c  -EHsc $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
+
+# $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker
+# Output-Logs -data $win32executable -title "Test: FPS in console (C++)"
 
 
 #echo "WAITING FOR PDB" > lock.tmp

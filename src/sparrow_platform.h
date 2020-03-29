@@ -18,5 +18,10 @@ struct memory
     void* Data;
 };
 
+struct dim_2d{
+    u32 Width;
+    u32 Height;
+};
+
 #define SPARROW_PLATFORM
 #endif

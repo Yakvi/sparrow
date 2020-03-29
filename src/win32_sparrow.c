@@ -6,8 +6,8 @@
 
 global_variable u8 GlobalRunning;
 
-global_variable struct frame_buffer Win32_FrameBuffer;
 global_variable struct memory* Win32_MainMemory;
+global_variable struct frame_buffer Win32_FrameBuffer;
 
 inline void*
 Win32_MemoryAlloc(memory_index Size)
@@ -15,13 +15,11 @@ Win32_MemoryAlloc(memory_index Size)
     void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #if SPARROW_DEV
     Assert(Result);
-    *((u8*)Result + (Size - 1)) = 0;
+    Assert(*((u8*)Result + (Size - 1)) == 0);
 #endif
 
     return (Result);
 }
-
-#include "win32_input.c"
 
 local b32
 Win32_MemoryFree(void* address)
@@ -31,48 +29,70 @@ Win32_MemoryFree(void* address)
     return (Result);
 }
 
-local void
-Win32_AllocateFrameBuffer(u16 width, u16 height)
+#include "win32_input.c"
+
+inline struct dim_2d
+Win32_DimFromRect(rect Source)
 {
-    u16 BytesPerPixel = 4;
+    struct dim_2d Result;
+    Result.Width = (u16)(Source.right - Source.left);
+    Result.Height = (u16)(Source.bottom - Source.top);
 
-    if (Win32_FrameBuffer.Pixels) {
-        Win32_MemoryFree(Win32_FrameBuffer.Pixels);
-    }
+    return (Result);
+}
 
-    u32 PixelSize = height * width * BytesPerPixel;
-    Win32_FrameBuffer.Width = width;
-    Win32_FrameBuffer.Height = height;
-    Win32_FrameBuffer.BytesPerPixel = BytesPerPixel;
-    Win32_FrameBuffer.Pixels = Win32_MemoryAlloc(PixelSize);
+inline struct dim_2d
+Win32_GetWindowDim(void* Window)
+{
+    Assert(Window);
+    rect WindowRect;
+    GetClientRect(Window, &WindowRect);
 
-    // Render(0, 0, &Win32_FrameBuffer); // TODO: Do we even want to bother?
+    struct dim_2d Result = Win32_DimFromRect(WindowRect);
+
+    return (Result);
 }
 
 local void
-Win32_UpdateBuffer(void* DeviceContext, rect WindowRect)
+Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, u32 Width, u32 Height)
 {
-    Assert(Win32_FrameBuffer.Pixels);
+    u16 BytesPerPixel = 4;
 
-    s32 BitmapWidth = Win32_FrameBuffer.Width;
-    s32 BitmapHeight = Win32_FrameBuffer.Height;
+    if (Buffer->Pixels) {
+        Win32_MemoryFree(Buffer->Pixels);
+    }
 
-    u32 WindowWidth = WindowRect.right - WindowRect.left;
-    u32 WindowHeight = WindowRect.bottom - WindowRect.top;
+    u32 PixelSize = Height * Width * BytesPerPixel;
+    Buffer->Width = Width;
+    Buffer->Height = Height;
+    Buffer->BytesPerPixel = BytesPerPixel;
+    Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
+
+    Assert(Buffer->Pixels);
+}
+
+local void
+Win32_UpdateBuffer(void* DeviceContext, struct frame_buffer* Buffer, struct dim_2d Window)
+{
+    Assert(DeviceContext);
+    Assert(Buffer->Pixels);
+    Assert(Buffer->Width > 0);
+    Assert(Buffer->Height > 0);
+    Assert(Buffer->BytesPerPixel > 0);
 
     bitmap_info bi = {0};
 
     bi.header.size = sizeof(bi.header);
-    bi.header.width = BitmapWidth;
-    bi.header.height = BitmapHeight; // rows will go top-down
+    bi.header.width = Buffer->Width;
+    bi.header.height = Buffer->Height; // rows will go top-down
     bi.header.planes = 1;
-    bi.header.bitsPerPixel = Win32_FrameBuffer.BytesPerPixel * 8;
+    bi.header.bitsPerPixel = Buffer->BytesPerPixel * 8;
     bi.header.compression = BI_RGB;
 
     StretchDIBits(DeviceContext,
-                  0, 0, BitmapWidth, BitmapHeight,
-                  0, 0, WindowWidth, WindowHeight,
-                  Win32_FrameBuffer.Pixels, &bi,
+                  0, 0, Window.Width, Window.Height,
+                  0, 0, Buffer->Width, Buffer->Height,
+                  Buffer->Pixels, &bi,
                   DIB_RGB_COLORS, SRCCOPY);
 }
 
@@ -83,11 +103,6 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
     switch (Message) {
 
         case WM_SIZE: {
-            rect ClientRect;
-            GetClientRect(Window, &ClientRect);
-            u16 Width = (u16)(ClientRect.right - ClientRect.left);
-            u16 Height = (u16)(ClientRect.bottom - ClientRect.top);
-            Win32_AllocateFrameBuffer(Width, Height);
         } break;
 
         case WM_ACTIVATEAPP: {
@@ -104,17 +119,12 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
 
         case WM_PAINT: {
             paint_struct ps;
+            Assert(Window);
             void* DeviceContext = BeginPaint(Window, &ps);
             Assert(DeviceContext);
 
-            // u32 x = ps.paintRect.left;
-            // u32 y = ps.paintRect.top;
-            // u32 width = ps.paintRect.right - x;
-            // u32 height = ps.paintRect.bottom - y;
-            // rect clientRect;
-            // GetClientRect(Window, &clientRect);
-
-            Win32_UpdateBuffer(DeviceContext, ps.paintRect);
+            struct dim_2d Dim = Win32_DimFromRect(ps.paintRect);
+            Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Dim);
             EndPaint(Window, &ps);
         } break;
 
@@ -187,10 +197,12 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     win_class WindowClass = {0};
     WindowClass.instance = Instance;
     WindowClass.className = "ProjectSparrowWindowClass";
-    WindowClass.style = CS_HREDRAW | CS_VREDRAW;
+    WindowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     WindowClass.cursor = LoadCursorA(0, IDC_ARROW);
     WindowClass.windowProc = Win32_DefaultWindowProc;
     Assert_exec(RegisterClassA(&WindowClass));
+
+    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
 
     // TODO: show window after all initialized?
     void* Window = CreateWindowExA(0,
@@ -203,6 +215,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
                                    CW_USEDEFAULT,
                                    0, 0, Instance, 0);
     Assert(Window);
+    void* DeviceContext = GetDC(Window);
 
     // TODO: implement custom size buffers
     //  struct frame_buffer* Buffer = {0}; //RequestScreenBuffer(1920, 1080);
@@ -218,15 +231,12 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
         // TODO: Render asynchronously?
         if (Win32_IsTimeToRender()) {
+            // NOTE: Game logic
             UpdateState(Win32_MainMemory, Input);
             Render(Win32_MainMemory, &Win32_FrameBuffer);
 
-            Assert(Window);
-            void* DeviceContext = GetDC(Window);
-            Assert(DeviceContext);
-            rect WindowRect;
-            GetClientRect(Window, &WindowRect);
-            Win32_UpdateBuffer(DeviceContext, WindowRect);
+            // NOTE: Display buffer on screen
+            Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
             ReleaseDC(Window, DeviceContext);
         }
     }
