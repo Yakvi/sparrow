@@ -21,6 +21,13 @@
     "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
         "scratch.c": "cpp",
-        "win32_input.c": "cpp"
+        "win32_input.c": "cpp",
+        "iostream": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "ios": "cpp",
+        "xlocnum": "cpp",
+        "cmath": "cpp",
+        "cstdlib": "cpp"
     }
 }

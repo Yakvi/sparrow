@@ -57,7 +57,7 @@ $debug += '-MTd'                       #Creates debug multithreaded executable
 $debug += '-Zo'                        #Enhance Optimized Debugging
 $debug += '-Z7'                        #Generates C 7.0–compatible debugging information.
 $debug += '-WX'                        #Treats all warnings as errors (except the ones below).
-$debug += '-Wall'                        #Displays all warnings (except the ones below).
+$debug += '-W3' #'-Wall'                        #Displays all warnings (except the ones below).
 # NOTE: Ignoring selected warnings:
 $debug += '-wd4100'                  #Unreferenced variable
 # $debug += '-wd4711'                  #Function inlined by optimizer
@@ -93,12 +93,16 @@ Write-Host "Compilation started." -ForegroundColor "Cyan"
 Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
-$win32file = "win32_sparrow.c"
+# $win32file = "win32_sparrow.c"
 # $win32file = "wintest.cpp"
+$win32file = "experiments\confps.cpp"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+# $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+# Output-Logs -data $win32executable -title "win32 platform layer"
+
+$win32executable = & cl $c  -EHsc $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
 
