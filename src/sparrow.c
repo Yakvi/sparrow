@@ -17,7 +17,7 @@ LoadGameState(struct memory* Memory)
     return (Result);
 }
 
-local void
+void
 UpdateState(struct memory* Memory,
             struct user_input* Input)
 {
@@ -26,7 +26,7 @@ UpdateState(struct memory* Memory,
     GameState->GradientYOffset++;
 }
 
-local void
+void
 Render(struct memory* Memory, struct frame_buffer* Buffer)
 {
     struct game_state* GameState = LoadGameState(Memory);
@@ -43,8 +43,8 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
             for (u32 x = 0;
                  x < Buffer->Width;
                  ++x) {
-                u8 Red = (u8)(y + xOffset);
-                u8 Green = (u8)(x + y - yOffset);
+                u8 Red = (u8)(y - xOffset);
+                u8 Green = (u8)(x + y);
                 u8 Blue = (u8)(x + yOffset);
 
                 *Pixel++ = ((Red << 16) | (Green << 8) | Blue | 0);
@@ -53,3 +53,10 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
         }
     }
 }
+
+#if COMPILER_MSVC
+b32 __stdcall _DllMainCRTStartup(void* instance, u32 reason, void* reserved)
+{
+    return true;
+}
+#endif

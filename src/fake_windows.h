@@ -1,8 +1,15 @@
 #if !defined(FAKE_WINDOWS)
 #ifndef _WINDOWS_
 
-#pragma comment(lib, "user32.lib")
-#pragma comment(lib, "gdi32.lib")
+// TODO: find a way to put this back?
+// #pragma comment(linker, "user32.lib")
+// #pragma comment(linker, "gdi32.lib")
+// #pragma comment(linker, "kernel32.lib")
+
+// NOTE: CRT Startup
+char* __stdcall GetCommandLineA(void);
+void* __stdcall GetModuleHandleA(char* ModuleName);
+void __stdcall ExitProcess(u32 ExitCode);
 
 // NOTE: Window Class flags
 enum WindowClass
@@ -205,11 +212,18 @@ void* __stdcall VirtualAlloc(void* address, memory_index size, u32 type, u32 pro
 b32 __stdcall VirtualFree(void* address, memory_index size, u32 type);
 b32 __stdcall VirtualProtect(void* address, memory_index size, u32 newProtect, u32* oldProtect);
 
+// NOTE: File System
+typedef u64(__stdcall* function)();
+void* __stdcall LoadLibraryA(char* filename);
+function __stdcall GetProcAddress(void* library, char* funcName);
+
 // NOTE: Debug calls
 #if defined(SPARROW_DEV)
 void __stdcall OutputDebugStringA(char* string);
+u64 __stdcall GetLastError();
 #else
 #define OutputDebugStringA(string)
+#define GetLastError() 0
 #endif
 
 #endif // !_WINDOWS_

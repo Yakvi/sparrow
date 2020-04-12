@@ -1,8 +1,7 @@
 #include <yak_defines.h>
-#include "sparrow_platform.h"
 #include "fake_windows.h"
-
-#include "sparrow.c" // TODO: Move this away!
+#include "sparrow_platform.h"
+#include "win32_sparrow.h"
 
 global_variable u8 GlobalRunning;
 
@@ -192,6 +191,21 @@ Win32_IsTimeToRender(void)
     return true;
 }
 
+local void
+Win32_TryLoadGameDLL(struct win32_game_calls* Game)
+{
+    // TODO: Test if DLL was changed
+    void* GameDLL = LoadLibraryA("sparrow.dll");
+    if (GameDLL) {
+        Game->Update = GetProcAddress(GameDLL, "UpdateState");
+        Game->Render = GetProcAddress(GameDLL, "Render");
+        Game->IsLoaded = (Game->Update && Game->Render);
+        // TODO: Unload DLL! Should I need to copy dll data first? Maybe copy dll?
+        // We need to make sure we can recompile Dll after we're done with loading it.
+        // FreeLibrary? https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
+    }
+}
+
 int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int ShowCmd)
 {
     win_class WindowClass = {0};
@@ -224,22 +238,67 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     // Win32_AllocateFrameBuffer(u16 width, u16 height);
     Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
 
+    struct win32_game_calls Game = {0};
     GlobalRunning = true;
     while (GlobalRunning) {
-        Win32_ProcessMessages();
-        ReadInput(Input);
+        Win32_TryLoadGameDLL(&Game);
 
-        // TODO: Render asynchronously?
-        if (Win32_IsTimeToRender()) {
-            // NOTE: Game logic
-            UpdateState(Win32_MainMemory, Input);
-            Render(Win32_MainMemory, &Win32_FrameBuffer);
+        if (Game.IsLoaded) {
 
-            // NOTE: Display buffer on screen
-            Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
-            ReleaseDC(Window, DeviceContext);
+            Win32_ProcessMessages();
+            ReadInput(Input);
+
+            // TODO: Render asynchronously?
+            if (Win32_IsTimeToRender()) {
+                // NOTE: Game logic
+                Game.Update(Win32_MainMemory, Input);
+                Game.Render(Win32_MainMemory, &Win32_FrameBuffer);
+
+                // NOTE: Display buffer on screen
+                Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
+                ReleaseDC(Window, DeviceContext);
+            }
+        }
+        else {
+            Assert(!"Game DLL not loaded!");
         }
     }
 
     return (0);
+}
+
+void
+WinMainCRTStartup(void)
+{
+    char* CommandLine = GetCommandLineA();
+
+    // Skip past program name (first token in command line).
+    // TODO: Tokenize this? Can be a good testing bed for a parser.
+    if (*CommandLine == '"') //Check for and handle quoted program name
+    {
+        // Scan, and skip over, subsequent characters until  another
+        // double-quote or a null is encountered
+
+        while (*CommandLine && (*CommandLine != '"'))
+            CommandLine++;
+
+        // If we stopped on a double-quote (usual case), skip over it.
+
+        if (*CommandLine == '"')
+            CommandLine++;
+    }
+    else // First token wasn't a quote
+    {
+        while (*CommandLine > ' ')
+            CommandLine++;
+    }
+
+    // Skip past any white space preceeding the second token.
+
+    while (*CommandLine && (*CommandLine <= ' '))
+        CommandLine++;
+
+    u32 ExitCode = WinMain(GetModuleHandleA(0), 0, CommandLine, 0);
+
+    ExitProcess(ExitCode);
 }

@@ -69,3 +69,47 @@ And the code to initialize it was simple as well:
 And it's in the function above that a trained eye will immediately spot the bug: I was initializing Data to point not at the virtual space provided to me by Windows, but directly on the stack, a few bytes after the pointer itself! And, of course, back at the main loop that data was occupied by the Windows and, later, DC. 
 
 Removing the small & symbol was all it took! So much for hours of debugging spread accross two days. 
+
+## 12. Apr 12, 2020 - Implementing DLL loading (+getting rid of CRT)
+
+I set myself on the road of casey's Hot Reloading(tm) today. The idea was to try and reimplement the dll loading system without peaking or otherwise trying to cheat my way out of it. 
+
+Challenge: in the game's frame loop, we need to:
+1. Check if we need to update the DLL. 
+2. If so, load DLL data
+3. Get the necessary procedures
+4. Copy them somewhere? Or otherwise ensure we don't need the dll file itself
+5. Release the file handle
+6. Inject the procedures in the game.
+
+That way we can edit the dll source code and compile it on the fly, while the game is running.
+
+Today, we have pretty much achieved 2, 3 and 6. We're loading the DLL file (with a relative path, this will need to be addressed eventually), getting its procedures and inject them into the game. To this end, I've introduced a new struct win32_game_calls and the Win32_TryLoadGameDLL call which also makes sure the game procedures have loaded succesfully. The resulting code is the following: 
+
+    typedef u64(__stdcall* function)();
+
+    struct win32_game_calls
+    {
+        b32 IsLoaded;
+        function Update;
+        function Render;
+    };
+
+    local void
+    Win32_TryLoadGameDLL(struct win32_game_calls* Game)
+    {
+        void* GameDLL = LoadLibraryA("sparrow.dll");
+        if (GameDLL) {
+            Game->Update = GetProcAddress(GameDLL, "UpdateState");
+            Game->Render = GetProcAddress(GameDLL, "Render");
+            Game->IsLoaded = (Game->Update && Game->Render); // Ensures both pointers are not 0.
+        }
+    }
+
+Some time was also spent debugging why exactly my program wasn't binding with those functions. As it turns out, I forgot to include the -EXPORT:UpdateState and -EXPORT:Render linker commands in my build file.
+
+Evidently, before we call this feature done we'll need to properly address the other points, as well as some minor todos I left along the way. 
+
+Another thing that caught my attention was the amount of garbage the exe and dll files were adding to their content. I'm not going to use any of the standard library (I suspect), so, as of now, it's of no use to me. What I have done as a result was introducing -NODEFAULTLIB linker flag, bringing down the size of my executable from 315 KiB to 6.5 KiB! I'm sure you can go even further than that but that's more than enough for the time being. 
+
+This also had a neat side-effect of having to define WinMainCRTStartup() which I'm sure I'll be able to use for my own means if I need it (or even get rid of WinMain entirely?). 

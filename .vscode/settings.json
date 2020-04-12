@@ -28,6 +28,7 @@
         "ios": "cpp",
         "xlocnum": "cpp",
         "cmath": "cpp",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "functional": "cpp"
     }
 }

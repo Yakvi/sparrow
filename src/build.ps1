@@ -46,13 +46,14 @@ $c += '-fp:except-'                    #Floating point behaviour. Precise behavi
 $c += '-Gm-'                           #Enables minimal rebuild. For faster compile.
 $c += '-Oi'                            #Generates intrinsic functions. For faster runtime.
 $c += '-EHa-'                          #Disable exception handling, -EHsc for c++
+$c += '-GS-'                           #Disable Buffer Security checks https://docs.microsoft.com/en-us/cpp/build/reference/gs-buffer-security-check
 # NOTE: Preprocessor directives
 $c += '-DSPARROW_DEV=1'            #For debug stuff
 $c += '-DSPARROW_WIN32=1'          #Compiles for Win32
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
 $debug += '-GR-'                       #Disables run-time type information. For faster compile.
-$debug += '-Od'                        #Optimizations disabled
+# $debug += '-Od'                        #Optimizations disabled
 $debug += '-MTd'                       #Creates debug multithreaded executable
 $debug += '-Zo'                        #Enhance Optimized Debugging
 $debug += '-Z7'                        #Generates C 7.0–compatible debugging information.
@@ -73,13 +74,16 @@ $debug += '-wd4100'                  #Unreferenced variable
 # NOTE: linker flags, go after the source file
 $linker = '/link', '-incremental:no'   #Passes linker parameters from here; Disables incremental linking of the linker
 $linker += '-opt:ref'                  #Eliminates functions and data that are never referenced
+$linker += '-NODEFAULTLIB'             #Disable standard C library
 # NOTE: Extra libraries for win32
-# $32linker += 'kernel32.lib'
+$32linker = 'kernel32.lib', 'user32.lib'
+$32linker += 'gdi32.lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
-# NOTE: Extra parameters for sparrow.dll linker
-$dlllinker = '-FmSPARROW', '-LD'      #Creates a map file and output DLL
-# $linkerflags = '-EXPORT:MainLoop'     #Functions to export
+# NOTE: Extra parameters for sparrow.dll 
+$dllc = '-FmSPARROW', '-LD'
+$dllc += '-GR-'              
+$dlllinker += '-EXPORT:UpdateState', '-EXPORT:Render'
 
 #timeout /t 1
 $srcDir = "..\src"
@@ -94,22 +98,23 @@ Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32_sparrow.c"
+$opt = "-Od"
 # $win32file = "wintest.cpp"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
-# WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+# NOTE WIN32 PLATFORM LAYER
+$win32executable = & cl $c $debug $opt $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
+#echo "WAITING FOR PDB" > lock.tmp
+# NOTE sparrow DLL
+$sparrow = & cl $c $dllc $debug $opt $srcDir\sparrow.c  $linker $dlllinker
+Output-Logs -data $sparrow -title "sparrow dll"
+#del lock.tmp
+
+# TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker
 # Output-Logs -data $win32executable -title "Test: FPS in console (C++)"
-
-
-#echo "WAITING FOR PDB" > lock.tmp
-# sparrow DLL
-#$sparrow = & cl $c -Od ..\$srcDir\sparrow.c -Fmsparrow -LD $linker $linkerflags
-# Output-Logs -data $sparrow -title "sparrow dll"
-#del lock.tmp
 
 # NOTE: Compiling Diagnostics
 $CompileTime = $CompileTimer.Elapsed
