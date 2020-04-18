@@ -1,4 +1,4 @@
-#include <yak_defines.h>
+#include "types.h"
 #include "fake_windows.h"
 #include "sparrow_platform.h"
 #include "win32_sparrow.h"
@@ -191,19 +191,45 @@ Win32_IsTimeToRender(void)
     return true;
 }
 
-local void
-Win32_TryLoadGameDLL(struct win32_game_calls* Game)
+local struct win32_module
+Win32_InitModule(char* Filename)
 {
-    // TODO: Test if DLL was changed
-    void* GameDLL = LoadLibraryA("sparrow.dll");
-    if (GameDLL) {
-        Game->Update = GetProcAddress(GameDLL, "UpdateState");
-        Game->Render = GetProcAddress(GameDLL, "Render");
-        Game->IsLoaded = (Game->Update && Game->Render);
-        // TODO: Unload DLL! Should I need to copy dll data first? Maybe copy dll?
-        // We need to make sure we can recompile Dll after we're done with loading it.
-        // FreeLibrary? https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
+    struct win32_module Result = {0};
+    Result.Name = Filename;
+
+    return (Result);
+}
+
+local b32
+Win32_FileExists(char* filename)
+{
+#if 0
+    s32 Attributes = GetFileAttributesA(filename);
+    b32 Result = Attributes != -1;
+#else
+    b32 Result = false;
+#endif
+
+    return (Result);
+}
+
+local void
+Win32_TryLoadDLL(struct win32_module* Module)
+{
+    b32 LockFileExists = Win32_FileExists("lock.tmp");
+    if (!LockFileExists) {
+        // TODO: Test if DLL was changed
+        Assert(Module->Name);
+        Module->Library = LoadLibraryA(Module->Name);
+        if (Module->Library) {
+            Module->Update = GetProcAddress(Module->Library, "UpdateState");
+            Module->Render = GetProcAddress(Module->Library, "Render");
+            // TODO: Unload DLL! Should I need to copy dll data first? Maybe copy dll?
+            // We need to make sure we can recompile Dll after we're done with loading it.
+            // FreeLibrary? https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
+        }
     }
+    Module->IsLoaded = (Module->Library && Module->Update && Module->Render);
 }
 
 int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int ShowCmd)
@@ -212,11 +238,9 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     WindowClass.instance = Instance;
     WindowClass.className = "ProjectSparrowWindowClass";
     WindowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    WindowClass.cursor = LoadCursorA(0, IDC_ARROW);
+    WindowClass.cursor = LoadCursorA(0, IDC_ARROW); // TODO: We'll need to investigate removing cursor and implementing our own at some point
     WindowClass.windowProc = Win32_DefaultWindowProc;
     Assert_exec(RegisterClassA(&WindowClass));
-
-    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
 
     // TODO: show window after all initialized?
     void* Window = CreateWindowExA(0,
@@ -231,17 +255,16 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Assert(Window);
     void* DeviceContext = GetDC(Window);
 
-    // TODO: implement custom size buffers
-    //  struct frame_buffer* Buffer = {0}; //RequestScreenBuffer(1920, 1080);
     struct user_input* Input = InitializeInput();
-    // TODO: Allocate main buffer!
-    // Win32_AllocateFrameBuffer(u16 width, u16 height);
+
+    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
     Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
 
-    struct win32_game_calls Game = {0};
+    struct win32_module Game = Win32_InitModule("sparrow.dll");
+
     GlobalRunning = true;
     while (GlobalRunning) {
-        Win32_TryLoadGameDLL(&Game);
+        Win32_TryLoadDLL(&Game);
 
         if (Game.IsLoaded) {
 
@@ -251,6 +274,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
                 // NOTE: Game logic
+                // TODO: Run this for each module
                 Game.Update(Win32_MainMemory, Input);
                 Game.Render(Win32_MainMemory, &Win32_FrameBuffer);
 

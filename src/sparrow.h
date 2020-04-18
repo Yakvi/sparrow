@@ -1,4 +1,6 @@
-#include <yak_defines.h>
+#if !defined(SPARROW_H)
+
+#include "types.h"
 #include "sparrow_platform.h"
 
 struct game_state
@@ -7,3 +9,6 @@ struct game_state
     u16 GradientYOffset;
     b32 IsInitialized;
 };
+
+#define SPARROW_H
+#endif

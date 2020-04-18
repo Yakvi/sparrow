@@ -29,6 +29,7 @@
         "xlocnum": "cpp",
         "cmath": "cpp",
         "cstdlib": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "xstring": "cpp"
     }
 }

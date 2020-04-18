@@ -1,10 +1,13 @@
 #if !defined(WIN32_SPARROW_H)
 
-struct win32_game_calls
+struct win32_module
 {
-    b32 IsLoaded;
+    char* Name;
+    void* Library;
     function Update;
     function Render;
+
+    b32 IsLoaded;
 };
 
 #define WIN32_SPARROW_H

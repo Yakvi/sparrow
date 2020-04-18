@@ -48,8 +48,8 @@ $c += '-Oi'                            #Generates intrinsic functions. For faste
 $c += '-EHa-'                          #Disable exception handling, -EHsc for c++
 $c += '-GS-'                           #Disable Buffer Security checks https://docs.microsoft.com/en-us/cpp/build/reference/gs-buffer-security-check
 # NOTE: Preprocessor directives
-$c += '-DSPARROW_DEV=1'            #For debug stuff
-$c += '-DSPARROW_WIN32=1'          #Compiles for Win32
+$c += '-DSPARROW_DEV=1'                #For debug stuff
+$c += '-DSPARROW_WIN32=1'              #Compiles for Win32
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
 $debug += '-GR-'                       #Disables run-time type information. For faster compile.
@@ -78,6 +78,9 @@ $linker += '-NODEFAULTLIB'             #Disable standard C library
 # NOTE: Extra libraries for win32
 $32linker = 'kernel32.lib', 'user32.lib'
 $32linker += 'gdi32.lib'
+# $32linker += 'shlwapi.lib'             # Shell API
+# $32linker += 'msvcrt.lib'           #REMINDER: This program is compiled in x64!
+# $32linker += '-LIBPATH:H:\C\_Deps\Lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
 # NOTE: Extra parameters for sparrow.dll 

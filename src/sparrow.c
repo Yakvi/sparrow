@@ -54,8 +54,9 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
     }
 }
 
-#if COMPILER_MSVC
-b32 __stdcall _DllMainCRTStartup(void* instance, u32 reason, void* reserved)
+#if _WIN32
+// NOTE(yakvi): Required entry point for all win32 dlls
+b32 __stdcall _DllMainCRTStartup()
 {
     return true;
 }

@@ -1,12 +1,12 @@
 #if !defined(FAKE_WINDOWS)
 #ifndef _WINDOWS_
 
-// TODO: find a way to put this back?
+// TODO: find a way to put this back in here?
 // #pragma comment(linker, "user32.lib")
 // #pragma comment(linker, "gdi32.lib")
 // #pragma comment(linker, "kernel32.lib")
 
-// NOTE: CRT Startup
+// NOTE: Kernel
 char* __stdcall GetCommandLineA(void);
 void* __stdcall GetModuleHandleA(char* ModuleName);
 void __stdcall ExitProcess(u32 ExitCode);
@@ -214,6 +214,8 @@ b32 __stdcall VirtualProtect(void* address, memory_index size, u32 newProtect, u
 
 // NOTE: File System
 typedef u64(__stdcall* function)();
+u32 __stdcall GetFileAttributesA(char* filename);
+// b32 __stdcall PathFileExistsA(char* filename); //shlwapi
 void* __stdcall LoadLibraryA(char* filename);
 function __stdcall GetProcAddress(void* library, char* funcName);
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <windows.h>
-#include <yak_defines.h>
+#include "types.h"
 
 #pragma comment(lib, "user32.lib")
 
