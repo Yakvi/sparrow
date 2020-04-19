@@ -1,5 +1,6 @@
 #if !defined(SPARROW_H)
 
+#include "min_crt.h"
 #include "types.h"
 #include "sparrow_platform.h"
 

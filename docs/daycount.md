@@ -132,3 +132,39 @@ The past few days have consisted in a slow dance of opening the source files, po
 - I started on a journey of incorporating my yak_defines.h inside the project. For now, I changed the includes to types.h which then redirects to yak_defines. The idea is that, once, I'm happy with the state of yak_defines, I'll simply copy the code from there into the types.h.
 - sparrow.c: compressing \_DllMainCRTStartup even further. Not sure I can get rid of it entirely without linking CRT.
 - win32_sparrow.c: continue work on live code reloading. My current approach is to rely on existance of the lock file, but a concrete solution still hasn't presented itself (and I'm not entirely happy with the one proposed by Casey). In the meantime, I've continued definition of the win32_module structure. I hope to find a solution to this in the next commit.
+
+## 14. Apr 19, 2020 - Dynamic DLL Locking
+
+Completed implementation of the lockfile-based DLL loading. The Win32_TryLoad will take any DLL and, provided the lockfile doesn't exist, load it. This functionality existed before. Now, however, the function will also unload any DLL is such a lock file already exists.
+
+The cleanup code is super straightforward:
+
+    if (Module->Library && FreeLibrary(Module->Library)) {
+        Module->Library = 0;
+        Module->Update = 0;
+        Module->Render = 0;
+    }
+
+The big change however that allowed me to finally get to this piece of code was the introduction of string handling. The new sparrow_text.h defines the `text_buffer` struct and a couple helper functions.
+
+Memory allocation happens using VirtualAlloc on Win32 layer and will use the memory arena in the dll layer, if needed. I'm currently using `memset` and `memcpy` which apparently are an integral part of the x64 MSVC++ compiler; will probably implement an intrinsic "library" later on for this kind of operations.
+
+Overall list of the new symbols added:
+
+`win32_sparrow.c`:
+
+    local struct text_buffer Win32_AllocatePathBuffer(char* Input);
+    local struct win32_module Win32_InitModule(struct text_buffer* ModuleDirectory, char* Filename);
+    local struct text_buffer Win32_GetWorkingDirectory();
+    local struct text_buffer Win32_GetModuleDirectory(char* WorkingDirectory);
+
+`sparrow_text.h`:
+
+    #define STR_SHORT 128
+    #define STR_MEDIUM 512
+    #define STR_MAX 4096
+    struct text_buffer;
+
+    inline unsigned int StringLength(char* String);
+    inline void TextConcat(struct text_buffer* Buffer, char* NewText);
+    inline struct text_buffer InitTextBuffer(char* Buffer, unsigned int Size, char* Input);

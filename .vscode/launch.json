@@ -9,7 +9,7 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/win32_sparrow.exe",
-      "cwd": "${workspaceFolder}/data",
+      "cwd": "${workspaceFolder}",
       "externalConsole": true
     }
   ]

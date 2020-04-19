@@ -216,7 +216,10 @@ b32 __stdcall VirtualProtect(void* address, memory_index size, u32 newProtect, u
 typedef u64(__stdcall* function)();
 u32 __stdcall GetFileAttributesA(char* filename);
 // b32 __stdcall PathFileExistsA(char* filename); //shlwapi
+u32 __stdcall GetCurrentDirectoryA(u32 maxLength, char* bBuffer);
 void* __stdcall LoadLibraryA(char* filename);
+b32 __stdcall DeleteFileA(char* filename);
+b32 __stdcall FreeLibrary(void* library);
 function __stdcall GetProcAddress(void* library, char* funcName);
 
 // NOTE: Debug calls

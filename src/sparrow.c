@@ -3,7 +3,6 @@
 local struct game_state*
 LoadGameState(struct memory* Memory)
 {
-
     struct game_state* Result = 0;
     if (Memory) {
         Result = (struct game_state*)Memory->Data;

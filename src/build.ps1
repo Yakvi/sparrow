@@ -47,6 +47,7 @@ $c += '-Gm-'                           #Enables minimal rebuild. For faster comp
 $c += '-Oi'                            #Generates intrinsic functions. For faster runtime.
 $c += '-EHa-'                          #Disable exception handling, -EHsc for c++
 $c += '-GS-'                           #Disable Buffer Security checks https://docs.microsoft.com/en-us/cpp/build/reference/gs-buffer-security-check
+$c += '-Gs9999999'                     #Push back __chkstk threshold https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows
 # NOTE: Preprocessor directives
 $c += '-DSPARROW_DEV=1'                #For debug stuff
 $c += '-DSPARROW_WIN32=1'              #Compiles for Win32
@@ -75,6 +76,8 @@ $debug += '-wd4100'                  #Unreferenced variable
 $linker = '/link', '-incremental:no'   #Passes linker parameters from here; Disables incremental linking of the linker
 $linker += '-opt:ref'                  #Eliminates functions and data that are never referenced
 $linker += '-NODEFAULTLIB'             #Disable standard C library
+$linker += '-STACK:0x100000,0x100000'  #Access to full stack, https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows
+
 # NOTE: Extra libraries for win32
 $32linker = 'kernel32.lib', 'user32.lib'
 $32linker += 'gdi32.lib'
@@ -109,15 +112,17 @@ $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 $win32executable = & cl $c $debug $opt $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer"
 
-#echo "WAITING FOR PDB" > lock.tmp
+echo "WAITING FOR PDB" > lock.tmp
 # NOTE sparrow DLL
 $sparrow = & cl $c $dllc $debug $opt $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
-#del lock.tmp
+del lock.tmp
 
 # TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker
 # Output-Logs -data $win32executable -title "Test: FPS in console (C++)"
+
+popd
 
 # NOTE: Compiling Diagnostics
 $CompileTime = $CompileTimer.Elapsed
@@ -126,4 +131,3 @@ Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNe
 Write-Host "Compilation finished in " -ForegroundColor "Cyan"              -NoNewLine
 Write-Host $([string]::Format("{0:d1}s {1:d3}ms", $CompileTime.seconds, $CompileTime.milliseconds)) -ForegroundColor "Green"
 
-popd

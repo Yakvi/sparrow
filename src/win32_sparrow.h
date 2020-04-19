@@ -1,5 +1,10 @@
 #if !defined(WIN32_SPARROW_H)
 
+#include "types.h"
+#include "fake_windows.h"
+#include "sparrow_text.h"
+#include "sparrow_platform.h"
+
 struct win32_module
 {
     char* Name;

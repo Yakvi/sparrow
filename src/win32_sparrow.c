@@ -1,10 +1,8 @@
-#include "types.h"
-#include "fake_windows.h"
-#include "sparrow_platform.h"
 #include "win32_sparrow.h"
 
 global_variable u8 GlobalRunning;
 
+#define PATH_BUFFER_LENGTH STR_MAX
 global_variable struct memory* Win32_MainMemory;
 global_variable struct frame_buffer Win32_FrameBuffer;
 
@@ -191,45 +189,86 @@ Win32_IsTimeToRender(void)
     return true;
 }
 
-local struct win32_module
-Win32_InitModule(char* Filename)
-{
-    struct win32_module Result = {0};
-    Result.Name = Filename;
-
-    return (Result);
-}
-
 local b32
-Win32_FileExists(char* filename)
+Win32_FileExists(char* Filename)
 {
-#if 0
-    s32 Attributes = GetFileAttributesA(filename);
+    s32 Attributes = GetFileAttributesA(Filename);
     b32 Result = Attributes != -1;
-#else
-    b32 Result = false;
-#endif
 
     return (Result);
 }
 
 local void
-Win32_TryLoadDLL(struct win32_module* Module)
+Win32_TryLoadDLL(char* Lockfile,
+                 struct win32_module* Module)
 {
-    b32 LockFileExists = Win32_FileExists("lock.tmp");
+    b32 LockFileExists = Win32_FileExists(Lockfile);
     if (!LockFileExists) {
-        // TODO: Test if DLL was changed
-        Assert(Module->Name);
-        Module->Library = LoadLibraryA(Module->Name);
-        if (Module->Library) {
-            Module->Update = GetProcAddress(Module->Library, "UpdateState");
-            Module->Render = GetProcAddress(Module->Library, "Render");
-            // TODO: Unload DLL! Should I need to copy dll data first? Maybe copy dll?
-            // We need to make sure we can recompile Dll after we're done with loading it.
-            // FreeLibrary? https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
+        if (!Module->IsLoaded) {
+            Assert(Module->Name);
+            Module->Library = LoadLibraryA(Module->Name);
+            if (Module->Library) {
+                // TODO(yakvi): Compress this into an array
+                Module->Update = GetProcAddress(Module->Library, "UpdateState");
+                Module->Render = GetProcAddress(Module->Library, "Render");
+            }
+        }
+    }
+    else {
+        if (Module->Library && FreeLibrary(Module->Library)) {
+            Module->Library = 0;
+            Module->Update = 0;
+            Module->Render = 0;
         }
     }
     Module->IsLoaded = (Module->Library && Module->Update && Module->Render);
+}
+
+local struct text_buffer
+Win32_AllocatePathBuffer(char* Input)
+{
+    char* Buffer = Win32_MemoryAlloc(PATH_BUFFER_LENGTH);
+    struct text_buffer Result = InitTextBuffer(Buffer, PATH_BUFFER_LENGTH, 0);
+    if (Input) {
+        TextConcat(&Result, Input);
+    }
+    return (Result);
+}
+
+local struct win32_module
+Win32_InitModule(struct text_buffer* ModuleDirectory, char* Filename)
+{
+    struct win32_module Result = {0};
+    struct text_buffer Path = Win32_AllocatePathBuffer(ModuleDirectory->Data);
+    TextConcat(&Path, Filename);
+    Assert(Path.Length > 0);
+    Result.Name = Path.Data;
+
+    return (Result);
+}
+
+local struct text_buffer
+Win32_GetWorkingDirectory()
+{
+    struct text_buffer Result = Win32_AllocatePathBuffer(0);
+    Result.Length = GetCurrentDirectoryA(Result.MaxLength, Result.Data); // TODO: Replace this with wide function!
+    Assert(Result.Length > 0);
+    return (Result);
+}
+
+local struct text_buffer
+Win32_GetModuleDirectory(char* WorkingDirectory)
+{
+    struct text_buffer Result = Win32_AllocatePathBuffer(WorkingDirectory);
+    Assert(Result.Length > 0);
+#if SPARROW_DEV
+    TextConcat(&Result, "\\build\\");
+#else
+    Assert(!"TODO: Copy program DLL to the Modules folder!");
+    TextConcat(&Result, "\\Modules\\");
+#endif SPARROW_DEV
+
+    return (Result);
 }
 
 int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int ShowCmd)
@@ -260,32 +299,34 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
     Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
 
-    struct win32_module Game = Win32_InitModule("sparrow.dll");
+    struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
+    struct text_buffer ModuleDirectory = Win32_GetModuleDirectory(WorkingDirectory.Data);
+    struct text_buffer LockfilePath = Win32_AllocatePathBuffer(ModuleDirectory.Data);
+    TextConcat(&LockfilePath, "lock.tmp");
+
+    struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
 
     GlobalRunning = true;
     while (GlobalRunning) {
-        Win32_TryLoadDLL(&Game);
+        Win32_TryLoadDLL(LockfilePath.Data, &Game);
 
+        Win32_ProcessMessages();
+        ReadInput(Input);
         if (Game.IsLoaded) {
-
-            Win32_ProcessMessages();
-            ReadInput(Input);
-
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
                 // NOTE: Game logic
                 // TODO: Run this for each module
                 Game.Update(Win32_MainMemory, Input);
                 Game.Render(Win32_MainMemory, &Win32_FrameBuffer);
-
-                // NOTE: Display buffer on screen
-                Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
-                ReleaseDC(Window, DeviceContext);
             }
         }
         else {
-            Assert(!"Game DLL not loaded!");
+            // NOTE(yakvi): Game not loaded (waiting for DLL)
+            // Assert(!"Game DLL not loaded!");
         }
+        // NOTE: Display buffer on screen
+        Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
     }
 
     return (0);
@@ -294,35 +335,8 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 void
 WinMainCRTStartup(void)
 {
-    char* CommandLine = GetCommandLineA();
-
-    // Skip past program name (first token in command line).
-    // TODO: Tokenize this? Can be a good testing bed for a parser.
-    if (*CommandLine == '"') //Check for and handle quoted program name
-    {
-        // Scan, and skip over, subsequent characters until  another
-        // double-quote or a null is encountered
-
-        while (*CommandLine && (*CommandLine != '"'))
-            CommandLine++;
-
-        // If we stopped on a double-quote (usual case), skip over it.
-
-        if (*CommandLine == '"')
-            CommandLine++;
-    }
-    else // First token wasn't a quote
-    {
-        while (*CommandLine > ' ')
-            CommandLine++;
-    }
-
-    // Skip past any white space preceeding the second token.
-
-    while (*CommandLine && (*CommandLine <= ' '))
-        CommandLine++;
-
-    u32 ExitCode = WinMain(GetModuleHandleA(0), 0, CommandLine, 0);
-
+    char BigArray[4096];
+    BigArray[0] = 0;
+    u32 ExitCode = WinMain(GetModuleHandleA(0), 0, 0, 0);
     ExitProcess(ExitCode);
 }
