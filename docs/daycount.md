@@ -168,3 +168,13 @@ Overall list of the new symbols added:
     inline unsigned int StringLength(char* String);
     inline void TextConcat(struct text_buffer* Buffer, char* NewText);
     inline struct text_buffer InitTextBuffer(char* Buffer, unsigned int Size, char* Input);
+
+## 15. Apr 22, 2020 - Live Code Reloading and Debugging!
+
+Today's change was largely away from the codebase, but rather a bit of tinkering within my build file. I'm trying to keep the build file as simple as possible, but for live code debugging I need to do some actions on build file side. At least, I didn't manage to find any acceptable analogue to the system implemented by Casey back in episodes 23-24.
+
+Anyway, the idea is simple: each build, change the .pdb filename slightly so that it can be loaded by the debugger (debugger won't release the pdb file during the session, apparently). I'm adding mm-ss-ms time format at the end of the fixed pdb name, but it really can be any. I'm also trying to clean up by deleting any .pdb file I find in the build directory.
+
+My implentation was achieving pretty much that, plus I optimized my code colouring macros. Still pretty sure there's an easier way for those.
+
+Last thing, I started working on a platform layer todo list, now that I have some basic functionality up and running. This is far from perfect but at least this will allow me to continue making new stuff without kicking the old ideas through my mind.

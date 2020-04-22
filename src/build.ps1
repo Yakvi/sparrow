@@ -1,32 +1,34 @@
 #Build file for sparrow project
 
 $dateFormat = "HH:mm"
-function Output-Logs([String[]]$data, [string]$title = "") {
+function Output-Line([String]$color = "Gray") {
+    [String]$m = $matches.Values[0].trim()
+    $i = [int] $line.IndexOf($m)
+    $line.Substring(0, $i) | Write-Host -ForegroundColor $color -NoNewline
+    $line.Substring($i) | Write-Host -ForegroundColor "Gray" 
+}
+
+function Output-Logs([String[]]$data, [string]$title = "", [string]$filename = "") {
+    $HasErrors = 0
     foreach ($line in $data) {
-        If ($line -match "error ") {
-            [string]$m = $matches.Values[0].trim()
-            $i = $line.IndexOf($m)
-            $line.Substring(0, $i) | Write-Host -ForegroundColor "Red" -NoNewline
-            $line.Substring($i) | Write-Host -ForegroundColor "Gray" 
+        If ($line -match "cannot open file '" + $filename) {
+
+        }
+        elseif ($line -match "error ") {
+            Output-Line("Red")
         }
         elseif ($line -match "warning ") {
-            [string]$m = $matches.Values[0].trim()
-            $i = $line.IndexOf($m)
-            $line.Substring(0, $i) | Write-Host -ForegroundColor "DarkYellow" -NoNewline
-            $line.Substring($i) | Write-Host -ForegroundColor "Gray" 
+            Output-Line("DarkYellow")
         }
         elseif ($line -match "note ") {
-            [string]$m = $matches.Values[0].trim()
-            $i = $line.IndexOf($m)
-            $line.Substring(0, $i) | Write-Host -ForegroundColor "Cyan" -NoNewline
-            $line.Substring($i) | Write-Host -ForegroundColor "Gray" 
+            Output-Line("Cyan")
         }
         else {
             Write-Host $line
         }
     }
 
-    if ($data -match "error") {
+    if ($HasErrors -eq 1) {
         Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine 
         Write-Host "Compilation failed, " -ForegroundColor "Red" -NoNewLine
         Write-Host $title -ForegroundColor "Cyan"
@@ -90,6 +92,7 @@ $32linker += 'gdi32.lib'
 $dllc = '-FmSPARROW', '-LD'
 $dllc += '-GR-'              
 $dlllinker += '-EXPORT:UpdateState', '-EXPORT:Render'
+$dlllinker += '-PDB:sparrow-' + $(Get-Date -Format mm-ss-ms) + '.pdb'
 
 #timeout /t 1
 $srcDir = "..\src"
@@ -110,9 +113,10 @@ $opt = "-Od"
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE WIN32 PLATFORM LAYER
 $win32executable = & cl $c $debug $opt $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
-Output-Logs -data $win32executable -title "win32 platform layer"
+Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
 echo "WAITING FOR PDB" > lock.tmp
+del *.pdb 2> lock.tmp
 # NOTE sparrow DLL
 $sparrow = & cl $c $dllc $debug $opt $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"

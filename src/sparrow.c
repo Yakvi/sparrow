@@ -1,5 +1,7 @@
 #include "sparrow.h"
 
+global_variable struct game_state StubGameState;
+
 local struct game_state*
 LoadGameState(struct memory* Memory)
 {
@@ -12,6 +14,9 @@ LoadGameState(struct memory* Memory)
             Result->IsInitialized = true;
         }
     }
+    else {
+        Result = &StubGameState;
+    }
 
     return (Result);
 }
@@ -21,17 +26,13 @@ UpdateState(struct memory* Memory,
             struct user_input* Input)
 {
     struct game_state* GameState = LoadGameState(Memory);
-    GameState->GradientXOffset++;
-    GameState->GradientYOffset++;
+    ++GameState->GradientXOffset;
+    ++GameState->GradientYOffset;
 }
 
-void
-Render(struct memory* Memory, struct frame_buffer* Buffer)
+local void
+RenderGradientSquares(struct frame_buffer* Buffer, u32 xOffset, u32 yOffset)
 {
-    struct game_state* GameState = LoadGameState(Memory);
-    u32 xOffset = GameState ? GameState->GradientXOffset : 0;
-    u32 yOffset = GameState ? GameState->GradientYOffset : 0;
-
     if (Buffer) {
         u32 Pitch = Buffer->Width * Buffer->BytesPerPixel;
         u8* Row = Buffer->Pixels;
@@ -53,8 +54,15 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
     }
 }
 
+void
+Render(struct memory* Memory, struct frame_buffer* Buffer)
+{
+    struct game_state* GameState = LoadGameState(Memory);
+    RenderGradientSquares(Buffer, GameState->GradientXOffset, GameState->GradientYOffset);
+}
+
 #if _WIN32
-// NOTE(yakvi): Required entry point for all win32 dlls
+// NOTE(yakvi): Required entry point for all win32 dlls (with stripped down items)
 b32 __stdcall _DllMainCRTStartup()
 {
     return true;

@@ -1,5 +1,32 @@
 #include "win32_sparrow.h"
 
+/**
+ * GLOBAL PLATFORM LAYER TODO LIST
+ * (to be considered barebones)
+ * 
+ * NOTE: Graphics
+ * Fullscreen toggle
+ * Fixed Framerate
+ * Hardware acceleration
+ * 
+ * NOTE: Game Update
+ * DeltaTime for frame
+ * 
+ * NOTE: Engine tech
+ * Multithreading
+ * Multiple DLL handling
+ *    - DLL resources shop
+ *    - Higher level modules
+ *    - Arbitrary DLL load
+ *    - Arbitrary loading sequence
+ *    - Production-level hot reloading (e.g. for mod development)
+ * Input capture system
+ * Audio reproduction system
+ * Asset loading
+ *    - Lazy asset loading
+ * 
+*/
+
 global_variable u8 GlobalRunning;
 
 #define PATH_BUFFER_LENGTH STR_MAX
