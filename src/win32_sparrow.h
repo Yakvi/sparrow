@@ -1,5 +1,6 @@
 #if !defined(WIN32_SPARROW_H)
 
+#include "min_crt.h"
 #include "types.h"
 #include "fake_windows.h"
 #include "sparrow_text.h"

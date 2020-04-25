@@ -107,18 +107,18 @@ Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32_sparrow.c"
-$opt = "-Od"
 # $win32file = "wintest.cpp"
+$debug = "-O2"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug $opt $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
 echo "WAITING FOR PDB" > lock.tmp
 del *.pdb 2> lock.tmp
 # NOTE sparrow DLL
-$sparrow = & cl $c $dllc $debug $opt $srcDir\sparrow.c  $linker $dlllinker
+$sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
 del lock.tmp
 

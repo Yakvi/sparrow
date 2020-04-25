@@ -30,6 +30,7 @@
         "cmath": "cpp",
         "cstdlib": "cpp",
         "functional": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "xiosbase": "cpp"
     }
 }

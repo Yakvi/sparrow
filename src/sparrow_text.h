@@ -30,7 +30,7 @@ TextConcat(struct text_buffer* Buffer, char* NewText)
 {
     unsigned int Length = StringLength(NewText);
     Assert(Buffer->Length + Length < Buffer->MaxLength);
-    memcpy(Buffer->Data + Buffer->Length, NewText, Length); // NOTE(yakvi): I wonder where does this come from? We don't have CRT, in theory
+    memcpy(Buffer->Data + Buffer->Length, NewText, Length);
     Buffer->Length += Length;
 }
 

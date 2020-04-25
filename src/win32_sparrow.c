@@ -127,6 +127,11 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
     switch (Message) {
 
         case WM_SIZE: {
+            // TODO: Do we even want dynamic buffer resolution?
+            rect ClientRect;
+            GetClientRect(Window, &ClientRect);
+            struct dim_2d Dim = Win32_DimFromRect(ClientRect);
+            Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Dim.Width, Dim.Height);
         } break;
 
         case WM_ACTIVATEAPP: {
@@ -324,7 +329,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     struct user_input* Input = InitializeInput();
 
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
-    Win32_MainMemory = Win32_MainMemoryInit(KiB(10));
+    Win32_MainMemory = Win32_MainMemoryInit(KiB(500));
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
     struct text_buffer ModuleDirectory = Win32_GetModuleDirectory(WorkingDirectory.Data);

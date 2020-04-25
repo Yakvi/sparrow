@@ -178,3 +178,31 @@ Anyway, the idea is simple: each build, change the .pdb filename slightly so tha
 My implentation was achieving pretty much that, plus I optimized my code colouring macros. Still pretty sure there's an easier way for those.
 
 Last thing, I started working on a platform layer todo list, now that I have some basic functionality up and running. This is far from perfect but at least this will allow me to continue making new stuff without kicking the old ideas through my mind.
+
+## 16. Apr 25, 2020 - Implementing fixed-grid console
+
+I started working on a console-like output. As of today, I can load a 120x40 grid into the DLL memory. Each pixel can be tinted in solid color, and contains information regarding its position on the grid and color. 
+
+![Console Output](media/Day16/hello_console2.png)
+
+The system now has the following loops: 
+
+`GameUpdate`:
+* `InitConsolePixels`: (Console Buffer) Resets all pixels position and color
+* `PixelOverlay`: (Console Buffer) All pixels get a color overload. 
+There's currently also a structured art iteration which allows to write some simple ASCII text art.
+
+`Render`:
+* `Clear`: (Render Buffer) Global pass through the whole buffer to clear it in one colour
+* `DrawAllPixels`: (Console Buffer) Send all pixels for individual rendering
+* `DrawPixel`: (RenderBuffer) Set specified memory location to the specified values.
+
+Each "screen chunk" can potentially be expanded to carry more data (including bitmap, characters, etc.). I still have no idea how will I implement any decent text display, but if we're going all the way through console, might as well do it via Console Buffer. For now however, I implemented a simple string lookup tool to quickly lay out color.
+
+![Console Output](media/Day16/hello_console.png)
+
+I have no idea about how well this performs, so I will need to implement some frame-time tracking later on. 
+
+I also realized that, in release mode, intrinsic memset and memcopy are actually dropped, so I implemented the ones from [Handmade Network](https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows/)
+
+Up next: Create a decent random access scheme for the Console buffer.
