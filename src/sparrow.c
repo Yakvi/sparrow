@@ -9,15 +9,15 @@ InitConsolePixels(struct game_state* GameState, color Color)
 {
     Assert(GameState);
     struct pixel* Row = GameState->Pixels;
-    for (s32 Y = CONSOLE_HEIGHT - 1;
-         Y > -1;
-         --Y) {
+    for (u32 Y = 0;
+         Y < CONSOLE_HEIGHT;
+         ++Y) {
         struct pixel* Pixel = Row;
         for (u32 X = 0;
              X < CONSOLE_WIDTH;
              ++X) {
             Assert(Pixel);
-            Pixel->Pos = (v2){(f32)X, (f32)Y};
+            Pixel->Pos = (v2u){X, Y};
             Pixel->Color = Color;
             ++Pixel;
         }
@@ -52,12 +52,32 @@ LoadGameState(struct memory* Memory)
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
             InitConsolePixels(Result, (v3)Color_Black);
+            Result->Player.Pos = (v2u){0, 0};
+
             Result->IsInitialized = true;
         }
     }
     else {
         Result = &StubGameState;
     }
+
+    return (Result);
+}
+
+local struct pixel*
+GetPixel(struct pixel* Pixels, v2u Coords)
+{
+    Assert(Coords.x < CONSOLE_WIDTH);
+    Assert(Coords.y < CONSOLE_HEIGHT);
+    u32 Y = CONSOLE_WIDTH * Coords.y;
+    u32 Pos = Y + Coords.x;
+
+    Assert(Pos < CONSOLE_SIZE);
+
+    struct pixel* Result = Pixels + Pos;
+
+    Assert(Result->Pos.x == Coords.x);
+    Assert(Result->Pos.y == Coords.y);
 
     return (Result);
 }
@@ -89,7 +109,7 @@ SetStructuredArt(struct pixel* Pixels)
              X < MAP_WIDTH;
              ++X) {
             if (map[MAP_WIDTH * Y + X] == '#') {
-                Pixels[CONSOLE_WIDTH * (Y + 10) + X + 10].Color = (v3)Color_Blue;
+                GetPixel(Pixels, (v2u){X + 10, Y + 10})->Color = (v3)Color_Blue;
             }
         }
     }
@@ -104,10 +124,19 @@ UpdateState(struct memory* Memory,
     // Then, at the render phase, these would be painted as squares.
     struct game_state* GameState = LoadGameState(Memory);
     InitConsolePixels(GameState, (v3)Color_Cyan);
+    PixelOverlay(GameState->Pixels);
 
     SetStructuredArt(GameState->Pixels);
 
-    PixelOverlay(GameState->Pixels);
+    struct player* Player = &GameState->Player;
+    if (Player->Pos.x < CONSOLE_WIDTH - 1) {
+        ++Player->Pos.x;
+    }
+    else {
+        Player->Pos.x = 0;
+    }
+    struct pixel* PlayerPixel = GetPixel(GameState->Pixels, Player->Pos);
+    PlayerPixel->Color = (v3)Color_Gray05;
 }
 
 // BOOKMARK: Render
@@ -142,16 +171,20 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim PixelSize)
     if (Buffer && Pixel) {
         u32 Pitch = Buffer->Width * Buffer->BytesPerPixel;
 
+        Assert(Pixel->Pos.x >= 0);
+        Assert(Pixel->Pos.y >= 0);
         Assert(Pixel->Pos.x < CONSOLE_WIDTH);
         Assert(Pixel->Pos.y < CONSOLE_HEIGHT);
 
         u32 PixelBaseX = (u32)(Pixel->Pos.x * PixelSize.Width);
-        u32 PixelBaseY = (u32)(Pixel->Pos.y * PixelSize.Height);
+        // NOTE(yakvi): The rows are laid out in memory bottom up. We want to go top-down
+        u32 PixelBaseY = (u32)((CONSOLE_HEIGHT - 1 - Pixel->Pos.y) * PixelSize.Height);
 
-        v2i PixelPos = {
+        v2u PixelPos = {
             PixelBaseX + (s32)PixelSize.Width,
             PixelBaseY + (s32)PixelSize.Height};
 
+        // NOTE(yakvi): Anti-overflow measures
         s32 OverflowX = PixelPos.x - Buffer->Width;
         if (OverflowX > 0) PixelBaseX -= OverflowX;
 

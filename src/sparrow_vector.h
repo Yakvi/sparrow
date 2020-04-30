@@ -12,7 +12,7 @@ typedef struct
 {
     u32 x;
     u32 y;
-} v2i;
+} v2u;
 
 typedef struct
 {

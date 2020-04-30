@@ -15,6 +15,7 @@
  * NOTE: Engine tech
  * Multithreading
  * Multiple DLL handling
+ *    - DLL reloading only if unloaded or DLL changed
  *    - DLL resources shop
  *    - Higher level modules
  *    - Arbitrary DLL load

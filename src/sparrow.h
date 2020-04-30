@@ -10,21 +10,27 @@
  * Memory Arena
  * SIMD software renderer
  * Debug logging
- * 
 */
 
 struct pixel
 {
-    p Pos;
+    v2u Pos;
     color Color;
 };
 
 #define CONSOLE_WIDTH 120
 #define CONSOLE_HEIGHT 40
+#define CONSOLE_SIZE ((CONSOLE_WIDTH) * (CONSOLE_HEIGHT))
+
+struct player
+{
+    v2u Pos;
+};
 
 struct game_state
 {
     struct pixel Pixels[CONSOLE_WIDTH * CONSOLE_HEIGHT];
+    struct player Player;
     b32 IsInitialized;
 };
 

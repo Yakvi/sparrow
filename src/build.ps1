@@ -108,7 +108,7 @@ Write-Host ""
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32_sparrow.c"
 # $win32file = "wintest.cpp"
-$debug = "-O2"
+# $debug = "-O2"
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE WIN32 PLATFORM LAYER

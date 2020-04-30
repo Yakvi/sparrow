@@ -206,3 +206,22 @@ I have no idea about how well this performs, so I will need to implement some fr
 I also realized that, in release mode, intrinsic memset and memcopy are actually dropped, so I implemented the ones from [Handmade Network](https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows/)
 
 Up next: Create a decent random access scheme for the Console buffer.
+
+## 17. April 30, 2020 - Fixing pixel grid orientation
+
+The efforts to improve the console pixel grid continue. Today, the biggest implementation was that of the `GetPixel` function. We can now properly (and quickly?) load any pixel with the specified coordinates. The function itself its pretty simple, if you ignore all the assertions (that fired oh so many times during its implementation).
+
+    local struct pixel*
+    GetPixel(struct pixel* Pixels, v2u Coords)
+    {
+        u32 Y = CONSOLE_WIDTH * Coords.y;
+        u32 Pos = Y + Coords.x;
+
+        struct pixel* Result = Pixels + Pos;
+
+        return (Result);
+    }
+
+Even this is a bit of an overkill but I wanted to be super explicit, should we need to revisit this function later down the line. For now, the plan is to use the new function to assist in implementing the first input system.
+
+One big issue that was fixed was the coordinate system orientation of the pixel grid. Before today's work, the origin of the console grid was in the bottom-left corner of the buffer; now it's in the top-left. Hopefully this will allow easier iteration moving forward. 
