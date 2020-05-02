@@ -52,18 +52,12 @@ enum WindowProperties
 
 typedef struct
 {
-    u32 x;
-    u32 y;
-} v2, p;
-
-typedef struct
-{
     void* window;
     u64 message;
     u64 WParam;
     s64 LParam;
     u32 time;
-    v2 point;
+    v2i point;
     u8 __pad[4];
 } message;
 
@@ -90,6 +84,7 @@ enum WindowMessage
     WM_QUIT = 0x12,
     WM_PAINT = 0xF,
     WM_ACTIVATEAPP = 0x1C,
+    WM_KEYDOWN = 0x0100,
     WM_KEYUP = 0x0101,
     WM_SYSKEYUP = 0x105,
     WM_MOUSEMOVE = 0x200,
@@ -105,7 +100,28 @@ void __stdcall PostQuitMessage(int exit_code);
 // NOTE: Key presses
 enum KeyPress
 {
+    VK_BACK = 0x08,
+    VK_TAB = 0x09,
+    VK_RETURN = 0x0D,
+    VK_SHIFT = 0x10,
+    VK_CONTROL = 0x11,
+    VK_MENU = 0x12, // ALT
+    VK_PAUSE = 0x13,
+    VK_CAPITAL = 0x14,
     VK_ESCAPE = 0x1B,
+    VK_SPACE = 0x20,
+    VK_LEFT = 0x25,
+    VK_UP = 0x26,
+    VK_RIGHT = 0x27,
+    VK_DOWN = 0x28,
+    VK_DELETE = 0x2E,
+    /*
+    * VK_0 - VK_9 are the same as ASCII '0' - '9' (0x30 - 0x39)
+    * 0x3A - 0x40 : unassigned
+    * VK_A - VK_Z are the same as ASCII 'A' - 'Z' (0x41 - 0x5A)
+    */
+    VK_LWIN = 0x5B,
+    VK_RWIN = 0x5C,
 };
 enum Mouse
 {

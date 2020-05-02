@@ -21,7 +21,7 @@
  *    - Arbitrary DLL load
  *    - Arbitrary loading sequence
  *    - Production-level hot reloading (e.g. for mod development)
- * Input capture system
+ * Advanced input capture system
  * Audio reproduction system
  * Asset loading
  *    - Lazy asset loading
@@ -166,46 +166,6 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
     return (Result);
 }
 
-local void
-Win32_RegisterKeyInput(u64 Key)
-{
-    switch (Key) {
-
-        case VK_ESCAPE: {
-            GlobalRunning = false;
-        } break;
-
-        default: {
-        } break;
-    }
-}
-
-local void
-Win32_ProcessMessages(void)
-{
-    message Message;
-    while (PeekMessageA(&Message, 0, 0, 0, true)) {
-        switch (Message.message) {
-
-            case WM_MOUSEMOVE:
-            case WM_MBUTTONDOWN:
-            case WM_MBUTTONUP: {
-                // TODO: Do we even want to handle any mouse code here?
-            } break;
-
-            case WM_SYSKEYUP:
-            case WM_KEYUP: {
-                Win32_RegisterKeyInput(Message.WParam);
-            } break;
-
-            default: {
-                TranslateMessage(&Message);
-                DispatchMessageA(&Message);
-            } break;
-        }
-    }
-}
-
 local struct memory*
 Win32_MainMemoryInit(memory_index Size)
 {
@@ -341,10 +301,10 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
     GlobalRunning = true;
     while (GlobalRunning) {
+        // TODO(yakvi): DeltaTime calculations! 
         Win32_TryLoadDLL(LockfilePath.Data, &Game);
 
-        Win32_ProcessMessages();
-        ReadInput(Input);
+        Win32_ReadInput(Input);
         if (Game.IsLoaded) {
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
@@ -357,6 +317,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
         else {
             // NOTE(yakvi): Game not loaded (waiting for DLL)
             // Assert(!"Game DLL not loaded!");
+            // TODO(yakvi): Some softer logging maybe?
         }
         // NOTE: Display buffer on screen
         Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));

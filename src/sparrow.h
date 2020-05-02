@@ -3,7 +3,6 @@
 #include "min_crt.h"
 #include "types.h"
 #include "sparrow_platform.h"
-#include "sparrow_vector.h"
 
 /**
  * TODO on Engine side
@@ -14,7 +13,7 @@
 
 struct pixel
 {
-    v2u Pos;
+    v2i Pos;
     color Color;
 };
 
@@ -24,7 +23,7 @@ struct pixel
 
 struct player
 {
-    v2u Pos;
+    v2 Pos;
 };
 
 struct game_state

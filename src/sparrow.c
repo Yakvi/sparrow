@@ -17,7 +17,7 @@ InitConsolePixels(struct game_state* GameState, color Color)
              X < CONSOLE_WIDTH;
              ++X) {
             Assert(Pixel);
-            Pixel->Pos = (v2u){X, Y};
+            Pixel->Pos = (v2i){X, Y};
             Pixel->Color = Color;
             ++Pixel;
         }
@@ -52,7 +52,7 @@ LoadGameState(struct memory* Memory)
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
             InitConsolePixels(Result, (v3)Color_Black);
-            Result->Player.Pos = (v2u){0, 0};
+            Result->Player.Pos = (v2){0, 0};
 
             Result->IsInitialized = true;
         }
@@ -65,7 +65,7 @@ LoadGameState(struct memory* Memory)
 }
 
 local struct pixel*
-GetPixel(struct pixel* Pixels, v2u Coords)
+GetPixel(struct pixel* Pixels, v2i Coords)
 {
     Assert(Coords.x < CONSOLE_WIDTH);
     Assert(Coords.y < CONSOLE_HEIGHT);
@@ -78,6 +78,38 @@ GetPixel(struct pixel* Pixels, v2u Coords)
 
     Assert(Result->Pos.x == Coords.x);
     Assert(Result->Pos.y == Coords.y);
+
+    return (Result);
+}
+
+local b32
+MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
+{
+    b32 Result = true;
+
+    AddV2(&Player->Pos, Offset);
+    v2i Pos = RoundV2ToV2(Player->Pos);
+
+    if (Pos.x >= CONSOLE_WIDTH) {
+        Player->Pos.x = 0;
+        Pos.x = 0;
+    }
+    else if (Pos.x < 0) {
+        Player->Pos.x = CONSOLE_WIDTH - 1;
+        Pos.x = CONSOLE_WIDTH - 1;
+    }
+
+    if (Pos.y >= CONSOLE_HEIGHT) {
+        Player->Pos.y = 0;
+        Pos.y = 0;
+    }
+    else if (Pos.y < 0) {
+        Player->Pos.y = CONSOLE_HEIGHT - 1;
+        Pos.y = CONSOLE_HEIGHT - 1;
+    }
+
+    struct pixel* PlayerPixel = GetPixel(Pixels, Pos);
+    PlayerPixel->Color = (v3)Color_Gray05;
 
     return (Result);
 }
@@ -109,7 +141,7 @@ SetStructuredArt(struct pixel* Pixels)
              X < MAP_WIDTH;
              ++X) {
             if (map[MAP_WIDTH * Y + X] == '#') {
-                GetPixel(Pixels, (v2u){X + 10, Y + 10})->Color = (v3)Color_Blue;
+                GetPixel(Pixels, (v2i){X + 10, Y + 10})->Color = (v3)Color_Blue;
             }
         }
     }
@@ -119,8 +151,8 @@ void
 UpdateState(struct memory* Memory,
             struct user_input* Input)
 {
-    // NOTE: Let's try today making a "console" grid.
-    // We need to be able to set each "square" with a specific colour
+    // NOTE: This is a "console" grid.
+    // We need to be able to set each "pixel" with a specific colour
     // Then, at the render phase, these would be painted as squares.
     struct game_state* GameState = LoadGameState(Memory);
     InitConsolePixels(GameState, (v3)Color_Cyan);
@@ -128,15 +160,7 @@ UpdateState(struct memory* Memory,
 
     SetStructuredArt(GameState->Pixels);
 
-    struct player* Player = &GameState->Player;
-    if (Player->Pos.x < CONSOLE_WIDTH - 1) {
-        ++Player->Pos.x;
-    }
-    else {
-        Player->Pos.x = 0;
-    }
-    struct pixel* PlayerPixel = GetPixel(GameState->Pixels, Player->Pos);
-    PlayerPixel->Color = (v3)Color_Gray05;
+    MovePlayer(GameState->Pixels, &GameState->Player, Input->MovementKeys);
 }
 
 // BOOKMARK: Render
@@ -180,7 +204,7 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim PixelSize)
         // NOTE(yakvi): The rows are laid out in memory bottom up. We want to go top-down
         u32 PixelBaseY = (u32)((CONSOLE_HEIGHT - 1 - Pixel->Pos.y) * PixelSize.Height);
 
-        v2u PixelPos = {
+        v2i PixelPos = {
             PixelBaseX + (s32)PixelSize.Width,
             PixelBaseY + (s32)PixelSize.Height};
 

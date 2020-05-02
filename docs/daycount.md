@@ -225,3 +225,16 @@ The efforts to improve the console pixel grid continue. Today, the biggest imple
 Even this is a bit of an overkill but I wanted to be super explicit, should we need to revisit this function later down the line. For now, the plan is to use the new function to assist in implementing the first input system.
 
 One big issue that was fixed was the coordinate system orientation of the pixel grid. Before today's work, the origin of the console grid was in the bottom-left corner of the buffer; now it's in the top-left. Hopefully this will allow easier iteration moving forward. 
+
+## 18. May 2, 2020 - Basic input processing!
+
+`win32_sparrow.c`: Removed the the `ReadInput()` function, unified it with `Win32_ProcessMessages()`. The new function is called `Win32_ReadInput()` and it has the following area of competence:
+    
+* Read input provided by the Windows API
+* If it's a keypress, handle it in the `Win32_NormalKeyInput()` routine
+
+In the future, additional input processing functionality will be implemented here.
+
+`sparrow_vector.h`: Implemented rounding functions for scalar and vectors, introduced `AddV2` function. Starting really to think about moving to cpp for those _sweet sweet_ function and operator overloaders.
+
+`sparrow.c`: Defined `MovePlayer()` function. It adds the provided input vector to the player's position. It's then rounded out and the according cell is colorized. It's also does the screen wrapping if necessary.

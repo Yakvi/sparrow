@@ -2,6 +2,26 @@
 
 #include "types.h"
 
+// BOOKMARK: Scalar
+
+inline s32
+RoundF32ToInt(f32 number)
+{
+    s32 Result = 0;
+    if (number > 0) {
+        Assert(number + 0.5f > 0);
+        Result = (s32)(number + 0.5f);
+    }
+    else if (number < 0) {
+        Assert(number - 0.5f < 0);
+        Result = (s32)(number - 0.5f);
+    }
+
+    return (Result);
+}
+
+// BOOKMARK: Vector 2
+
 typedef struct
 {
     f32 x;
@@ -10,15 +30,33 @@ typedef struct
 
 typedef struct
 {
-    u32 x;
-    u32 y;
-} v2u;
+    s32 x;
+    s32 y;
+} v2i;
 
 typedef struct
 {
     f32 Width;
     f32 Height;
 } dim;
+
+inline void
+AddV2(v2* A, v2 B)
+{
+    A->x += B.x;
+    A->y += B.y;
+}
+
+inline v2i
+RoundV2ToV2(v2 Source)
+{
+    v2i Result = {0};
+    Result.x = RoundF32ToInt(Source.x);
+    Result.y = RoundF32ToInt(Source.y);
+    return (Result);
+}
+
+// BOOKMARK: Vector 3
 
 typedef struct
 {
@@ -52,26 +90,27 @@ V3(f32 X, f32 Y, f32 Z)
     return (Result);
 }
 
-typedef struct
-{
-    union
-    {
-        struct
-        {
-            p top_left;
-            p bottom_right;
-        };
-        struct
-        {
-            p origin;
-            f32 width;
-            f32 height;
-        };
-    };
+// typedef struct
+// {
+//     union
+//     {
+//         struct
+//         {
+//             p top_left;
+//             p bottom_right;
+//         };
+//         struct
+//         {
+//             p origin;
+//             f32 width;
+//             f32 height;
+//         };
+//     };
 
-} rect;
+// } rect;
 
 // BOOKMARK: Color constants
+// TODO: Move this out somewhere else?
 // clang-format off
 # define Color_Black     { 0,    0,    0}
 # define Color_White     { 0xFF, 0xFF, 0xFF}

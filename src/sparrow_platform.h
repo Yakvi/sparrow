@@ -1,5 +1,7 @@
 #if !defined(SPARROW_PLATFORM)
 
+#include "sparrow_vector.h"
+
 struct frame_buffer
 {
     u16 Width;
@@ -11,6 +13,7 @@ struct frame_buffer
 struct user_input
 {
     b32 LeftMouseClick;
+    v2 MovementKeys;
 };
 struct memory
 {
