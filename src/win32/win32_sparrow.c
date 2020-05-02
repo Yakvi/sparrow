@@ -301,7 +301,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
     GlobalRunning = true;
     while (GlobalRunning) {
-        // TODO(yakvi): DeltaTime calculations! 
+        // TODO(yakvi): DeltaTime calculations!
         Win32_TryLoadDLL(LockfilePath.Data, &Game);
 
         Win32_ReadInput(Input);

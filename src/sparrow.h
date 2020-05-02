@@ -3,6 +3,10 @@
 #include "min_crt.h"
 #include "types.h"
 #include "sparrow_platform.h"
+#include "core/sparrow_core_render.h"
+#include "console/sparrow_console_platform.h"
+#include "console/sparrow_console_render.h"
+#include "console/sparrow_console_update.h"
 
 /**
  * TODO on Engine side
@@ -11,16 +15,6 @@
  * Debug logging
 */
 
-struct pixel
-{
-    v2i Pos;
-    color Color;
-};
-
-#define CONSOLE_WIDTH 120
-#define CONSOLE_HEIGHT 40
-#define CONSOLE_SIZE ((CONSOLE_WIDTH) * (CONSOLE_HEIGHT))
-
 struct player
 {
     v2 Pos;
@@ -28,7 +22,7 @@ struct player
 
 struct game_state
 {
-    struct pixel Pixels[CONSOLE_WIDTH * CONSOLE_HEIGHT];
+    struct pixel Pixels[CONSOLE_WIDTH * CONSOLE_HEIGHT]; // TODO(yakvi): Abstract it out? Overkill?
     struct player Player;
     b32 IsInitialized;
 };
