@@ -181,27 +181,29 @@ Last thing, I started working on a platform layer todo list, now that I have som
 
 ## 16. Apr 25, 2020 - Implementing fixed-grid console
 
-I started working on a console-like output. As of today, I can load a 120x40 grid into the DLL memory. Each pixel can be tinted in solid color, and contains information regarding its position on the grid and color. 
+I started working on a console-like output. As of today, I can load a 120x40 grid into the DLL memory. Each pixel can be tinted in solid color, and contains information regarding its position on the grid and color.
 
 ![Console Output](media/Day16/hello_console2.png)
 
-The system now has the following loops: 
+The system now has the following loops:
 
 `GameUpdate`:
-* `InitConsolePixels`: (Console Buffer) Resets all pixels position and color
-* `PixelOverlay`: (Console Buffer) All pixels get a color overload. 
-There's currently also a structured art iteration which allows to write some simple ASCII text art.
+
+- `InitConsolePixels`: (Console Buffer) Resets all pixels position and color
+- `PixelOverlay`: (Console Buffer) All pixels get a color overload.
+  There's currently also a structured art iteration which allows to write some simple ASCII text art.
 
 `Render`:
-* `Clear`: (Render Buffer) Global pass through the whole buffer to clear it in one colour
-* `DrawAllPixels`: (Console Buffer) Send all pixels for individual rendering
-* `DrawPixel`: (RenderBuffer) Set specified memory location to the specified values.
+
+- `Clear`: (Render Buffer) Global pass through the whole buffer to clear it in one colour
+- `DrawAllPixels`: (Console Buffer) Send all pixels for individual rendering
+- `DrawPixel`: (RenderBuffer) Set specified memory location to the specified values.
 
 Each "screen chunk" can potentially be expanded to carry more data (including bitmap, characters, etc.). I still have no idea how will I implement any decent text display, but if we're going all the way through console, might as well do it via Console Buffer. For now however, I implemented a simple string lookup tool to quickly lay out color.
 
 ![Console Output](media/Day16/hello_console.png)
 
-I have no idea about how well this performs, so I will need to implement some frame-time tracking later on. 
+I have no idea about how well this performs, so I will need to implement some frame-time tracking later on.
 
 I also realized that, in release mode, intrinsic memset and memcopy are actually dropped, so I implemented the ones from [Handmade Network](https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows/)
 
@@ -224,17 +226,31 @@ The efforts to improve the console pixel grid continue. Today, the biggest imple
 
 Even this is a bit of an overkill but I wanted to be super explicit, should we need to revisit this function later down the line. For now, the plan is to use the new function to assist in implementing the first input system.
 
-One big issue that was fixed was the coordinate system orientation of the pixel grid. Before today's work, the origin of the console grid was in the bottom-left corner of the buffer; now it's in the top-left. Hopefully this will allow easier iteration moving forward. 
+One big issue that was fixed was the coordinate system orientation of the pixel grid. Before today's work, the origin of the console grid was in the bottom-left corner of the buffer; now it's in the top-left. Hopefully this will allow easier iteration moving forward.
 
 ## 18. May 2, 2020 - Basic input processing!
 
 `win32_sparrow.c`: Removed the the `ReadInput()` function, unified it with `Win32_ProcessMessages()`. The new function is called `Win32_ReadInput()` and it has the following area of competence:
-    
-* Read input provided by the Windows API
-* If it's a keypress, handle it in the `Win32_NormalKeyInput()` routine
+
+- Read input provided by the Windows API
+- If it's a keypress, handle it in the `Win32_NormalKeyInput()` routine
 
 In the future, additional input processing functionality will be implemented here.
 
 `sparrow_vector.h`: Implemented rounding functions for scalar and vectors, introduced `AddV2` function. Starting really to think about moving to cpp for those _sweet sweet_ function and operator overloaders.
 
 `sparrow.c`: Defined `MovePlayer()` function. It adds the provided input vector to the player's position. It's then rounded out and the according cell is colorized. It's also does the screen wrapping if necessary.
+
+![Basic input processing](media/Day18/day18.gif)
+
+## 19. May 7, 2020 - String output
+
+`win32_sparrow.c`: started first experiments with multithreading. Will return to it, eventually.
+`sparrow.c`: Moved `PixelOverlay()` and `SetStructuredArt()` back.
+`sparrow_console_update`: Introduced basic string parsing based on a character table. In theory, eventually we will be able parse any string thrown at us; at the moment though, we will crash if an unrecognized character. I did however introduce a whole bunch of glyphs (A-Z, a-z, 0-9 and a few special characters) for testing purposes. Should be enough for now, and this approach allows the glyph library to be expanded at the moment's notice. I'll probably need to identify a more compact storage option (u64 bits?).
+
+As a result, we can now print simple strings on the grid using the following API: 
+
+`PrintString(*Pixels, *String, FirstCharacterPosition(top-left corner), Color)`
+
+Another bug that I identified is inconsistent pixel size; this is especially visible with smaller pixel grids. This will need to be addressed in the future. 

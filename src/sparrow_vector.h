@@ -48,7 +48,7 @@ AddV2(v2* A, v2 B)
 }
 
 inline v2i
-RoundV2ToV2(v2 Source)
+RoundV2ToV2i(v2 Source)
 {
     v2i Result = {0};
     Result.x = RoundF32ToInt(Source.x);

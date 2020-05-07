@@ -40,52 +40,42 @@ InitConsolePixels(struct game_state* GameState, color Color)
 }
 
 local void
-PixelOverlay(struct pixel* Pixels)
+PaintPixel(struct pixel* Pixels, v2i Pos, v3 Color)
 {
-    struct pixel* Row = Pixels;
+    GetPixel(Pixels, Pos)->Color = Color;
+}
+
+#include "sparrow_console_glyphs.h"
+
+local void
+PrintGlyph(struct pixel* Pixels, char* Char, v2i Pos, v3 Color)
+{
+    struct glyph Glyph = GetGlyph(Char);
     for (u32 Y = 0;
-         Y < CONSOLE_HEIGHT;
+         Y < Glyph.Dim.Height;
          ++Y) {
-        struct pixel* Pixel = Row;
         for (u32 X = 0;
-             X < CONSOLE_WIDTH;
+             X < Glyph.Dim.Width;
              ++X) {
-            // TODO: Clamp!
-            Pixel++->Color.r += (f32)(Y % 2) * 70;
+            if (Glyph.Data[Glyph.Dim.Width * Y + X] == '#') {
+                PaintPixel(Pixels, (v2i){Pos.x + X, Pos.y + Y}, Color);
+            }
         }
-        Row += CONSOLE_WIDTH;
     }
 }
 
-#define MAP_WIDTH 79
-#define MAP_HEIGHT 8
-const char map[] = {
-    "#     #                                    #     #                             "
-    "#     # ###### #      #       ####         #  #  #  ####  #####  #      #####  "
-    "#     # #      #      #      #    #        #  #  # #    # #    # #      #    # "
-    "####### #####  #      #      #    #        #  #  # #    # #    # #      #    # "
-    "#     # #      #      #      #    # ###    #  #  # #    # #####  #      #    # "
-    "#     # #      #      #      #    # ###    #  #  # #    # #   #  #      #    # "
-    "#     # ###### ###### ######  ####   #      ## ##   ####  #    # ###### #####  "
-    "                                    #                                          "};
-
 local void
-SetStructuredArt(struct pixel* Pixels)
+PrintString(struct pixel* Pixels, char* String, v2i Pos, v3 Color)
 {
-    Pixels[0].Color = (v3)Color_Yellow;
-    Pixels[CONSOLE_WIDTH - 1].Color = (v3)Color_Red;
-    Pixels[CONSOLE_HEIGHT * CONSOLE_WIDTH - 1].Color = (v3)Color_Blue;
-    Pixels[CONSOLE_HEIGHT * CONSOLE_WIDTH - CONSOLE_WIDTH].Color = (v3)Color_Black;
+    if ((Pos.y + GLYPH_HEIGHT) < CONSOLE_HEIGHT) {
+        for (char* At = String;
+             *At;
+             ++At) {
+            if ((Pos.x + GLYPH_WIDTH) >= CONSOLE_WIDTH)
+                break;
 
-    for (u32 Y = 0;
-         Y < MAP_HEIGHT;
-         ++Y) {
-        for (u32 X = 0;
-             X < MAP_WIDTH;
-             ++X) {
-            if (map[MAP_WIDTH * Y + X] == '#') {
-                GetPixel(Pixels, (v2i){X + 10, Y + 10})->Color = (v3)Color_Blue;
-            }
+            PrintGlyph(Pixels, At, Pos, Color);
+            Pos.x += GLYPH_WIDTH;
         }
     }
 }

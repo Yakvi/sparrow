@@ -35,7 +35,7 @@ MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
     b32 Result = true;
 
     AddV2(&Player->Pos, Offset);
-    v2i Pos = RoundV2ToV2(Player->Pos);
+    v2i Pos = RoundV2ToV2i(Player->Pos);
 
     if (Pos.x >= CONSOLE_WIDTH) {
         Player->Pos.x = 0;
@@ -61,6 +61,35 @@ MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
     return (Result);
 }
 
+local void
+PixelOverlay(struct pixel* Pixels)
+{
+    struct pixel* Row = Pixels;
+    for (u32 Y = 0;
+         Y < CONSOLE_HEIGHT;
+         ++Y) {
+        struct pixel* Pixel = Row;
+        for (u32 X = 0;
+             X < CONSOLE_WIDTH;
+             ++X) {
+            // TODO: Clamp!
+            Pixel++->Color.r += (f32)(Y % 2) * 70;
+        }
+        Row += CONSOLE_WIDTH;
+    }
+}
+
+local void
+SetStructuredArt(struct pixel* Pixels)
+{
+    GetPixel(Pixels, (v2i){0, 0})->Color = (v3)Color_Yellow;
+    GetPixel(Pixels, (v2i){(CONSOLE_WIDTH - 1), 0})->Color = (v3)Color_Red;
+    GetPixel(Pixels, (v2i){(CONSOLE_WIDTH - 1), (CONSOLE_HEIGHT - 1)})->Color = (v3)Color_Blue;
+    GetPixel(Pixels, (v2i){0, (CONSOLE_HEIGHT - 1)})->Color = (v3)Color_Black;
+
+    PrintString(Pixels, "A string here", (v2i){10, 10}, (v3)Color_Black);
+}
+
 void
 UpdateState(struct memory* Memory,
             struct user_input* Input)
@@ -75,6 +104,10 @@ UpdateState(struct memory* Memory,
     SetStructuredArt(GameState->Pixels);
 
     MovePlayer(GameState->Pixels, &GameState->Player, Input->MovementKeys);
+
+    PrintString(GameState->Pixels, "Cursor", RoundV2ToV2i(GameState->Player.Pos), (v3)Color_Black);
+    // char At = 'a' + (char)RoundF32ToInt(GameState->Player.Pos.x);
+    // PrintString(GameState->Pixels, &At, (v2i){10, 20}, (v3)Color_Black);
 }
 
 // BOOKMARK: Render

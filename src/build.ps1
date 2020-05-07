@@ -56,7 +56,7 @@ $c += '-DSPARROW_WIN32=1'              #Compiles for Win32
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
 $debug += '-GR-'                       #Disables run-time type information. For faster compile.
-# $debug += '-Od'                        #Optimizations disabled
+$debug += '-Od'                        #Optimizations disabled
 $debug += '-MTd'                       #Creates debug multithreaded executable
 $debug += '-Zo'                        #Enhance Optimized Debugging
 $debug += '-Z7'                        #Generates C 7.0–compatible debugging information.
@@ -110,13 +110,13 @@ $win32file = "win32\win32_sparrow.c"
 # $win32file = "wintest.cpp"
 # $debug = "-O2"
 
+echo "WAITING FOR PDB" > lock.tmp
+del *.pdb 2> lock.tmp
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE WIN32 PLATFORM LAYER
 $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
-echo "WAITING FOR PDB" > lock.tmp
-del *.pdb 2> lock.tmp
 # NOTE sparrow DLL
 $sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"

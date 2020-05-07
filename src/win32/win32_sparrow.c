@@ -264,8 +264,25 @@ Win32_GetModuleDirectory(char* WorkingDirectory)
     return (Result);
 }
 
+#define MULTITHREADING_DEV 0
+#if MULTITHREADING_DEV
+u32 __stdcall Test(void* Param)
+{
+    char* Input = (char*)Param;
+    OutputDebugStringA(Input);
+    return (0);
+}
+#endif
+
 int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int ShowCmd)
 {
+#if MULTITHREADING_DEV
+    char* Param = "Test thread\n";
+    u32 ThreadId;
+    void* ThreadHandle = CreateThread(0, 0, Test, Param, 0, &ThreadId);
+    CloseHandle(ThreadHandle);
+#endif
+
     win_class WindowClass = {0};
     WindowClass.instance = Instance;
     WindowClass.className = "ProjectSparrowWindowClass";
@@ -290,7 +307,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     struct user_input* Input = InitializeInput();
 
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
-    Win32_MainMemory = Win32_MainMemoryInit(KiB(500));
+    Win32_MainMemory = Win32_MainMemoryInit(MiB(200));
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
     struct text_buffer ModuleDirectory = Win32_GetModuleDirectory(WorkingDirectory.Data);

@@ -10,6 +10,9 @@
 char* __stdcall GetCommandLineA(void);
 void* __stdcall GetModuleHandleA(char* ModuleName);
 void __stdcall ExitProcess(u32 ExitCode);
+void* __stdcall CreateThread(void* ThreadAttributes, memory_index dwStackSize, void* StartingRoutine,
+                            void* RoutineParam, u32 CreationFlags, u32 *ThreadId);
+void __stdcall CloseHandle(void* Handle);
 
 // NOTE: Window Class flags
 enum WindowClass

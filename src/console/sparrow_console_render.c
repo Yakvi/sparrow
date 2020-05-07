@@ -35,6 +35,7 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim PixelSize)
 local void
 DrawAllPixels(struct frame_buffer* Buffer, struct pixel* Pixels)
 {
+    // TODO: Consistent pixel size! 
     dim PixelSize = {
         (f32)Buffer->Width / (f32)CONSOLE_WIDTH,
         (f32)Buffer->Height / (f32)CONSOLE_HEIGHT};
