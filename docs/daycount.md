@@ -254,3 +254,12 @@ As a result, we can now print simple strings on the grid using the following API
 `PrintString(*Pixels, *String, FirstCharacterPosition(top-left corner), Color)`
 
 Another bug that I identified is inconsistent pixel size; this is especially visible with smaller pixel grids. This will need to be addressed in the future. 
+
+## 20. May 8, 2020 - Debugging pixel size
+
+Today was a bit of an exercise in futility. In my rush to implement a rendering system I actually introudced a whole bunch of bugs that need to be addressed.
+
+`win32_sparrow.c`: Removed fixed buffer size at initialization
+`sparrow_console_render.c`: Identified an issue where sometimes a pixel is too big, and sometimes is too small. A proper stretching mechanism will need to be implemented if we are to solve this issue. 
+
+For the most part I have reverted my changes to the start of the day. I'll need to revisit console rendering code at a later stage.

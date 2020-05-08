@@ -65,15 +65,19 @@ local void
 PixelOverlay(struct pixel* Pixels)
 {
     struct pixel* Row = Pixels;
+    b32 IsRowOdd = false;
     for (u32 Y = 0;
          Y < CONSOLE_HEIGHT;
          ++Y) {
         struct pixel* Pixel = Row;
+        IsRowOdd = Y % 2;
+
         for (u32 X = 0;
              X < CONSOLE_WIDTH;
              ++X) {
             // TODO: Clamp!
-            Pixel++->Color.r += (f32)(Y % 2) * 70;
+            // Pixel->Color.b = (f32)(X % 2) * 255;
+            Pixel++->Color.r += (f32)(IsRowOdd)*70;
         }
         Row += CONSOLE_WIDTH;
     }

@@ -4,6 +4,13 @@
 
 // BOOKMARK: Scalar
 
+inline f32
+Lerp(f32 A, f32 B, f32 t)
+{
+    f32 Result = (1 - t) * A + (B * t);
+    return (Result);
+}
+
 inline s32
 RoundF32ToInt(f32 number)
 {
@@ -127,6 +134,15 @@ V3(f32 X, f32 Y, f32 Z)
 # define Color_Cyan      { 0,    0xFF, 0xFF}
 # define Color_Pink      { 0xFF, 0,    0xFF}
 // clang-format on
+
+inline b32
+ColorsEqual(v3 A, v3 B)
+{
+    b32 Result = (A.r == B.r) &&
+                 (A.g == B.g) &&
+                 (A.b == B.b);
+    return (Result);
+}
 
 #define SPARROW_VECTOR_H
 #endif

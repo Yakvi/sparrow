@@ -7,7 +7,7 @@ struct frame_buffer
     u16 Width;
     u16 Height;
     u16 BytesPerPixel;
-    u16 Pad;
+    u16 Pitch;
     u8* Pixels;
 };
 struct user_input

@@ -91,6 +91,7 @@ Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, u32 Width, u32 Height)
     Buffer->Width = Width;
     Buffer->Height = Height;
     Buffer->BytesPerPixel = BytesPerPixel;
+    Buffer->Pitch = Width * BytesPerPixel;
     Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
 
     Assert(Buffer->Pixels);
@@ -129,9 +130,7 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
 
         case WM_SIZE: {
             // TODO: Do we even want dynamic buffer resolution?
-            rect ClientRect;
-            GetClientRect(Window, &ClientRect);
-            struct dim_2d Dim = Win32_DimFromRect(ClientRect);
+            struct dim_2d Dim = Win32_GetWindowDim(Window);
             Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Dim.Width, Dim.Height);
         } break;
 
@@ -306,7 +305,10 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
     struct user_input* Input = InitializeInput();
 
-    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720);
+    struct dim_2d Dim = Win32_GetWindowDim(Window);
+    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Dim.Width, Dim.Height);
+    // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim!
+
     Win32_MainMemory = Win32_MainMemoryInit(MiB(200));
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
