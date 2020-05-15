@@ -21,10 +21,11 @@ struct memory
     void* Data;
 };
 
-struct dim_2d{
+typedef struct dim_2d
+{
     u32 Width;
     u32 Height;
-};
+} dim_2d;
 
 #define SPARROW_PLATFORM
 #endif

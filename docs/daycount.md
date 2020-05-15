@@ -263,3 +263,7 @@ Today was a bit of an exercise in futility. In my rush to implement a rendering 
 `sparrow_console_render.c`: Identified an issue where sometimes a pixel is too big, and sometimes is too small. A proper stretching mechanism will need to be implemented if we are to solve this issue. 
 
 For the most part I have reverted my changes to the start of the day. I'll need to revisit console rendering code at a later stage.
+
+## 21. May 15, 2020 - Revert DrawPixel changes
+
+My attempts in removing scaling artifacts highlighted that I had a very vague understanding of the problem at hand. By now I mostly reverted the changes of the last few days except I streamlined the DrawPixel call a bit. I will need to revisit this part of code in the future; for now, as exploration code, it's more than enough.

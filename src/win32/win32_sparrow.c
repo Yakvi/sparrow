@@ -39,6 +39,7 @@ Win32_MemoryAlloc(memory_index Size)
 {
     void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #if SPARROW_DEV
+    Assert(Size > 0);
     Assert(Result);
     Assert(*((u8*)Result + (Size - 1)) == 0);
 #endif
@@ -81,20 +82,22 @@ Win32_GetWindowDim(void* Window)
 local void
 Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, u32 Width, u32 Height)
 {
-    u16 BytesPerPixel = 4;
+    if (Width > 0 && Height > 0) {
+        u16 BytesPerPixel = 4;
 
-    if (Buffer->Pixels) {
-        Win32_MemoryFree(Buffer->Pixels);
+        if (Buffer->Pixels) {
+            Win32_MemoryFree(Buffer->Pixels);
+        }
+
+        u32 PixelSize = Height * Width * BytesPerPixel;
+        Buffer->Width = Width;
+        Buffer->Height = Height;
+        Buffer->BytesPerPixel = BytesPerPixel;
+        Buffer->Pitch = Width * BytesPerPixel;
+        Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
+
+        Assert(Buffer->Pixels);
     }
-
-    u32 PixelSize = Height * Width * BytesPerPixel;
-    Buffer->Width = Width;
-    Buffer->Height = Height;
-    Buffer->BytesPerPixel = BytesPerPixel;
-    Buffer->Pitch = Width * BytesPerPixel;
-    Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
-
-    Assert(Buffer->Pixels);
 }
 
 local void

@@ -77,7 +77,7 @@ PixelOverlay(struct pixel* Pixels)
              ++X) {
             // TODO: Clamp!
             // Pixel->Color.b = (f32)(X % 2) * 255;
-            Pixel++->Color.r += (f32)(IsRowOdd)*70;
+            Pixel++->Color.r += (f32)(IsRowOdd)*200;
         }
         Row += CONSOLE_WIDTH;
     }

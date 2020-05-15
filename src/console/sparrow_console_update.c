@@ -13,7 +13,7 @@ GetPixel(struct pixel* Pixels, v2i Coords)
     struct pixel* Result = Pixels + Pos;
 
     Assert(Result->Pos.x == Coords.x);
-    Assert(Result->Pos.y == Coords.y);
+    Assert(Result->Pos.y == CONSOLE_HEIGHT - 1 - Coords.y);
 
     return (Result);
 }
@@ -31,7 +31,7 @@ InitConsolePixels(struct game_state* GameState, color Color)
              X < CONSOLE_WIDTH;
              ++X) {
             Assert(Pixel);
-            Pixel->Pos = (v2i){X, Y};
+            Pixel->Pos = (v2i){X, (CONSOLE_HEIGHT - 1 - Y)};
             Pixel->Color = Color;
             ++Pixel;
         }
