@@ -1,6 +1,6 @@
 #if !defined(SPARROW_PLATFORM)
 
-#include "sparrow_vector.h"
+#include "vector.h"
 
 struct frame_buffer
 {

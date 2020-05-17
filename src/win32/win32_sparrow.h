@@ -3,7 +3,7 @@
 #include "../min_crt.h"
 #include "../types.h"
 #include "../sparrow_platform.h"
-#include "../sparrow_text.h"
+#include "../text.h"
 #include "fake_windows.h"
 
 struct win32_module
