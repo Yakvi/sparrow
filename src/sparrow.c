@@ -3,6 +3,7 @@
 #include "core/sparrow_core_render.c"
 #include "console/sparrow_console_render.c"
 #include "console/sparrow_console_update.c"
+#include "everscroll/everscroll.c"
 
 global_variable struct game_state StubGameState;
 
@@ -34,7 +35,7 @@ MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
 {
     b32 Result = true;
 
-    AddV2(&Player->Pos, Offset);
+    Player->Pos = AddV2(Player->Pos, Offset);
     v2i Pos = RoundV2ToV2i(Player->Pos);
 
     if (Pos.x >= CONSOLE_WIDTH) {
@@ -61,39 +62,6 @@ MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
     return (Result);
 }
 
-local void
-PixelOverlay(struct pixel* Pixels)
-{
-    struct pixel* Row = Pixels;
-    b32 IsRowOdd = false;
-    for (u32 Y = 0;
-         Y < CONSOLE_HEIGHT;
-         ++Y) {
-        struct pixel* Pixel = Row;
-        IsRowOdd = Y % 2;
-
-        for (u32 X = 0;
-             X < CONSOLE_WIDTH;
-             ++X) {
-            // TODO: Clamp!
-            // Pixel->Color.b = (f32)(X % 2) * 255;
-            Pixel++->Color.r += (f32)(IsRowOdd)*200;
-        }
-        Row += CONSOLE_WIDTH;
-    }
-}
-
-local void
-SetStructuredArt(struct pixel* Pixels)
-{
-    GetPixel(Pixels, (v2i){0, 0})->Color = (v3)Color_Yellow;
-    GetPixel(Pixels, (v2i){(CONSOLE_WIDTH - 1), 0})->Color = (v3)Color_Red;
-    GetPixel(Pixels, (v2i){(CONSOLE_WIDTH - 1), (CONSOLE_HEIGHT - 1)})->Color = (v3)Color_Blue;
-    GetPixel(Pixels, (v2i){0, (CONSOLE_HEIGHT - 1)})->Color = (v3)Color_Black;
-
-    PrintString(Pixels, "A string here", (v2i){10, 10}, (v3)Color_Black);
-}
-
 void
 UpdateState(struct memory* Memory,
             struct user_input* Input)
@@ -103,15 +71,18 @@ UpdateState(struct memory* Memory,
     // Then, at the render phase, these would be painted as squares.
     struct game_state* GameState = LoadGameState(Memory);
     InitConsolePixels(GameState, (v3)Color_Cyan);
-    PixelOverlay(GameState->Pixels);
 
-    SetStructuredArt(GameState->Pixels);
+    // NOTE: Everscroll module
+    s32 ScreenId = GetScreenId((s32)Input->MovementKeys.y, &GameState->Scroll);
+    LoadScreen(GameState->Pixels, ScreenId);
 
+#if 0
+    // NOTE: cursor test
     MovePlayer(GameState->Pixels, &GameState->Player, Input->MovementKeys);
-
     PrintString(GameState->Pixels, "Cursor", RoundV2ToV2i(GameState->Player.Pos), (v3)Color_Black);
     // char At = 'a' + (char)RoundF32ToInt(GameState->Player.Pos.x);
     // PrintString(GameState->Pixels, &At, (v2i){10, 20}, (v3)Color_Black);
+#endif
 }
 
 // BOOKMARK: Render

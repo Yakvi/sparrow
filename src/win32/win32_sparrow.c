@@ -223,7 +223,7 @@ local struct text_buffer
 Win32_AllocatePathBuffer(char* Input)
 {
     char* Buffer = Win32_MemoryAlloc(PATH_BUFFER_LENGTH);
-    struct text_buffer Result = InitTextBuffer(Buffer, PATH_BUFFER_LENGTH, 0);
+    struct text_buffer Result = Text(0, PATH_BUFFER_LENGTH, Buffer);
     if (Input) {
         TextConcat(&Result, Input);
     }
@@ -259,8 +259,9 @@ Win32_GetModuleDirectory(char* WorkingDirectory)
 #if SPARROW_DEV
     TextConcat(&Result, "\\build\\");
 #else
-    Assert(!"TODO: Copy program DLL to the Modules folder!");
-    TextConcat(&Result, "\\Modules\\");
+    // TODO: Copy core inside the main exe?
+    // TextConcat(&Result, "\\Modules\\");
+    TextConcat(&Result, "\\");
 #endif SPARROW_DEV
 
     return (Result);

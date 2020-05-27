@@ -2,11 +2,13 @@
 
 #include "min_crt.h"
 #include "types.h"
+#include "text.h"
 #include "sparrow_platform.h"
 #include "core/sparrow_core_render.h"
 #include "console/sparrow_console_platform.h"
 #include "console/sparrow_console_render.h"
 #include "console/sparrow_console_update.h"
+#include "everscroll/everscroll.h"
 
 /**
  * TODO on Engine side
@@ -24,6 +26,7 @@ struct game_state
 {
     struct pixel Pixels[CONSOLE_WIDTH * CONSOLE_HEIGHT]; // TODO(yakvi): Abstract it out? Overkill?
     struct player Player;
+    struct everscroll_state Scroll;
     b32 IsInitialized;
 };
 

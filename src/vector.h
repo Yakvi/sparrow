@@ -22,11 +22,35 @@ typedef struct
     f32 Height;
 } dim;
 
-inline void
-AddV2(v2* A, v2 B)
+inline v2
+AddV2(v2 A, v2 B)
 {
-    A->x += B.x;
-    A->y += B.y;
+    v2 Result = {0};
+
+    Result.x = A.x + B.x;
+    Result.y = A.y + B.y;
+
+    return (Result);
+}
+
+inline v2i
+SubV2i(v2i A, v2i B)
+{
+    v2i Result = {0};
+    Result.x = A.x -= B.x;
+    Result.y = A.y -= B.y;
+
+    return (Result);
+}
+
+inline v2i
+AddV2i(v2i A, v2i B)
+{
+    v2i Result = {0};
+    Result.x = A.x += B.x;
+    Result.y = A.y += B.y;
+
+    return (Result);
 }
 
 inline v2i
@@ -116,6 +140,17 @@ ColorsEqual(v3 A, v3 B)
     b32 Result = (A.r == B.r) &&
                  (A.g == B.g) &&
                  (A.b == B.b);
+    return (Result);
+}
+
+inline color
+ColorLerp(color A, color B, f32 t)
+{
+    color Result = {0};
+    Result.r = Lerp(A.r, B.r, t);
+    Result.g = Lerp(A.g, B.g, t);
+    Result.b = Lerp(A.b, B.b, t);
+
     return (Result);
 }
 

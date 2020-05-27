@@ -267,3 +267,9 @@ For the most part I have reverted my changes to the start of the day. I'll need 
 ## 21. May 15, 2020 - Revert DrawPixel changes
 
 My attempts in removing scaling artifacts highlighted that I had a very vague understanding of the problem at hand. By now I mostly reverted the changes of the last few days except I streamlined the DrawPixel call a bit. I will need to revisit this part of code in the future; for now, as exploration code, it's more than enough.
+
+## 22. May 27, 2020 - Improve text glyphs and start Everscroll
+
+I cleaned up the text glyphs for the console. They are still solid pixels on a 8x8 grid, but at least there's some sort of kerning going on. 
+
+Additionally, I started work on a potential Everscroll module. The idea is that eventually it will be a third dll loaded from the main dll that will not know of core existance. However, I'm not sure this is still possible since all of these modules will have to live in the GameState structure. Maybe I can avoid it with some "clever" use of the void pointers. 

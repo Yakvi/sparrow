@@ -3,9 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "H:/C/_Deps/Include/**",
-                "H:/C/_Deps/Include/yak_libs/**"
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",

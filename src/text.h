@@ -35,16 +35,22 @@ TextConcat(struct text_buffer* Buffer, char* NewText)
 }
 
 inline struct text_buffer
-InitTextBuffer(char* Buffer, unsigned int Size, char* Input)
+Text(char* Input, unsigned int Size, char* Buffer)
 {
     struct text_buffer Result = {0};
-    memset(Buffer, 0, Size);
+    if (Buffer) {
+        memset(Buffer, 0, Size);
+        Result.Data = Buffer;
+        Result.MaxLength = Size;
 
-    Result.Data = Buffer;
-    Result.MaxLength = Size;
-
-    if (Input) {
-        TextConcat(&Result, Input);
+        if (Input) {
+            TextConcat(&Result, Input);
+        }
+    }
+    else {
+        Result.Data = Input;
+        Result.Length = StringLength(Input);
+        Result.MaxLength = Result.Length;
     }
 
     return (Result);

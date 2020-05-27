@@ -1,36 +1,33 @@
 {
-    "terminal.integrated.shellArgs.windows": [
-        "cd ./src; qsetup"
-    ],
-    "multiCommand.commands": [
+  "terminal.integrated.shellArgs.windows": ["cd ./src; qsetup"],
+  "multiCommand.commands": [
+    {
+      "command": "multiCommand.compile",
+      "sequence": [
+        "workbench.action.files.save",
         {
-            "command": "multiCommand.compile",
-            "sequence": [
-                "workbench.action.terminal.clear",
-                "workbench.action.files.save",
-                {
-                    "command": "runInTerminal.run", 
-                    "args": {
-                        "cmd": "./build.ps1",
-                        "match": ".*"
-                    }
-                }
-            ]
+          "command": "runInTerminal.run",
+          "args": {
+            "cmd": "./build.ps1",
+            "match": ".*"
+          }
         }
-    ],
-    "C_Cpp.errorSquiggles": "Disabled",
-    "files.associations": {
-        "scratch.c": "cpp",
-        "win32_input.c": "cpp",
-        "iostream": "cpp",
-        "istream": "cpp",
-        "ostream": "cpp",
-        "ios": "cpp",
-        "xlocnum": "cpp",
-        "cmath": "cpp",
-        "cstdlib": "cpp",
-        "functional": "cpp",
-        "xstring": "cpp",
-        "xiosbase": "cpp"
+      ]
     }
+  ],
+  "C_Cpp.errorSquiggles": "Disabled",
+  "files.associations": {
+    "scratch.c": "cpp",
+    "win32_input.c": "cpp",
+    "iostream": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "ios": "cpp",
+    "xlocnum": "cpp",
+    "cmath": "cpp",
+    "cstdlib": "cpp",
+    "functional": "cpp",
+    "xstring": "cpp",
+    "xiosbase": "cpp"
+  }
 }

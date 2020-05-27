@@ -51,10 +51,10 @@ $c += '-EHa-'                          #Disable exception handling, -EHsc for c+
 $c += '-GS-'                           #Disable Buffer Security checks https://docs.microsoft.com/en-us/cpp/build/reference/gs-buffer-security-check
 $c += '-Gs9999999'                     #Push back __chkstk threshold https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows
 # NOTE: Preprocessor directives
-$c += '-DSPARROW_DEV=1'                #For debug stuff
 $c += '-DSPARROW_WIN32=1'              #Compiles for Win32
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
+$debug += '-DSPARROW_DEV=1'            #For debug stuff
 $debug += '-GR-'                       #Disables run-time type information. For faster compile.
 $debug += '-Od'                        #Optimizations disabled
 $debug += '-MTd'                       #Creates debug multithreaded executable
