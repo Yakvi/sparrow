@@ -2,6 +2,12 @@
 
 #include "vector.h"
 
+typedef struct dim_2d
+{
+    u32 Width;
+    u32 Height;
+} dim_2d;
+
 struct frame_buffer
 {
     u16 Width;
@@ -13,6 +19,8 @@ struct frame_buffer
 struct user_input
 {
     b32 LeftMouseClick;
+    v2i Cursor;
+    v2 CursorNorm;
     v2 MovementKeys;
 };
 struct memory
@@ -20,12 +28,6 @@ struct memory
     memory_index Size;
     void* Data;
 };
-
-typedef struct dim_2d
-{
-    u32 Width;
-    u32 Height;
-} dim_2d;
 
 #define SPARROW_PLATFORM
 #endif

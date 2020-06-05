@@ -17,7 +17,7 @@ LoadGameState(struct memory* Memory)
         Assert(Memory->Size > sizeof(struct game_state));
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
-            InitConsolePixels(Result, (v3)Color_Black);
+            InitConsole(&Result->Console, (v3)Color_Black);
             Result->Player.Pos = (v2){0, 0};
 
             Result->IsInitialized = true;
@@ -63,6 +63,23 @@ MovePlayer(struct pixel* Pixels, struct player* Player, v2 Offset)
 }
 
 void
+DemoFont(struct pixel* Pixels)
+{
+    PrintString(Pixels, "THE QUICK BROWN FOX JUMPS OVER LAZY DOG", (v2i){10, 10}, (v3){0x55, 0xDD, 0xFF});
+    PrintString(Pixels, "the quick brown fox jumps over lazy dog", (v2i){10, 20}, (v3){0x55, 0xDD, 0xFF});
+}
+
+void
+DemoShowCursor(struct pixel* Pixels, v2i CursorPos)
+{
+    Assert(Pixels);
+    if (CursorPos.x < CONSOLE_WIDTH && CursorPos.x >= 0 &&
+        CursorPos.y < CONSOLE_HEIGHT && CursorPos.y >= 0) {
+        GetPixel(Pixels, CursorPos)->Color = (color)Color_White;
+    }
+}
+
+void
 UpdateState(struct memory* Memory,
             struct user_input* Input)
 {
@@ -70,18 +87,33 @@ UpdateState(struct memory* Memory,
     // We need to be able to set each "pixel" with a specific colour
     // Then, at the render phase, these would be painted as squares.
     struct game_state* GameState = LoadGameState(Memory);
-    InitConsolePixels(GameState, (v3)Color_Cyan);
+    struct console* Console = &GameState->Console;
+    InitConsole(Console, (v3)Color_Cyan);
 
+    struct pixel* Pixels = Console->Pixels;
+    VerticalGradient(Pixels, (color){6, 146, 180}, (color){153, 255, 0});
+
+#if 0
     // NOTE: Everscroll module
-    s32 ScreenId = GetScreenId((s32)Input->MovementKeys.y, &GameState->Scroll);
-    LoadScreen(GameState->Pixels, ScreenId);
+     s32 ScreenId = GetScreenId((s32)Input->MovementKeys.y, &GameState->Scroll);
+    LoadScreen(Pixels, ScreenId);
+#endif
+
+#if 0
+    DemoFont(Pixels);
+#endif
+
+    v2i CursorPos;
+    CursorPos.x = RoundF32ToInt(Input->CursorNorm.x * CONSOLE_WIDTH);
+    CursorPos.y = RoundF32ToInt(Input->CursorNorm.y * CONSOLE_HEIGHT);
+    DemoShowCursor(Pixels, CursorPos);
 
 #if 0
     // NOTE: cursor test
-    MovePlayer(GameState->Pixels, &GameState->Player, Input->MovementKeys);
-    PrintString(GameState->Pixels, "Cursor", RoundV2ToV2i(GameState->Player.Pos), (v3)Color_Black);
+    MovePlayer(Pixels, &GameState->Player, Input->MovementKeys);
+    PrintString(Pixels, "Cursor", RoundV2ToV2i(GameState->Player.Pos), (v3)Color_Black);
     // char At = 'a' + (char)RoundF32ToInt(GameState->Player.Pos.x);
-    // PrintString(GameState->Pixels, &At, (v2i){10, 20}, (v3)Color_Black);
+    // PrintString(Pixels, &At, (v2i){10, 20}, (v3)Color_Black);
 #endif
 }
 
@@ -93,7 +125,7 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
     struct game_state* GameState = LoadGameState(Memory);
 
     Clear(Buffer, (v3)Color_Pink);
-    DrawAllPixels(Buffer, GameState->Pixels);
+    DrawAllPixels(Buffer, GameState->Console.Pixels);
 }
 
 #if _WIN32

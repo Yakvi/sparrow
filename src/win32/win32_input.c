@@ -72,7 +72,7 @@ Win32_NormalKeyInput(struct user_input* Input, u64 Key)
 }
 
 local void
-Win32_ReadInput(struct user_input* Input)
+Win32_ReadInput(void* Window, struct user_input* Input)
 {
     Win32_ClearInput(Input); // TODO: Backup old input before clearing?
     message Message;
@@ -97,5 +97,14 @@ Win32_ReadInput(struct user_input* Input)
             } break;
         }
     }
+    v2i CursorPos;
+    dim_2d ClientDim = Win32_GetClientDim(Window);
+    if (GetCursorPos(&CursorPos) && ScreenToClient(Window, &CursorPos)) {
+        Input->Cursor.x = CursorPos.x;
+        Input->Cursor.y = CursorPos.y;
+        Input->CursorNorm.x = (f32)Input->Cursor.x / ClientDim.Width;
+        Input->CursorNorm.y = (f32)Input->Cursor.y / ClientDim.Height;
+    }
+
     // TODO: Register mouse input if any
 }

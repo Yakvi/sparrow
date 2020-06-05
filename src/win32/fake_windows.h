@@ -11,7 +11,7 @@ char* __stdcall GetCommandLineA(void);
 void* __stdcall GetModuleHandleA(char* ModuleName);
 void __stdcall ExitProcess(u32 ExitCode);
 void* __stdcall CreateThread(void* ThreadAttributes, memory_index dwStackSize, void* StartingRoutine,
-                            void* RoutineParam, u32 CreationFlags, u32 *ThreadId);
+                             void* RoutineParam, u32 CreationFlags, u32* ThreadId);
 void __stdcall CloseHandle(void* Handle);
 
 // NOTE: Window Class flags
@@ -66,10 +66,10 @@ typedef struct
 
 typedef struct
 {
-    u32 left;
-    u32 top;
-    u32 right;
-    u32 bottom;
+    s32 left;
+    s32 top;
+    s32 right;
+    s32 bottom;
 } rect;
 
 void* __stdcall CreateWindowExA(u32 ExStyle, char* ClassName, char* WindowName, u32 Style, s32 X, s32 Y, s32 Width, s32 Height, void* ParentWindow, void* Menu, void* Instance, s64 LParam);
@@ -207,9 +207,13 @@ typedef struct
     rbg_quad colors[1];
 } bitmap_info;
 
+// NOTE: UI
+b32 __stdcall GetCursorPos(v2i* Point);
+b32 __stdcall ScreenToClient(void* Window, v2i* Point);
 void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
 void* __stdcall EndPaint(void* Window, paint_struct* PaintStruct);
 b32 __stdcall GetClientRect(void* Window, rect* OutRect);
+b32 __stdcall GetWindowRect(void* Window, rect* OutRect);
 b32 __stdcall PatBlt(void* HDC, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
 void* __stdcall CreateDIBSection(void* HDC, bitmap_info* info, u32 mode, void** bits, void* section, u32 offset);
 s32 __stdcall StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 mode, u32 rop);

@@ -21,7 +21,7 @@
  *    - Arbitrary DLL load
  *    - Arbitrary loading sequence
  *    - Production-level hot reloading (e.g. for mod development)
- * Advanced input capture system
+ * Advanced input capture system (Mouse, Keyboard, Gamepad)
  * Audio reproduction system
  * Asset loading
  *    - Lazy asset loading
@@ -31,31 +31,7 @@
 global_variable u8 GlobalRunning;
 
 #define PATH_BUFFER_LENGTH STR_MAX
-global_variable struct memory* Win32_MainMemory;
 global_variable struct frame_buffer Win32_FrameBuffer;
-
-inline void*
-Win32_MemoryAlloc(memory_index Size)
-{
-    void* Result = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-#if SPARROW_DEV
-    Assert(Size > 0);
-    Assert(Result);
-    Assert(*((u8*)Result + (Size - 1)) == 0);
-#endif
-
-    return (Result);
-}
-
-local b32
-Win32_MemoryFree(void* address)
-{
-    b32 Result = VirtualFree(address, 0, MEM_RELEASE);
-    Assert(Result);
-    return (Result);
-}
-
-#include "win32_input.c"
 
 inline struct dim_2d
 Win32_DimFromRect(rect Source)
@@ -68,7 +44,7 @@ Win32_DimFromRect(rect Source)
 }
 
 inline struct dim_2d
-Win32_GetWindowDim(void* Window)
+Win32_GetClientDim(void* Window)
 {
     Assert(Window);
     rect WindowRect;
@@ -79,21 +55,25 @@ Win32_GetWindowDim(void* Window)
     return (Result);
 }
 
+#include "win32_memory.c"
+#include "win32_input.c"
+
 local void
-Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, u32 Width, u32 Height)
+Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2d Dim)
 {
-    if (Width > 0 && Height > 0) {
+    // Assert(Dim);
+    if (Dim.Width > 0 && Dim.Height > 0) {
         u16 BytesPerPixel = 4;
 
         if (Buffer->Pixels) {
             Win32_MemoryFree(Buffer->Pixels);
         }
 
-        u32 PixelSize = Height * Width * BytesPerPixel;
-        Buffer->Width = Width;
-        Buffer->Height = Height;
+        u32 PixelSize = Dim.Height * Dim.Width * BytesPerPixel;
+        Buffer->Width = Dim.Width;
+        Buffer->Height = Dim.Height;
         Buffer->BytesPerPixel = BytesPerPixel;
-        Buffer->Pitch = Width * BytesPerPixel;
+        Buffer->Pitch = Dim.Width * BytesPerPixel;
         Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
 
         Assert(Buffer->Pixels);
@@ -133,8 +113,7 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
 
         case WM_SIZE: {
             // TODO: Do we even want dynamic buffer resolution?
-            struct dim_2d Dim = Win32_GetWindowDim(Window);
-            Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Dim.Width, Dim.Height);
+            Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Win32_GetClientDim(Window));
         } break;
 
         case WM_ACTIVATEAPP: {
@@ -164,16 +143,6 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
             Result = DefWindowProcA(Window, Message, WParam, LParam);
         } break;
     }
-
-    return (Result);
-}
-
-local struct memory*
-Win32_MainMemoryInit(memory_index Size)
-{
-    struct memory* Result = Win32_MemoryAlloc(Size + sizeof(struct memory));
-    Result->Size = Size;
-    Result->Data = Result + sizeof(struct memory);
 
     return (Result);
 }
@@ -309,9 +278,8 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
     struct user_input* Input = InitializeInput();
 
-    struct dim_2d Dim = Win32_GetWindowDim(Window);
-    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Dim.Width, Dim.Height);
-    // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim!
+    Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Win32_GetClientDim(Window));
+    // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim?
 
     Win32_MainMemory = Win32_MainMemoryInit(MiB(200));
 
@@ -327,7 +295,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
         // TODO(yakvi): DeltaTime calculations!
         Win32_TryLoadDLL(LockfilePath.Data, &Game);
 
-        Win32_ReadInput(Input);
+        Win32_ReadInput(Window, Input);
         if (Game.IsLoaded) {
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
@@ -343,7 +311,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
             // TODO(yakvi): Some softer logging maybe?
         }
         // NOTE: Display buffer on screen
-        Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetWindowDim(Window));
+        Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Win32_GetClientDim(Window));
     }
 
     return (0);

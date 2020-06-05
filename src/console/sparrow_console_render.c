@@ -1,4 +1,4 @@
-#include "sparrow_console_render.h"
+#include "sparrow_console_platform.h"
 
 local void
 DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim RealSize, dim_2d Size)

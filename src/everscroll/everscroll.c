@@ -23,29 +23,6 @@ PixelOverlay(struct pixel* Pixels)
 }
 
 local void
-VerticalGradient(struct pixel* Pixels, color Start, color End)
-{
-    // f32 InvertedWidth = 1.0f / CONSOLE_WIDTH;
-    f32 InvertedHeight = 1.0f / CONSOLE_HEIGHT;
-
-    struct pixel* Row = Pixels;
-    for (u32 Y = 0;
-         Y < CONSOLE_HEIGHT;
-         ++Y) {
-        struct pixel* Pixel = Row;
-        color Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
-        for (u32 X = 0;
-             X < CONSOLE_WIDTH;
-             ++X) {
-
-            // color NewColor = ColorLerp(Color, End, (f32)X * InvertedWidth);
-            Pixel++->Color = Color;
-        }
-        Row += CONSOLE_WIDTH;
-    }
-}
-
-local void
 SetStructuredArt(struct pixel* Pixels)
 {
     GetPixel(Pixels, (v2i){0, 0})->Color = (v3)Color_Yellow;
@@ -77,7 +54,22 @@ LoadScreen(struct pixel* Pixels, s32 ScreenIndex)
 
         case 1: {
             VerticalGradient(Pixels, (color)Color_Black, (color)Color_Blue);
-            TextInCenterWithShadow(Pixels, "EVERSCROLL", (color){0x55, 0xDD, 0xFF});
+            // TextInCenterWithShadow(Pixels, "EVERSCROLL", (color){0x55, 0xDD, 0xFF});
+        } break;
+
+        case 2: {
+            VerticalGradient(Pixels, (color)Color_Blue, (color)Color_Green);
+            // TextInCenterWithShadow(Pixels, "EVERSCROLL", (color){0x55, 0xDD, 0xFF});
+        } break;
+
+        case 3: {
+            VerticalGradient(Pixels, (color)Color_Green, (color)Color_White);
+            // TextInCenterWithShadow(Pixels, "EVERSCROLL", (color){0x55, 0xDD, 0xFF});
+        } break;
+
+        case 4: {
+
+            // TextInCenterWithShadow(Pixels, "EVERSCROLL", (color){0x55, 0xDD, 0xFF});
         } break;
 
         case SCREEN_COUNT: {
