@@ -94,3 +94,10 @@ GetScreenId(s32 Input, struct everscroll_state* Scroll)
 
     return (Result);
 }
+
+local void
+EverScroll(struct everscroll_state* Scroll, struct user_input* Input, struct pixel* Pixels)
+{
+    s32 ScreenId = GetScreenId((s32)Input->MovementKeys.y, Scroll);
+    LoadScreen(Pixels, ScreenId);
+}

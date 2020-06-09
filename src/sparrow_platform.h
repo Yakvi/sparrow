@@ -20,8 +20,8 @@ struct user_input
 {
     b32 LeftMouseClick;
     v2i Cursor;
-    v2 CursorNorm;
-    v2 MovementKeys;
+    v2f CursorNorm;
+    v2f MovementKeys;
 };
 struct memory
 {

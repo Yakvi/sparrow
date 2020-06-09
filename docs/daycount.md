@@ -277,3 +277,9 @@ Additionally, I started work on a potential Everscroll module. The idea is that 
 ## 23. June 04, 2020 - Mouse Cursor Capture
 
 Implemented mouse cursor capture. In `win32_sparrow.c` we package both normalized and absolute mouse cursor position, while inside our Console application we use normalized cursor position to determine whether or not a pixel is currently under mouse cursor. Right now it's extremely semplicistic but, in the future, we might be able to move more advanced mouse detection deeper into the pixel logic.
+
+## 24. June 09, 2020 - Basic UI functionality
+
+We now have some basic UI API. We can draw Points, Lines (only vertical and horizontal for now), Boxes, Text boxes (size defined by the text within), Strings and finally Buttons! For now, the buttons don't detect mouse clicks but only hover, however there's already some Immediate Mode functionality built in. Hopefully it will continue improving as the time goes by. 
+
+One thing I'll need to focus on next would be cleaning up my calls. Things like `AddV2i((v2i){0, -20}, (v2i)CONSOLE_CENTER)` in the body of the function call are anything but readable, and in the long run it will hurt me. So changes must be made (transition to C++? Some style guide definitions?). 

@@ -721,13 +721,24 @@ GetGlyph(char* Code)
                 "  #     "
                 " #      ";
         } break;
-        case '!': {
+        case '\'': {
             Result.Data =
                 " ###    "
                 " ###    "
                 "  #     "
                 "        "
+                "        "
+                "        "
+                "        "
+                "        ";
+        } break;
+        case '!': {
+            Result.Data =
                 " ###    "
+                " ###    "
+                "  #     "
+                "  #     "
+                "        "
                 " ###    "
                 "        "
                 "        ";

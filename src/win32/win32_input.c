@@ -11,11 +11,11 @@ local void
 Win32_ClearInput(struct user_input* Input)
 {
     Input->LeftMouseClick = false;
-    Input->MovementKeys = (v2){0, 0};
+    Input->MovementKeys = (v2f){0, 0};
 }
 
 local void
-Win32_RegisterMouseInput(struct user_input* Input, v2 MousePos, u64 MouseState)
+Win32_RegisterMouseInput(struct user_input* Input, v2f MousePos, u64 MouseState)
 {
     // TODO THIS IS A STUB
     if (Input->LeftMouseClick && !(MouseState & MK_LBUTTON)) {

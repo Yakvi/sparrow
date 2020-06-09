@@ -8,7 +8,7 @@ typedef struct
 {
     f32 x;
     f32 y;
-} p, v2;
+} p, v2f;
 
 typedef struct
 {
@@ -22,10 +22,10 @@ typedef struct
     f32 Height;
 } dim;
 
-inline v2
-AddV2(v2 A, v2 B)
+inline v2f
+AddV2(v2f A, v2f B)
 {
-    v2 Result = {0};
+    v2f Result = {0};
 
     Result.x = A.x + B.x;
     Result.y = A.y + B.y;
@@ -54,7 +54,7 @@ AddV2i(v2i A, v2i B)
 }
 
 inline v2i
-RoundV2ToV2i(v2 Source)
+RoundV2ToV2i(v2f Source)
 {
     v2i Result = {0};
     Result.x = RoundF32ToInt(Source.x);
