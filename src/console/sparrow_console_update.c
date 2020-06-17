@@ -1,5 +1,6 @@
 #include "sparrow_console_platform.h"
 #include "sparrow_console_glyphs.h"
+#include "../text.h"
 
 local void
 InitConsole(struct console* Console, color Color)
@@ -192,18 +193,18 @@ TextBox(struct pixel* Pixels, v2i TopLeft, color BoxColor, char* Input, color St
 }
 
 local b32
-Button(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input)
+ButtonHover(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input)
 {
     b32 Result = false;
 
     dim_2d Dim = TextBox(Pixels, TopLeft, (color)Color_Gray13, Input, (color)Color_Black);
     if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) &&
         (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
-            
-        Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, (color)Color_Black);
-        Line(Pixels, TopLeft, Dim.Height, Line_Vertical, (color)Color_Black);
-        Line(Pixels, AddV2i(TopLeft, (v2i){Dim.Width, 0}), Dim.Height, Line_Vertical, (color)Color_White);
-        Line(Pixels, AddV2i(TopLeft, (v2i){0, Dim.Height}), Dim.Width + 1, Line_Horizontal, (color)Color_White);
+        TextBox(Pixels, TopLeft, (color){0xCC, 0xCC, 0xCC}, Input, (color)Color_Black);
+        // Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, (color)Color_Black);
+        // Line(Pixels, TopLeft, Dim.Height, Line_Vertical, (color)Color_Black);
+        // Line(Pixels, AddV2i(TopLeft, (v2i){Dim.Width, 0}), Dim.Height, Line_Vertical, (color)Color_White);
+        // Line(Pixels, AddV2i(TopLeft, (v2i){0, Dim.Height}), Dim.Width + 1, Line_Horizontal, (color)Color_White);
         Result = true;
     }
 

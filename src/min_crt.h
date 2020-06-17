@@ -34,5 +34,13 @@ extern "C"
 }
 #endif
 
+#if _WIN32
+// NOTE(yakvi): Required entry point for all win32 dlls (with stripped down items)
+int __stdcall _DllMainCRTStartup()
+{
+    return 1;
+}
+#endif
+
 #define MIN_CRT_H
 #endif

@@ -10,7 +10,7 @@ struct win32_module
 {
     char* Name;
     void* Library;
-    function Update;
+    function Main;
     function Render;
 
     b32 IsLoaded;

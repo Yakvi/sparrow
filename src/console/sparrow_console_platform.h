@@ -1,5 +1,7 @@
 #if !defined(SPARROW_CONSOLE_PLATFORM_H)
 
+typedef void (*console_module)(void* ModuleMemory, struct user_input* Input, struct pixel* Pixels);
+
 #define CONSOLE_WIDTH 400  // 140
 #define CONSOLE_HEIGHT 200 // 40
 #define CONSOLE_SIZE ((CONSOLE_WIDTH) * (CONSOLE_HEIGHT))
@@ -39,7 +41,7 @@ inline void Point(struct pixel* Pixels, v2i Pos, v3 Color);
 local void Line(struct pixel* Pixels, v2i Left, u32 Length, u32 Direction, color Color);
 local void Box(struct pixel* Pixels, v2i TopLeft, dim_2d Dim, color BoxColor);
 local dim_2d TextBox(struct pixel* Pixels, v2i TopLeft, color BoxColor, char* Input, color StringColor);
-local b32 Button(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input);
+local b32 ButtonHover(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input);
 
 inline void
 V2iGridClamp(v2i* Pos)

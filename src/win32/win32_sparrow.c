@@ -164,7 +164,8 @@ Win32_FileExists(char* Filename)
 
 local void
 Win32_TryLoadDLL(char* Lockfile,
-                 struct win32_module* Module)
+                 struct win32_module* Module,
+                 b32 IsMod)
 {
     b32 LockFileExists = Win32_FileExists(Lockfile);
     if (!LockFileExists) {
@@ -173,19 +174,29 @@ Win32_TryLoadDLL(char* Lockfile,
             Module->Library = LoadLibraryA(Module->Name);
             if (Module->Library) {
                 // TODO(yakvi): Compress this into an array
-                Module->Update = GetProcAddress(Module->Library, "UpdateState");
-                Module->Render = GetProcAddress(Module->Library, "Render");
+                if (IsMod) {
+                    Module->Main = GetProcAddress(Module->Library, "ModuleMain");
+                }
+                else {
+                    Module->Main = GetProcAddress(Module->Library, "UpdateState");
+                    Module->Render = GetProcAddress(Module->Library, "Render");
+                }
             }
         }
     }
     else {
         if (Module->Library && FreeLibrary(Module->Library)) {
             Module->Library = 0;
-            Module->Update = 0;
+            Module->Main = 0;
             Module->Render = 0;
         }
     }
-    Module->IsLoaded = (Module->Library && Module->Update && Module->Render);
+    if (IsMod) {
+        Module->IsLoaded = !!Module->Main;
+    }
+    else {
+        Module->IsLoaded = (Module->Library && Module->Main && Module->Render);
+    }
 }
 
 local struct text_buffer
@@ -289,11 +300,13 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     TextConcat(&LockfilePath, "lock.tmp");
 
     struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
+    struct win32_module Mod = Win32_InitModule(&ModuleDirectory, "weekend.dll");
 
     GlobalRunning = true;
     while (GlobalRunning) {
         // TODO(yakvi): DeltaTime calculations!
-        Win32_TryLoadDLL(LockfilePath.Data, &Game);
+        Win32_TryLoadDLL(LockfilePath.Data, &Game, false);
+        Win32_TryLoadDLL(LockfilePath.Data, &Mod, true);
 
         Win32_ReadInput(Window, Input);
         if (Game.IsLoaded) {
@@ -301,7 +314,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
             if (Win32_IsTimeToRender()) {
                 // NOTE: Game logic
                 // TODO: Run this for each module
-                Game.Update(Win32_MainMemory, Input);
+                Game.Main(Win32_MainMemory, Input, Mod.Main);
                 Game.Render(Win32_MainMemory, &Win32_FrameBuffer);
             }
         }

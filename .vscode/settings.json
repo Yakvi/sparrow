@@ -28,6 +28,11 @@
     "cstdlib": "cpp",
     "functional": "cpp",
     "xstring": "cpp",
-    "xiosbase": "cpp"
+    "xiosbase": "cpp",
+    "everscroll.c": "cpp",
+    "writer.c": "cpp",
+    "sparrow_console_render.c": "cpp",
+    "sparrow_console_tests.c": "cpp",
+    "sparrow_console_update.c": "cpp"
   }
 }

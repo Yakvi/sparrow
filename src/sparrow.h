@@ -26,9 +26,9 @@ struct game_state
 {
     struct console Console;
     struct player Player;
-    // struct everscroll_state Scroll;
-    struct writer_state Writer;
+    b32 UpdateCompleted;
     b32 IsInitialized;
+    char ModuleMemory[MiB(2)];
 };
 
 #define SPARROW_H

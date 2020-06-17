@@ -283,3 +283,11 @@ Implemented mouse cursor capture. In `win32_sparrow.c` we package both normalize
 We now have some basic UI API. We can draw Points, Lines (only vertical and horizontal for now), Boxes, Text boxes (size defined by the text within), Strings and finally Buttons! For now, the buttons don't detect mouse clicks but only hover, however there's already some Immediate Mode functionality built in. Hopefully it will continue improving as the time goes by. 
 
 One thing I'll need to focus on next would be cleaning up my calls. Things like `AddV2i((v2i){0, -20}, (v2i)CONSOLE_CENTER)` in the body of the function call are anything but readable, and in the long run it will hurt me. So changes must be made (transition to C++? Some style guide definitions?). 
+
+## 25. June 17, 2020 - Modules
+
+Today, Core Update and Rendering was 'sort of' separated from the game logic. The latter is now running in its own Modules - smaller? dlls containing only the logic pertinent to game updates. 
+
+This presents a whole new world of challenges: how to convert my Console logic into a proper API? Right now I'm simply importing the whole functions, but maybe filling out some specific structures and passing them back to the engine would make more sense ("I don't care how you deal with the pixels, I just want this button/pixel there").
+
+Additionally, I discovered that if I try transitioning into CPP, the API is TOTALLY borked. Again, something that will be probably solved once we define a proper set of APIs.

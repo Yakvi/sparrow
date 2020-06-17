@@ -110,16 +110,27 @@ $win32file = "win32\win32_sparrow.c"
 # $win32file = "wintest.cpp"
 # $debug = "-O2"
 
-echo "WAITING FOR PDB" > lock.tmp
-del *.pdb 2> lock.tmp
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE WIN32 PLATFORM LAYER
 $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
+# NOTE Live code editing: lock running
+echo "WAITING FOR PDB" > lock.tmp
+del *.pdb 2> lock.tmp
+
 # NOTE sparrow DLL
 $sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
+
+# NOTE Module DLLs
+$writer = & cl $c $dllc $debug $srcDir\writer\writer.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+Output-Logs -data $writer -title "writer dll"
+
+$raycast = & cl $c $dllc $debug $srcDir\raycast\weekend.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+Output-Logs -data $raycast -title "raycast dll"
+
+# NOTE Live code editing: resume running
 del lock.tmp
 
 # TODO: This would be cool to try porting to our engine in pure C

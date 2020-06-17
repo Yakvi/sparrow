@@ -1,5 +1,8 @@
 #if !defined(WRITER_SIM_H)
 
+#include "../min_crt.h"
+#include "../sparrow_platform.h"
+
 struct writer_state
 {
     s32 Pad;
@@ -7,4 +10,3 @@ struct writer_state
 
 #define WRITER_SIM_H
 #endif
-
