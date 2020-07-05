@@ -4,7 +4,6 @@
 #include "core/sparrow_core_render.c"
 #include "console/console_render.c"
 #include "console/console_update.c"
-#include "console/console_tests.c"
 
 global_variable struct game_state StubGameState;
 
@@ -18,8 +17,8 @@ LoadGameState(struct memory* Memory)
         Assert(Memory->Size > sizeof(struct game_state));
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
-            InitConsole(&Result->Console, (v3)Color_Black);
-            Result->Player.Pos = (v2f){0, 0};
+            InitConsole(&Result->Console, Color_Black);
+            Result->Player.Pos = V2F(0, 0);
 
             Result->UpdateCompleted = false;
             Result->IsInitialized = true;
@@ -46,7 +45,7 @@ UpdateState(struct memory* Memory,
         ClearConsole(Console, Input);
 
         struct pixel* Pixels = Console->Pixels;
-        VerticalGradient(Pixels, (color){20, 130, 200}, (color){6, 146, 180});
+        VerticalGradient(Pixels, Color(20, 130, 200), Color(6, 146, 180));
 
 #if 1
         Main(&GameState->ModuleMemory, Input, Pixels);
@@ -72,6 +71,6 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
 {
     struct game_state* GameState = LoadGameState(Memory);
 
-    Clear(Buffer, (v3)Color_Pink);
+    Clear(Buffer, Color_Pink);
     DrawAllPixels(Buffer, GameState->Console.Pixels);
 }

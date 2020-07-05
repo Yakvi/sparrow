@@ -192,7 +192,7 @@ Win32_TryLoadDLL(char* Lockfile,
         }
     }
     if (IsMod) {
-        Module->IsLoaded = !!Module->Main;
+        Module->IsLoaded = Module->Main != 0;
     }
     else {
         Module->IsLoaded = (Module->Library && Module->Main && Module->Render);
@@ -300,7 +300,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     TextConcat(&LockfilePath, "lock.tmp");
 
     struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
-    struct win32_module Mod = Win32_InitModule(&ModuleDirectory, "weekend.dll");
+    struct win32_module Mod = Win32_InitModule(&ModuleDirectory, "mod_weekend.dll");
 
     GlobalRunning = true;
     while (GlobalRunning) {
@@ -309,7 +309,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
         Win32_TryLoadDLL(LockfilePath.Data, &Mod, true);
 
         Win32_ReadInput(Window, Input);
-        if (Game.IsLoaded) {
+        if (Game.IsLoaded && Mod.IsLoaded) {
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
                 // NOTE: Game logic

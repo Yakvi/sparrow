@@ -16,7 +16,7 @@ InitConsole(struct console* Console, color Color)
 
             Assert(Pixel);
             if (!Console->IsInitialized) {
-                Pixel->Pos = (v2i){X, (CONSOLE_HEIGHT - 1 - Y)};
+                Pixel->Pos = V2I(X, (CONSOLE_HEIGHT - 1 - Y));
             }
             Pixel->Color = Color;
             Pixel->Flags = 0;
@@ -24,7 +24,7 @@ InitConsole(struct console* Console, color Color)
         }
         Row += CONSOLE_WIDTH;
     }
-    Console->CursorPos = (v2i){0, 0};
+    Console->CursorPos = V2I(0, 0);
     Console->IsInitialized = true;
 }
 
@@ -51,7 +51,7 @@ local void
 ClearConsole(struct console* Console, struct user_input* Input)
 {
     Assert(Console->IsInitialized);
-    InitConsole(Console, (color)Color_Pink);
+    InitConsole(Console, Color_Pink);
 
     v2i CursorPos;
     CursorPos.x = (s32)(Input->CursorNorm.x * CONSOLE_WIDTH);
@@ -103,7 +103,7 @@ PrintGlyph(struct pixel* Pixels, char* Char, v2i Pos, v3 Color)
              X < Glyph.Dim.Width;
              ++X) {
             if (Glyph.Data[Glyph.Dim.Width * Y + X] == '#') {
-                Point(Pixels, (v2i){Pos.x + X, Pos.y + Y}, Color);
+                Point(Pixels, V2I(Pos.x + X, Pos.y + Y), Color);
             }
         }
     }
@@ -142,10 +142,10 @@ Line(struct pixel* Pixels, v2i Left, u32 Length, u32 Direction, color Color)
          Offset < Length;
          ++Offset) {
         if (Direction == Line_Vertical) {
-            Point(Pixels, AddV2i(Left, (v2i){0, Offset}), Color);
+            Point(Pixels, AddV2i(Left, V2I(0, Offset)), Color);
         }
         else {
-            Point(Pixels, AddV2i(Left, (v2i){Offset, 0}), Color);
+            Point(Pixels, AddV2i(Left, V2I(Offset, 0)), Color);
         }
     }
 #else
@@ -175,12 +175,12 @@ Box(struct pixel* Pixels, v2i TopLeft, dim_2d Dim, color BoxColor)
     for (u32 Offset = 0;
          Offset < Dim.Height;
          ++Offset) {
-        Line(Pixels, AddV2i(TopLeft, (v2i){0, Offset}), Dim.Width, Line_Horizontal, BoxColor);
+        Line(Pixels, AddV2i(TopLeft, V2I(0, Offset)), Dim.Width, Line_Horizontal, BoxColor);
     }
-    Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, (color)Color_White);
-    Line(Pixels, TopLeft, Dim.Height, Line_Vertical, (color)Color_White);
-    Line(Pixels, AddV2i(TopLeft, (v2i){Dim.Width, 0}), Dim.Height, Line_Vertical, (color)Color_Black);
-    Line(Pixels, AddV2i(TopLeft, (v2i){0, Dim.Height}), Dim.Width + 1, Line_Horizontal, (color)Color_Black);
+    Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, Color_White);
+    Line(Pixels, TopLeft, Dim.Height, Line_Vertical, Color_White);
+    Line(Pixels, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, Color_Black);
+    Line(Pixels, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, Color_Black);
 }
 
 local dim_2d
@@ -188,7 +188,7 @@ TextBox(struct pixel* Pixels, v2i TopLeft, color BoxColor, char* Input, color St
 {
     dim_2d Dim = {4 + GLYPH_WIDTH * StringLength(Input), 3 + GLYPH_HEIGHT};
     Box(Pixels, TopLeft, Dim, BoxColor);
-    PrintString(Pixels, Input, AddV2i(TopLeft, (v2i){2, 2}), StringColor);
+    PrintString(Pixels, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
     return (Dim);
 }
 
@@ -197,14 +197,14 @@ ButtonHover(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input)
 {
     b32 Result = false;
 
-    dim_2d Dim = TextBox(Pixels, TopLeft, (color)Color_Gray13, Input, (color)Color_Black);
+    dim_2d Dim = TextBox(Pixels, TopLeft, Color_Gray13, Input, Color_Black);
     if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) &&
         (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
-        TextBox(Pixels, TopLeft, (color){0xCC, 0xCC, 0xCC}, Input, (color)Color_Black);
-        // Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, (color)Color_Black);
-        // Line(Pixels, TopLeft, Dim.Height, Line_Vertical, (color)Color_Black);
-        // Line(Pixels, AddV2i(TopLeft, (v2i){Dim.Width, 0}), Dim.Height, Line_Vertical, (color)Color_White);
-        // Line(Pixels, AddV2i(TopLeft, (v2i){0, Dim.Height}), Dim.Width + 1, Line_Horizontal, (color)Color_White);
+        TextBox(Pixels, TopLeft, Color(0xCC, 0xCC, 0xCC), Input, Color_Black);
+        // Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, Color_Black);
+        // Line(Pixels, TopLeft, Dim.Height, Line_Vertical, Color_Black);
+        // Line(Pixels, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, (color)Color_White);
+        // Line(Pixels, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, (color)Color_White);
         Result = true;
     }
 

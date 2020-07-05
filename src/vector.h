@@ -22,6 +22,33 @@ typedef struct
     f32 Height;
 } dim;
 
+inline p
+P(f32 X, f32 Y)
+{
+    p Result = {X, Y};
+    return (Result);
+}
+
+inline v2f
+V2F(f32 X, f32 Y)
+{
+    return P(X, Y);
+}
+
+inline v2i
+V2I(s32 X, s32 Y)
+{
+    v2i Result = {X, Y};
+    return (Result);
+}
+
+inline dim
+DIM(f32 width, f32 height)
+{
+    dim Result = {width, height};
+    return (Result);
+}
+
 inline v2f
 AddV2(v2f A, v2f B)
 {
@@ -96,6 +123,12 @@ V3(f32 X, f32 Y, f32 Z)
     return (Result);
 }
 
+inline color
+Color(f32 X, f32 Y, f32 Z)
+{
+    return V3(X, Y, Z);
+}
+
 // typedef struct
 // {
 //     union
@@ -118,20 +151,20 @@ V3(f32 X, f32 Y, f32 Z)
 // BOOKMARK: Color constants
 // TODO: Move this out somewhere else?
 // clang-format off
-# define Color_Black     { 0,    0,    0}
-# define Color_White     { 0xFF, 0xFF, 0xFF}
+# define Color_Black     Color(0,    0,    0)
+# define Color_White     Color(0xFF, 0xFF, 0xFF)
 
-# define Color_Gray05    { 0x55, 0x55, 0x55}
-# define Color_Gray11    { 0xAA, 0xAA, 0xAA}
-# define Color_Gray13    { 0xDD, 0xDD, 0xDD}
+# define Color_Gray05    Color(0x55, 0x55, 0x55)
+# define Color_Gray11    Color(0xAA, 0xAA, 0xAA)
+# define Color_Gray13    Color(0xDD, 0xDD, 0xDD)
 
-# define Color_Red       { 0xFF, 0,    0}
-# define Color_Green     { 0,    0xFF, 0}
-# define Color_Blue      { 0,    0,    0xFF}
+# define Color_Red       Color(0xFF, 0,    0)
+# define Color_Green     Color(0,    0xFF, 0)
+# define Color_Blue      Color(0,    0,    0xFF)
 
-# define Color_Yellow    { 0xFF, 0xFF, 0}
-# define Color_Cyan      { 0,    0xFF, 0xFF}
-# define Color_Pink      { 0xFF, 0,    0xFF}
+# define Color_Yellow    Color(0xFF, 0xFF, 0)
+# define Color_Cyan      Color(0,    0xFF, 0xFF)
+# define Color_Pink      Color(0xFF, 0,    0xFF)
 // clang-format on
 
 inline b32

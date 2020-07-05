@@ -1,5 +1,9 @@
 #if !defined(EVERSCROLL_H)
 
+#include "../../min_crt.h"
+#include "../../sparrow_platform.h"
+#include "../../console/console_platform.h"
+
 #define SCREEN_COUNT 5
 
 struct everscroll_state
@@ -9,4 +13,3 @@ struct everscroll_state
 
 #define EVERSCROLL_H
 #endif
-

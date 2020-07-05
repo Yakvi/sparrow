@@ -11,8 +11,9 @@ struct glyph
 local struct glyph
 GetGlyph(char* Code)
 {
-    struct glyph Result = {0};
-    Result.Dim = (struct dim_2d){GLYPH_WIDTH, GLYPH_HEIGHT};
+    struct glyph Result;
+    Result.Dim.Width = GLYPH_WIDTH;
+    Result.Dim.Height = GLYPH_HEIGHT;
     switch (*Code) {
         case '0': {
             Result.Data =

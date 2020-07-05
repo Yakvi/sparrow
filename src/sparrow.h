@@ -19,9 +19,6 @@ struct player
     v2f Pos;
 };
 
-// #include "everscroll/everscroll.h"
-#include "writer/writer.h"
-
 struct game_state
 {
     struct console Console;

@@ -1,8 +1,10 @@
 #if !defined(SPARROW_TEXT_H)
 
+#ifndef __cplusplus
 #if !defined wchar_t
 typedef int wchar_t;
 #endif
+#endif // !__cplusplus
 
 #define STR_SHORT 128
 #define STR_MEDIUM 512

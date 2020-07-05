@@ -28,5 +28,5 @@ local void
 Clear(struct frame_buffer* Buffer, color Color)
 {
     dim_2d Size = {Buffer->Width, Buffer->Height};
-    DrawSolidColorRectangle(Buffer, Color, (v2i){0, 0}, Size);
+    DrawSolidColorRectangle(Buffer, Color, V2I(0, 0), Size);
 }
