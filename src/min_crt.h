@@ -10,6 +10,8 @@ int _fltused;
 extern "C"
 {
 #endif
+    void* __cdecl memset(void*, int, size_t);
+#pragma intrinsic(memset)
 #pragma function(memset)
     void* memset(void* dest, int c, size_t count)
     {
@@ -20,6 +22,8 @@ extern "C"
         return dest;
     }
 
+    void* __cdecl memcpy(void* dest, const void* src, size_t count);
+#pragma intrinsic(memcpy)
 #pragma function(memcpy)
     void* memcpy(void* dest, const void* src, size_t count)
     {

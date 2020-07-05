@@ -2,9 +2,9 @@
 #include "sparrow.h"
 
 #include "core/sparrow_core_render.c"
-#include "console/sparrow_console_render.c"
-#include "console/sparrow_console_update.c"
-#include "console/sparrow_console_tests.c"
+#include "console/console_render.c"
+#include "console/console_update.c"
+#include "console/console_tests.c"
 
 global_variable struct game_state StubGameState;
 

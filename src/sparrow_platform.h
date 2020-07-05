@@ -8,26 +8,27 @@ typedef struct dim_2d
     u32 Height;
 } dim_2d;
 
-struct frame_buffer
+typedef struct frame_buffer
 {
     u16 Width;
     u16 Height;
     u16 BytesPerPixel;
     u16 Pitch;
     u8* Pixels;
-};
-struct user_input
+} frame_buffer;
+typedef struct user_input
 {
     b32 LeftMouseClick;
     v2i Cursor;
     v2f CursorNorm;
     v2f MovementKeys;
-};
-struct memory
+} user_input;
+
+typedef struct memory
 {
     memory_index Size;
     void* Data;
-};
+}memory;
 
 #define SPARROW_PLATFORM
 #endif

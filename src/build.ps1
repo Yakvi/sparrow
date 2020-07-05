@@ -127,7 +127,7 @@ Output-Logs -data $sparrow -title "sparrow dll"
 $writer = & cl $c $dllc $debug $srcDir\writer\writer.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $writer -title "writer dll"
 
-$raycast = & cl $c $dllc $debug $srcDir\raycast\weekend.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$raycast = & cl $c $dllc $debug -Tp $srcDir\raycast\weekend.cpp  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
 
 # NOTE Live code editing: resume running

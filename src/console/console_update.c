@@ -1,5 +1,5 @@
-#include "sparrow_console_platform.h"
-#include "sparrow_console_glyphs.h"
+#include "console_platform.h"
+#include "console_glyphs.h"
 #include "../text.h"
 
 local void

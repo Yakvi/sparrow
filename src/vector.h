@@ -25,7 +25,7 @@ typedef struct
 inline v2f
 AddV2(v2f A, v2f B)
 {
-    v2f Result = {0};
+    v2f Result;
 
     Result.x = A.x + B.x;
     Result.y = A.y + B.y;
@@ -36,7 +36,7 @@ AddV2(v2f A, v2f B)
 inline v2i
 SubV2i(v2i A, v2i B)
 {
-    v2i Result = {0};
+    v2i Result;
     Result.x = A.x -= B.x;
     Result.y = A.y -= B.y;
 
@@ -46,7 +46,7 @@ SubV2i(v2i A, v2i B)
 inline v2i
 AddV2i(v2i A, v2i B)
 {
-    v2i Result = {0};
+    v2i Result;
     Result.x = A.x += B.x;
     Result.y = A.y += B.y;
 
@@ -56,7 +56,7 @@ AddV2i(v2i A, v2i B)
 inline v2i
 RoundV2ToV2i(v2f Source)
 {
-    v2i Result = {0};
+    v2i Result;
     Result.x = RoundF32ToInt(Source.x);
     Result.y = RoundF32ToInt(Source.y);
     return (Result);
@@ -146,7 +146,7 @@ ColorsEqual(v3 A, v3 B)
 inline color
 ColorLerp(color A, color B, f32 t)
 {
-    color Result = {0};
+    color Result;
     Result.r = Lerp(A.r, B.r, t);
     Result.g = Lerp(A.g, B.g, t);
     Result.b = Lerp(A.b, B.b, t);

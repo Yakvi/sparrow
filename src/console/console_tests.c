@@ -1,4 +1,4 @@
-#include "sparrow_console_platform.h"
+#include "console_platform.h"
 
 local b32
 DemoKeyboardCursor(struct pixel* Pixels, v2f Pos, v2f Offset)

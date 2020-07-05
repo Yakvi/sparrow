@@ -5,7 +5,7 @@
 #include "text.h"
 #include "sparrow_platform.h"
 #include "core/sparrow_core_render.h"
-#include "console/sparrow_console_platform.h"
+#include "console/console_platform.h"
 
 /**
  * TODO on Engine side
