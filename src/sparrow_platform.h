@@ -23,6 +23,7 @@ typedef struct frame_buffer
     u16 Pitch;
     u8* Pixels;
 } frame_buffer;
+
 typedef struct user_input
 {
     b32 LeftMouseClick;

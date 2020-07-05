@@ -64,8 +64,8 @@ inline v2i
 SubV2i(v2i A, v2i B)
 {
     v2i Result;
-    Result.x = A.x -= B.x;
-    Result.y = A.y -= B.y;
+    Result.x = A.x - B.x;
+    Result.y = A.y - B.y;
 
     return (Result);
 }
@@ -74,8 +74,8 @@ inline v2i
 AddV2i(v2i A, v2i B)
 {
     v2i Result;
-    Result.x = A.x += B.x;
-    Result.y = A.y += B.y;
+    Result.x = A.x + B.x;
+    Result.y = A.y + B.y;
 
     return (Result);
 }

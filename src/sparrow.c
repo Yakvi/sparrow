@@ -17,7 +17,7 @@ LoadGameState(struct memory* Memory)
         Assert(Memory->Size > sizeof(struct game_state));
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
-            InitConsole(&Result->Console, Color_Black);
+            InitConsole(&Result->Console, 140, 50, Color_Black);
             Result->Player.Pos = V2F(0, 0);
 
             Result->UpdateCompleted = false;
@@ -30,6 +30,8 @@ LoadGameState(struct memory* Memory)
 
     return (Result);
 }
+
+#include "mods/tests/console_tests.c"
 
 void
 UpdateState(struct memory* Memory,
@@ -44,23 +46,18 @@ UpdateState(struct memory* Memory,
         struct console* Console = &GameState->Console;
         ClearConsole(Console, Input);
 
-        struct pixel* Pixels = Console->Pixels;
-        VerticalGradient(Pixels, Color(20, 130, 200), Color(6, 146, 180));
+        VerticalGradient(Console, Color(20, 130, 200), Color(6, 146, 180));
 
-#if 1
-        Main(&GameState->ModuleMemory, Input, Pixels);
-#endif
-#if 0
-#include "everscroll/everscroll.c"
-        EverScroll(&GameState->Scroll, Input, Pixels);
-#endif
-        // RunConsoleTests(Console, Input);
-        // RaytracingWeekend(Pixels);
+        Main(&GameState->ModuleMemory, Input, Console);
 
-        // #define RUNONCE 1
-        // #ifdef RUNONCE
-        //         GameState->UpdateCompleted = true;
-        // #endif
+#if 0 
+        RunConsoleTests(Console, Input);
+#endif
+
+// #define RUNONCE 1
+#ifdef RUNONCE
+        GameState->UpdateCompleted = true;
+#endif
     }
 }
 
@@ -72,5 +69,5 @@ Render(struct memory* Memory, struct frame_buffer* Buffer)
     struct game_state* GameState = LoadGameState(Memory);
 
     Clear(Buffer, Color_Pink);
-    DrawAllPixels(Buffer, GameState->Console.Pixels);
+    DrawAllPixels(Buffer, &GameState->Console);
 }

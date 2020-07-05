@@ -1,14 +1,11 @@
 #if !defined(SPARROW_CONSOLE_PLATFORM_H)
 
-typedef void (*console_module)(void* ModuleMemory, struct user_input* Input, struct pixel* Pixels);
+#define MODULE_DEF(memory) (memory, struct user_input * Input, struct console * Console)
+#define MODULE_MAIN(memory) void ModuleMain MODULE_DEF(memory)
+typedef void(*console_module) MODULE_DEF(void* ModuleMemory);
 
-#define CONSOLE_WIDTH 400  // 140
-#define CONSOLE_HEIGHT 200 // 40
-#define CONSOLE_SIZE ((CONSOLE_WIDTH) * (CONSOLE_HEIGHT))
-#define CONSOLE_CENTER                                            \
-    {                                                             \
-        (int)(CONSOLE_WIDTH * 0.5f), (int)(CONSOLE_HEIGHT * 0.5f) \
-    }
+#define MAX_CONSOLE_WIDTH 400  // 140
+#define MAX_CONSOLE_HEIGHT 400 // 40
 
 enum PixelFlags
 {
@@ -26,53 +23,58 @@ struct pixel
 
 struct console
 {
-    struct pixel Pixels[CONSOLE_WIDTH * CONSOLE_HEIGHT]; // TODO(yakvi): Abstract it out? Overkill?
     dim PixelDim;
     b32 IsInitialized;
     v2i CursorPos;
+
+    dim_2d Size;
+    u32 Length;
+    v2i Center;
+
+    struct pixel Pixels[MAX_CONSOLE_HEIGHT * MAX_CONSOLE_WIDTH]; // TODO(yakvi): Abstract it out? Overkill?
 };
 
-local void InitConsole(struct console* Console, color Color);
-local struct pixel* GetPixel(struct pixel* Pixels, v2i Coords);
-local void PrintGlyph(struct pixel* Pixels, char* Char, v2i Pos, v3 Color);
-local void PrintString(struct pixel* Pixels, char* String, v2i Pos, v3 Color);
-local void VerticalGradient(struct pixel* Pixels, color Start, color End);
-inline void Point(struct pixel* Pixels, v2i Pos, v3 Color);
-local void Line(struct pixel* Pixels, v2i Left, u32 Length, u32 Direction, color Color);
-local void Box(struct pixel* Pixels, v2i TopLeft, dim_2d Dim, color BoxColor);
-local dim_2d TextBox(struct pixel* Pixels, v2i TopLeft, color BoxColor, char* Input, color StringColor);
-local b32 ButtonHover(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input);
+local void InitConsole(struct console* Console, u32 Width, u32 Height, color Color);
+local struct pixel* GetPixel(struct console* Console, v2i Coords);
+local void PrintGlyph(struct console* Console, char* Char, v2i Pos, v3 Color);
+local void PrintString(struct console* Console, char* String, v2i Pos, v3 Color);
+local void VerticalGradient(struct console* Console, color Start, color End);
+inline void Point(struct console* Console, v2i Pos, v3 Color);
+local void Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color);
+local void Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor);
+local dim_2d TextBox(struct console* Console, v2i TopLeft, color BoxColor, char* Input, color StringColor);
+local b32 ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char* Input);
 
 inline void
-V2iGridClamp(v2i* Pos)
+V2iGridClamp(struct console* Console, v2i* Pos)
 {
-    if (Pos->x >= CONSOLE_WIDTH) {
-        Pos->x = CONSOLE_WIDTH - 1;
+    if ((u32)Pos->x >= Console->Size.Width) {
+        Pos->x = Console->Size.Width - 1;
     }
     else if (Pos->x < 0) {
         Pos->x = 0;
     }
-    if (Pos->y >= CONSOLE_HEIGHT) {
-        Pos->y = CONSOLE_HEIGHT - 1;
+    if ((u32)Pos->y >= Console->Size.Height) {
+        Pos->y = Console->Size.Height - 1;
     }
     else if (Pos->y < 0) {
         Pos->y = 0;
     }
 }
 inline void
-V2fGridClamp(v2f* Pos)
+V2fGridClamp(struct console* Console, v2f* Pos)
 {
-    if (Pos->x >= CONSOLE_WIDTH) {
+    if ((u32)Pos->x >= Console->Size.Width) {
         Pos->x = 0;
     }
     else if (Pos->x < 0) {
-        Pos->x = CONSOLE_WIDTH - 1;
+        Pos->x = (f32)Console->Size.Width - 1;
     }
-    if (Pos->y >= CONSOLE_HEIGHT) {
+    if ((u32)Pos->y >= Console->Size.Height) {
         Pos->y = 0;
     }
     else if (Pos->y < 0) {
-        Pos->y = CONSOLE_HEIGHT - 1;
+        Pos->y = (f32)Console->Size.Height - 1;
     }
 }
 

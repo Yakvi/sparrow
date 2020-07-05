@@ -291,3 +291,15 @@ Today, Core Update and Rendering was 'sort of' separated from the game logic. Th
 This presents a whole new world of challenges: how to convert my Console logic into a proper API? Right now I'm simply importing the whole functions, but maybe filling out some specific structures and passing them back to the engine would make more sense ("I don't care how you deal with the pixels, I just want this button/pixel there").
 
 Additionally, I discovered that if I try transitioning into CPP, the API is TOTALLY borked. Again, something that will be probably solved once we define a proper set of APIs.
+
+## 26. July 5, 2020 - Refactoring
+
+A lot of refactoring happened today. 
+
+First, I finished implementing static linking for C++ modules. This was done by removing any C-specific code like inline struct definition. Where, for instance, I had `color Color = (color){0,0,0};` I now have `color Color = Color(0,0,0);`. This also meant implementing a bunch of helper functions and replacing the code. Fortunately, the codebase isn't that big for now, and it was definitely worth it. 
+
+My second refactoring focused on dynamic console allocation. I now removed all references to `CONSOLE_WIDTH` and `CONSOLE_HEIGHT` from code. Most of the drawing API now receives the pointer to the whole Console structure, if only to verify that the parameters requested are within allocated bounds. 
+
+This also means that now the modules potentially have direct control over the sizing of the console, and it can be modified at the runtime. For now, I defined parameters MAX_CONSOLE_WIDTH and MAX_CONSOLE_HEIGHT: this is a temp measure until we implement dynamic memory allocation from a bank/arena.
+
+The need for arena is increasing. I'll get there, eventually.

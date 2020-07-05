@@ -124,11 +124,11 @@ $sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
 
 # NOTE Module DLLs
-# $writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
-# Output-Logs -data $writer -title "writer dll"
+$writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+Output-Logs -data $writer -title "writer dll"
 
-# $everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
-# Output-Logs -data $everscroll -title "everscroll dll"
+$everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+Output-Logs -data $everscroll -title "everscroll dll"
 
 $raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"

@@ -2,8 +2,8 @@
 #include "../../sparrow_platform.h"
 #include "../../console/console_update.c"
 
-void
-ModuleMain(void* Memory, struct user_input* Input, struct pixel* Pixels)
+MODULE_MAIN(void* Memory)
 {
-    TextBox(Pixels, V2I(10, 40), Color_Gray11, "Hello Raycaster!", Color_Black);
+    InitConsole(Console, 256, 256, Color_White);
+    TextBox(Console, V2I(10, 10), Color_Gray11, "Hello Raycaster!", Color_Black);
 }

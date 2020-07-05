@@ -3,46 +3,55 @@
 #include "../text.h"
 
 local void
-InitConsole(struct console* Console, color Color)
+InitConsole(struct console* Console, u32 Width, u32 Height, color Color)
 {
+    Console->IsInitialized = false;
+
+    Console->Size = DIM_2D(Width, Height);
+    Console->Length = Console->Size.Width * Console->Size.Height;
+    Console->Center = V2I((s32)(Console->Size.Width * 0.5f),
+                          (s32)(Console->Size.Height * 0.5f));
+    Console->CursorPos = V2I(0, 0);
+
     struct pixel* Row = Console->Pixels;
     for (u32 Y = 0;
-         Y < CONSOLE_HEIGHT;
+         Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
         for (u32 X = 0;
-             X < CONSOLE_WIDTH;
+             X < Console->Size.Width;
              ++X) {
 
             Assert(Pixel);
             if (!Console->IsInitialized) {
-                Pixel->Pos = V2I(X, (CONSOLE_HEIGHT - 1 - Y));
+                Pixel->Pos = V2I(X, (Console->Size.Height - 1 - Y));
             }
             Pixel->Color = Color;
             Pixel->Flags = 0;
             ++Pixel;
         }
-        Row += CONSOLE_WIDTH;
+        Row += Console->Size.Width;
     }
-    Console->CursorPos = V2I(0, 0);
     Console->IsInitialized = true;
 }
 
 local struct pixel*
-GetPixel(struct pixel* Pixels, v2i Coords)
+GetPixel(struct console* Console, v2i Coords)
 {
-    Assert(Coords.x < CONSOLE_WIDTH);
-    Assert(Coords.y < CONSOLE_HEIGHT);
+    Assert(Coords.x >= 0);
+    Assert(Coords.y >= 0);
+    Assert((u32)Coords.x < Console->Size.Width);
+    Assert((u32)Coords.y < Console->Size.Height);
 
-    u32 Y = CONSOLE_WIDTH * Coords.y;
+    u32 Y = Console->Size.Width * Coords.y;
     u32 Pos = Y + Coords.x;
 
-    Assert(Pos < CONSOLE_SIZE);
+    Assert(Pos < Console->Length);
 
-    struct pixel* Result = Pixels + Pos;
+    struct pixel* Result = Console->Pixels + Pos;
 
     Assert(Result->Pos.x == Coords.x);
-    Assert(Result->Pos.y == CONSOLE_HEIGHT - 1 - Coords.y);
+    Assert(Result->Pos.y == Console->Size.Height - 1 - Coords.y);
 
     return (Result);
 }
@@ -51,49 +60,54 @@ local void
 ClearConsole(struct console* Console, struct user_input* Input)
 {
     Assert(Console->IsInitialized);
-    InitConsole(Console, Color_Pink);
 
     v2i CursorPos;
-    CursorPos.x = (s32)(Input->CursorNorm.x * CONSOLE_WIDTH);
-    CursorPos.y = (s32)(Input->CursorNorm.y * CONSOLE_HEIGHT);
+    CursorPos.x = (s32)(Input->CursorNorm.x * Console->Size.Width);
+    CursorPos.y = (s32)(Input->CursorNorm.y * Console->Size.Height);
     // NOTE: Cursor clamping
-    V2iGridClamp(&CursorPos);
+    V2iGridClamp(Console, &CursorPos);
 
     Console->CursorPos = CursorPos;
-    GetPixel(Console->Pixels, Console->CursorPos)->Flags = Pixel_Hovered;
+    GetPixel(Console, Console->CursorPos)->Flags = Pixel_Hovered;
 }
 
 local void
-VerticalGradient(struct pixel* Pixels, color Start, color End)
+VerticalGradient(struct console* Console, color Start, color End)
 {
-    // f32 InvertedWidth = 1.0f / CONSOLE_WIDTH;
-    f32 InvertedHeight = 1.0f / CONSOLE_HEIGHT;
+    struct pixel* Pixels = Console->Pixels;
+    // f32 InvertedWidth = 1.0f / Console->Size.Width;
+    f32 InvertedHeight = 1.0f / Console->Size.Height;
 
-    struct pixel* Row = Pixels;
+    struct pixel* Row = Console->Pixels;
     for (u32 Y = 0;
-         Y < CONSOLE_HEIGHT;
+         Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
         color Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
         for (u32 X = 0;
-             X < CONSOLE_WIDTH;
+             X < Console->Size.Width;
              ++X) {
 
             // color NewColor = ColorLerp(Color, End, (f32)X * InvertedWidth);
             Pixel++->Color = Color;
         }
-        Row += CONSOLE_WIDTH;
+        Row += Console->Size.Width;
     }
 }
 
 inline void
-Point(struct pixel* Pixels, v2i Pos, v3 Color)
+Point(struct console* Console, v2i Pos, v3 Color)
 {
-    GetPixel(Pixels, Pos)->Color = Color;
+    Assert(Pos.x >= 0);
+    Assert(Pos.y >= 0);
+    Assert((u32)Pos.x < Console->Size.Width);
+    Assert((u32)Pos.y < Console->Size.Height);
+
+    GetPixel(Console, Pos)->Color = Color;
 }
 
 local void
-PrintGlyph(struct pixel* Pixels, char* Char, v2i Pos, v3 Color)
+PrintGlyph(struct console* Console, char* Char, v2i Pos, v3 Color)
 {
     struct glyph Glyph = GetGlyph(Char);
     for (u32 Y = 0;
@@ -103,23 +117,23 @@ PrintGlyph(struct pixel* Pixels, char* Char, v2i Pos, v3 Color)
              X < Glyph.Dim.Width;
              ++X) {
             if (Glyph.Data[Glyph.Dim.Width * Y + X] == '#') {
-                Point(Pixels, V2I(Pos.x + X, Pos.y + Y), Color);
+                Point(Console, V2I(Pos.x + X, Pos.y + Y), Color);
             }
         }
     }
 }
 
 local void
-PrintString(struct pixel* Pixels, char* String, v2i Pos, v3 Color)
+PrintString(struct console* Console, char* String, v2i Pos, v3 Color)
 {
-    if ((Pos.y + GLYPH_HEIGHT) < CONSOLE_HEIGHT) {
+    if ((u32)(Pos.y + GLYPH_HEIGHT) < Console->Size.Height) {
         for (char* At = String;
              *At;
              ++At) {
-            if ((Pos.x + GLYPH_WIDTH) >= CONSOLE_WIDTH)
+            if ((u32)(Pos.x + GLYPH_WIDTH) >= Console->Size.Width)
                 break;
 
-            PrintGlyph(Pixels, At, Pos, Color);
+            PrintGlyph(Console, At, Pos, Color);
             Pos.x += GLYPH_WIDTH;
         }
     }
@@ -133,22 +147,30 @@ enum LineDirection
 };
 
 local void
-Line(struct pixel* Pixels, v2i Left, u32 Length, u32 Direction, color Color)
+Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color)
 {
 #if 1
     Assert(Direction == Line_Vertical || Direction == Line_Horizontal);
 
-    for (u32 Offset = 0;
-         Offset < Length;
+    v2i Pos = Left;
+    for (s32 Offset = 0;
+         Offset < (s32)Length;
          ++Offset) {
+        // Offset
         if (Direction == Line_Vertical) {
-            Point(Pixels, AddV2i(Left, V2I(0, Offset)), Color);
+            ++Pos.y;
         }
         else {
-            Point(Pixels, AddV2i(Left, V2I(Offset, 0)), Color);
+            ++Pos.x;
+        }
+        // Try to draw
+        if (((u32)Pos.x < Console->Size.Width) &&
+            (((u32)Pos.y < Console->Size.Height))) {
+            Point(Console, Pos, Color);
         }
     }
 #else
+    // TODO: Arbitrary lines
     for (s32 Y = Start.y;
          Y < End.y;
          ++Y) {
@@ -168,43 +190,43 @@ Line(struct pixel* Pixels, v2i Left, u32 Length, u32 Direction, color Color)
 }
 
 local void
-Box(struct pixel* Pixels, v2i TopLeft, dim_2d Dim, color BoxColor)
+Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor)
 {
     Assert(Dim.Width >= 0);
     Assert(Dim.Height >= 0);
     for (u32 Offset = 0;
          Offset < Dim.Height;
          ++Offset) {
-        Line(Pixels, AddV2i(TopLeft, V2I(0, Offset)), Dim.Width, Line_Horizontal, BoxColor);
+        Line(Console, AddV2i(TopLeft, V2I(0, Offset)), Dim.Width, Line_Horizontal, BoxColor);
     }
-    Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, Color_White);
-    Line(Pixels, TopLeft, Dim.Height, Line_Vertical, Color_White);
-    Line(Pixels, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, Color_Black);
-    Line(Pixels, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, Color_Black);
+    Line(Console, TopLeft, Dim.Width, Line_Horizontal, Color_White);
+    Line(Console, TopLeft, Dim.Height, Line_Vertical, Color_White);
+    Line(Console, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, Color_Black);
+    Line(Console, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, Color_Black);
 }
 
 local dim_2d
-TextBox(struct pixel* Pixels, v2i TopLeft, color BoxColor, char* Input, color StringColor)
+TextBox(struct console* Console, v2i TopLeft, color BoxColor, char* Input, color StringColor)
 {
     dim_2d Dim = {4 + GLYPH_WIDTH * StringLength(Input), 3 + GLYPH_HEIGHT};
-    Box(Pixels, TopLeft, Dim, BoxColor);
-    PrintString(Pixels, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
+    Box(Console, TopLeft, Dim, BoxColor);
+    PrintString(Console, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
     return (Dim);
 }
 
 local b32
-ButtonHover(struct pixel* Pixels, v2i CursorPos, v2i TopLeft, char* Input)
+ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char* Input)
 {
     b32 Result = false;
 
-    dim_2d Dim = TextBox(Pixels, TopLeft, Color_Gray13, Input, Color_Black);
+    dim_2d Dim = TextBox(Console, TopLeft, Color_Gray13, Input, Color_Black);
     if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) &&
         (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
-        TextBox(Pixels, TopLeft, Color(0xCC, 0xCC, 0xCC), Input, Color_Black);
-        // Line(Pixels, TopLeft, Dim.Width, Line_Horizontal, Color_Black);
-        // Line(Pixels, TopLeft, Dim.Height, Line_Vertical, Color_Black);
-        // Line(Pixels, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, (color)Color_White);
-        // Line(Pixels, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, (color)Color_White);
+        TextBox(Console, TopLeft, Color(0xCC, 0xCC, 0xCC), Input, Color_Black);
+        // Line(Console, TopLeft, Dim.Width, Line_Horizontal, Color_Black);
+        // Line(Console, TopLeft, Dim.Height, Line_Vertical, Color_Black);
+        // Line(Console, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, (color)Color_White);
+        // Line(Console, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, (color)Color_White);
         Result = true;
     }
 
