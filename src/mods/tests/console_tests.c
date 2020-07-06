@@ -1,4 +1,4 @@
-#include "../../console/console_platform.h"
+#include "console/console_platform.h"
 
 local b32
 DemoKeyboardCursor(struct console* Console, v2f Pos, v2f Offset)

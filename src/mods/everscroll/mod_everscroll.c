@@ -1,5 +1,5 @@
 #include "everscroll.h"
-#include "../../console/console_update.c"
+#include "console/console_update.c"
 
 local void
 PixelOverlay(struct console* Console)

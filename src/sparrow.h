@@ -3,6 +3,7 @@
 #include "min_crt.h"
 #include "types.h"
 #include "text.h"
+#include "vector.h"
 #include "sparrow_platform.h"
 #include "core/sparrow_core_render.h"
 #include "console/console_platform.h"

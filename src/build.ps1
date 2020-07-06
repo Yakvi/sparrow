@@ -39,6 +39,7 @@ function Output-Logs([String[]]$data, [string]$title = "", [string]$filename = "
 
 $project = "sparrow"
 $buildDir = "build"
+$srcDir = "..\src"
 
 # NOTE: Compiler flags
 $c = '-nologo','-FC'                   #Display full path of source code
@@ -52,6 +53,7 @@ $c += '-GS-'                           #Disable Buffer Security checks https://d
 $c += '-Gs9999999'                     #Push back __chkstk threshold https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows
 # NOTE: Preprocessor directives
 $c += '-DSPARROW_WIN32=1'              #Compiles for Win32
+$c += '-I' + $srcDir                   #Base folder for include
 # NOTE: Debug mode
 $debug = '-DDEBUG=1', '-D_DEBUG=1'     #Basic debug defines
 $debug += '-DSPARROW_DEV=1'            #For debug stuff
@@ -95,7 +97,6 @@ $dlllinker += '-EXPORT:UpdateState', '-EXPORT:Render'
 $dlllinker += '-PDB:sparrow-' + $(Get-Date -Format mm-ss-ms) + '.pdb'
 
 #timeout /t 1
-$srcDir = "..\src"
 
 # Remove-Item -Path ..\$buildDir -Force -Recurse # NOTE: Clean build
 if(!(Test-Path -Path ..\$buildDir)) { mkdir ..\$buildDir }
@@ -116,8 +117,8 @@ echo "WAITING FOR PDB" > lock.tmp
 del *.pdb 2> lock.tmp
 
 # NOTE WIN32 PLATFORM LAYER
-$win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
-Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
+# $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
+# Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
 # NOTE sparrow DLL
 $sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
@@ -130,7 +131,7 @@ Output-Logs -data $writer -title "writer dll"
 $everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $everscroll -title "everscroll dll"
 
-$raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp  $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
 
 

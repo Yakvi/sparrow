@@ -1,5 +1,5 @@
 #include "writer.h"
-#include "../../console/console_update.c"
+#include "console/console_update.c"
 
 MODULE_MAIN(struct writer_state* State)
 {

@@ -1,7 +1,5 @@
 #if !defined(SPARROW_PLATFORM)
 
-#include "vector.h"
-
 typedef struct dim_2d
 {
     u32 Width;

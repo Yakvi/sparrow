@@ -1,6 +1,5 @@
 #if !defined(SPARROW_VECTOR_H)
 
-#include "types.h"
 #include "math.h"
 // BOOKMARK: Vector 2
 

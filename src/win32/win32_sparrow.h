@@ -1,9 +1,9 @@
 #if !defined(WIN32_SPARROW_H)
 
-#include "../min_crt.h"
-#include "../types.h"
-#include "../sparrow_platform.h"
-#include "../text.h"
+#include "min_crt.h"
+#include "types.h"
+#include "sparrow_platform.h"
+#include "text.h"
 #include "fake_windows.h"
 
 struct win32_module
