@@ -1,11 +1,5 @@
 #if !defined(SPARROW_PLATFORM)
 
-typedef struct dim_2d
-{
-    u32 Width;
-    u32 Height;
-} dim_2d;
-
 inline dim_2d
 DIM_2D(u32 Width, u32 Height)
 {

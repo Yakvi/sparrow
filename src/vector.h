@@ -3,24 +3,6 @@
 #include "math.h"
 // BOOKMARK: Vector 2
 
-typedef struct
-{
-    f32 x;
-    f32 y;
-} p, v2f;
-
-typedef struct
-{
-    s32 x;
-    s32 y;
-} v2i;
-
-typedef struct
-{
-    f32 Width;
-    f32 Height;
-} dim;
-
 inline p
 P(f32 X, f32 Y)
 {
@@ -89,31 +71,6 @@ RoundV2ToV2i(v2f Source)
 }
 
 // BOOKMARK: Vector 3
-
-typedef struct
-{
-    union
-    {
-        struct
-        {
-            f32 x;
-            f32 y;
-            f32 z;
-        };
-        struct
-        {
-            f32 r;
-            f32 g;
-            f32 b;
-        };
-        struct
-        {
-            p xy;
-            f32 unused;
-        };
-    };
-
-} color, v3;
 
 inline v3
 V3(f32 X, f32 Y, f32 Z)
