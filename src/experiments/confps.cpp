@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <windows.h>
-#include "types.h"
+#include "sparrow_types.h"
 
 #pragma comment(lib, "user32.lib")
 

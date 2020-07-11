@@ -1,6 +1,6 @@
 #include "min_crt.h"
-#include "types.h"
-#include "vector.h"
+#include "sparrow_types.h"
+#include "sparrow_vector.h"
 #include "sparrow_platform.h"
 #include "console/console_platform.h"
 

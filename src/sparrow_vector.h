@@ -1,6 +1,6 @@
 #if !defined(SPARROW_VECTOR_H)
 
-#include "math.h"
+#include "sparrow_math.h"
 // BOOKMARK: Vector 2
 
 inline p

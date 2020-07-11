@@ -1,6 +1,6 @@
 #if !defined(SPARROW_MATH_H)
 
-#include "types.h"
+#include "sparrow_types.h"
 
 inline f32
 Lerp(f32 A, f32 B, f32 t)

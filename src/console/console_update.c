@@ -1,6 +1,6 @@
 #include "console_platform.h"
 #include "console_glyphs.h"
-#include "text.h"
+#include "sparrow_text.h"
 
 local void
 InitConsole(struct console* Console, u32 Width, u32 Height, color Color)
