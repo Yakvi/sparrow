@@ -1,11 +1,5 @@
 #if !defined(SPARROW_PLATFORM)
 
-inline dim_2d
-DIM_2D(u32 Width, u32 Height)
-{
-    dim_2d Result = {Width, Height};
-    return (Result);
-}
 
 typedef struct frame_buffer
 {

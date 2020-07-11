@@ -1,7 +1,68 @@
 #if !defined(SPARROW_VECTOR_H)
 
 #include "sparrow_math.h"
+
+// BOOKMARK: Types
+// NOTE: Floating point components
+
+typedef struct
+{
+    f32 x;
+    f32 y;
+} p, v2f, v2;
+
+typedef struct
+{
+    union
+    {
+        struct
+        {
+            f32 x;
+            f32 y;
+            f32 z;
+        };
+        struct
+        {
+            f32 r;
+            f32 g;
+            f32 b;
+        };
+        struct
+        {
+            p xy;
+            f32 unused;
+        };
+    };
+
+} color, v3f, v3;
+
+typedef struct
+{
+    f32 Width;
+    f32 Height;
+} dim;
+
+// NOTE: Int components
+
+typedef struct
+{
+    s32 x;
+    s32 y;
+} v2i;
+
+typedef struct dim_2d
+{
+    u32 Width;
+    u32 Height;
+} dim_2d;
+
 // BOOKMARK: Vector 2
+inline dim_2d
+DIM_2D(u32 Width, u32 Height)
+{
+    dim_2d Result = {Width, Height};
+    return (Result);
+}
 
 inline p
 P(f32 X, f32 Y)

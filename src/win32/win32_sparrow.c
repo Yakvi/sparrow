@@ -33,12 +33,18 @@ global_variable u8 GlobalRunning;
 #define PATH_BUFFER_LENGTH STR_MAX
 global_variable struct frame_buffer Win32_FrameBuffer;
 
+struct dim_2d
+{
+    u32 Width;
+    u32 Height;
+};
+
 inline struct dim_2d
 Win32_DimFromRect(rect Source)
 {
     struct dim_2d Result;
-    Result.Width = (u16)(Source.right - Source.left);
-    Result.Height = (u16)(Source.bottom - Source.top);
+    Result.Width = Source.right - Source.left;
+    Result.Height = Source.bottom - Source.top;
 
     return (Result);
 }
@@ -59,7 +65,7 @@ Win32_GetClientDim(void* Window)
 #include "win32_input.c"
 
 local void
-Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2d Dim)
+Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, struct dim_2d Dim)
 {
     // Assert(Dim);
     if (Dim.Width > 0 && Dim.Height > 0) {
