@@ -2,6 +2,7 @@
 
 #include "min_crt.h"
 #include "sparrow_types.h"
+#include "sparrow_math.h"
 #include "sparrow_platform.h"
 #include "sparrow_text.h"
 #include "fake_windows.h"

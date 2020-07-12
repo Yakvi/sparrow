@@ -33,12 +33,6 @@ global_variable u8 GlobalRunning;
 #define PATH_BUFFER_LENGTH STR_MAX
 global_variable struct frame_buffer Win32_FrameBuffer;
 
-struct dim_2d
-{
-    u32 Width;
-    u32 Height;
-};
-
 inline struct dim_2d
 Win32_DimFromRect(rect Source)
 {
