@@ -249,18 +249,18 @@ In the future, additional input processing functionality will be implemented her
 `sparrow.c`: Moved `PixelOverlay()` and `SetStructuredArt()` back.
 `sparrow_console_update`: Introduced basic string parsing based on a character table. In theory, eventually we will be able parse any string thrown at us; at the moment though, we will crash if an unrecognized character. I did however introduce a whole bunch of glyphs (A-Z, a-z, 0-9 and a few special characters) for testing purposes. Should be enough for now, and this approach allows the glyph library to be expanded at the moment's notice. I'll probably need to identify a more compact storage option (u64 bits?).
 
-As a result, we can now print simple strings on the grid using the following API: 
+As a result, we can now print simple strings on the grid using the following API:
 
 `PrintString(*Pixels, *String, FirstCharacterPosition(top-left corner), Color)`
 
-Another bug that I identified is inconsistent pixel size; this is especially visible with smaller pixel grids. This will need to be addressed in the future. 
+Another bug that I identified is inconsistent pixel size; this is especially visible with smaller pixel grids. This will need to be addressed in the future.
 
 ## 20. May 8, 2020 - Debugging pixel size
 
 Today was a bit of an exercise in futility. In my rush to implement a rendering system I actually introudced a whole bunch of bugs that need to be addressed.
 
 `win32_sparrow.c`: Removed fixed buffer size at initialization
-`sparrow_console_render.c`: Identified an issue where sometimes a pixel is too big, and sometimes is too small. A proper stretching mechanism will need to be implemented if we are to solve this issue. 
+`sparrow_console_render.c`: Identified an issue where sometimes a pixel is too big, and sometimes is too small. A proper stretching mechanism will need to be implemented if we are to solve this issue.
 
 For the most part I have reverted my changes to the start of the day. I'll need to revisit console rendering code at a later stage.
 
@@ -270,9 +270,9 @@ My attempts in removing scaling artifacts highlighted that I had a very vague un
 
 ## 22. May 27, 2020 - Improve text glyphs and start Everscroll
 
-I cleaned up the text glyphs for the console. They are still solid pixels on a 8x8 grid, but at least there's some sort of kerning going on. 
+I cleaned up the text glyphs for the console. They are still solid pixels on a 8x8 grid, but at least there's some sort of kerning going on.
 
-Additionally, I started work on a potential Everscroll module. The idea is that eventually it will be a third dll loaded from the main dll that will not know of core existance. However, I'm not sure this is still possible since all of these modules will have to live in the GameState structure. Maybe I can avoid it with some "clever" use of the void pointers. 
+Additionally, I started work on a potential Everscroll module. The idea is that eventually it will be a third dll loaded from the main dll that will not know of core existance. However, I'm not sure this is still possible since all of these modules will have to live in the GameState structure. Maybe I can avoid it with some "clever" use of the void pointers.
 
 ## 23. June 04, 2020 - Mouse Cursor Capture
 
@@ -280,13 +280,13 @@ Implemented mouse cursor capture. In `win32_sparrow.c` we package both normalize
 
 ## 24. June 09, 2020 - Basic UI functionality
 
-We now have some basic UI API. We can draw Points, Lines (only vertical and horizontal for now), Boxes, Text boxes (size defined by the text within), Strings and finally Buttons! For now, the buttons don't detect mouse clicks but only hover, however there's already some Immediate Mode functionality built in. Hopefully it will continue improving as the time goes by. 
+We now have some basic UI API. We can draw Points, Lines (only vertical and horizontal for now), Boxes, Text boxes (size defined by the text within), Strings and finally Buttons! For now, the buttons don't detect mouse clicks but only hover, however there's already some Immediate Mode functionality built in. Hopefully it will continue improving as the time goes by.
 
-One thing I'll need to focus on next would be cleaning up my calls. Things like `AddV2i((v2i){0, -20}, (v2i)CONSOLE_CENTER)` in the body of the function call are anything but readable, and in the long run it will hurt me. So changes must be made (transition to C++? Some style guide definitions?). 
+One thing I'll need to focus on next would be cleaning up my calls. Things like `AddV2i((v2i){0, -20}, (v2i)CONSOLE_CENTER)` in the body of the function call are anything but readable, and in the long run it will hurt me. So changes must be made (transition to C++? Some style guide definitions?).
 
 ## 25. June 17, 2020 - Modules
 
-Today, Core Update and Rendering was 'sort of' separated from the game logic. The latter is now running in its own Modules - smaller? dlls containing only the logic pertinent to game updates. 
+Today, Core Update and Rendering was 'sort of' separated from the game logic. The latter is now running in its own Modules - smaller? dlls containing only the logic pertinent to game updates.
 
 This presents a whole new world of challenges: how to convert my Console logic into a proper API? Right now I'm simply importing the whole functions, but maybe filling out some specific structures and passing them back to the engine would make more sense ("I don't care how you deal with the pixels, I just want this button/pixel there").
 
@@ -294,12 +294,44 @@ Additionally, I discovered that if I try transitioning into CPP, the API is TOTA
 
 ## 26. July 5, 2020 - Refactoring
 
-A lot of refactoring happened today. 
+A lot of refactoring happened today.
 
-First, I finished implementing static linking for C++ modules. This was done by removing any C-specific code like inline struct definition. Where, for instance, I had `color Color = (color){0,0,0};` I now have `color Color = Color(0,0,0);`. This also meant implementing a bunch of helper functions and replacing the code. Fortunately, the codebase isn't that big for now, and it was definitely worth it. 
+First, I finished implementing static linking for C++ modules. This was done by removing any C-specific code like inline struct definition. Where, for instance, I had `color Color = (color){0,0,0};` I now have `color Color = Color(0,0,0);`. This also meant implementing a bunch of helper functions and replacing the code. Fortunately, the codebase isn't that big for now, and it was definitely worth it.
 
-My second refactoring focused on dynamic console allocation. I now removed all references to `CONSOLE_WIDTH` and `CONSOLE_HEIGHT` from code. Most of the drawing API now receives the pointer to the whole Console structure, if only to verify that the parameters requested are within allocated bounds. 
+My second refactoring focused on dynamic console allocation. I now removed all references to `CONSOLE_WIDTH` and `CONSOLE_HEIGHT` from code. Most of the drawing API now receives the pointer to the whole Console structure, if only to verify that the parameters requested are within allocated bounds.
 
 This also means that now the modules potentially have direct control over the sizing of the console, and it can be modified at the runtime. For now, I defined parameters MAX_CONSOLE_WIDTH and MAX_CONSOLE_HEIGHT: this is a temp measure until we implement dynamic memory allocation from a bank/arena.
 
 The need for arena is increasing. I'll get there, eventually.
+
+## 27. July 12, 2020 - More Refactoring
+
+I started research into "handmade" and otherwise CRT or STD-indipendent libraries for math.
+
+One thing that I came up accross is the [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math) library. It's wide, it's supposed to be fast, and it almost fills out all the boxes. Except it doesn't provide any trig functions out of the box (sinf, cosf, etc.). The library either uses `Math.h` (that we can't use since we moved away from all things CRT) or allows the users specify their own functions.
+
+After some lengthy googling, I was surprised how few things are out there. These are largely described on one of the [last pages](http://gruntthepeon.free.fr/ssemath/) I came across:
+
+    On the mac, you get the vsinf and friends (in the Accelerate framework) which are nice (there is a ppc version and an intel version, Apple rox) but closed-source, and restricted to macos..
+
+    Both Intel and AMD have some sort of vector math library with SIMD sines and cosines, but
+
+    * Intel MKL is not free (neither as beer, nor as speech)
+    * AMD ACML is free, but no source is available. Morever the vector functions are only available in 64bits OSes !
+    * Would you trust the intel MKL to run at full speed on AMD hardware ?
+
+    Some time ago, I found out the Intel Approximate Math library. This one is completely free and open-source, and it provides SSE and SSE2 versions of many functions. But it has two drawbacks:
+
+    * It is written as inline assembly, MASM style. The source is very targetted for MSVC/ICC so it is painful to use with gcc
+    * As the name implies, it is approximated. And, well, I had no use for a sine which has garbage in the ten last bits.
+
+So, I'm lucky that, once again, [the thread that started it all](https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows) came to the rescue. Next time, I'll be able to invent most of the functions used by `handmade-math` and hopefully be able to cheese my way out of the remaining couple.
+
+In the meantime, I started cleaning out my code in preparation of the dependencies introduction/adaptation. I moved around some vector/type code, removed header files cross-dependency, added back some standard headers for intrinsics and compiler-used code. As far as I can tell, this doesn't add any bloat to the executables. Speaking of, the release versions are currently sitting at the following values: 
+
+    - Win32 executable                                  6656 bytes
+    - Sparrow dll (with "console" rendering system)     4096 bytes
+    - C modules (Writer, Everscroll)                    11.5 KiB each
+    - C++ module (pretty barren at the moment)          3072 bytes
+
+Noting it here for future reference.

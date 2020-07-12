@@ -1,5 +1,6 @@
 #if !defined(SPARROW_PLATFORM)
 
+#include "sparrow_types.h"
 
 typedef struct frame_buffer
 {

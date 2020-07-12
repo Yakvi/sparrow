@@ -1,10 +1,9 @@
 #if !defined(SPARROW_H)
 
 #include "min_crt.h"
-#include "sparrow_types.h"
+#include "sparrow_platform.h"
 #include "sparrow_text.h"
 #include "sparrow_math.h"
-#include "sparrow_platform.h"
 #include "core/sparrow_core_render.h"
 #include "console/console_platform.h"
 

@@ -13,6 +13,7 @@
 #endif
 
 EXTERN_C_START
+
 //
 // NOTE: Basic assertions
 //
@@ -54,14 +55,21 @@ EXTERN_C_START
 #endif
 
 //
+// NOTE: safe standard headers, only provide compiler specific functionality
+//
+#include <stddef.h>   // size_t and NULL
+#include <stdint.h>   // various intXX_t and uintXX_t typedefs
+#include <limits.h>   // type min/max values
+#include <stdarg.h>   // va_arg, va_start, va_end, va_arg intrinsics
+#include <inttypes.h> // printf macros like PRIu64
+
+//
 // NOTE: Types
 //
 #define local static
 #define local_persist static
 #define global_variable static
 
-// #include <stddef.h>
-// #include <limits.h>
 // #include <float.h>
 
 #ifdef COMPILER_MSVC
@@ -114,13 +122,68 @@ typedef double f64;
 #define Min(a, b) ((a) < (b) ? (a) : (b))
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 // TODO: swap, min, max ... macros?
-// #if COMPILER_MSVC
-// #include <intrin.h>
-// #elif COMPILER_LLVM
-// #include <x86intrin.h>
-// #else
-// #error SEE/NEON optimizations are not available for this compiler yet!!!!
-// #endif
+#if COMPILER_MSVC
+#include <intrin.h> // few other headers for intrinsic functions (rdtsc, cpuid, SSE, SSE2, etc..)
+
+#elif COMPILER_LLVM
+#include <x86intrin.h>
+#else
+#error SEE/NEON optimizations are not available for this compiler yet!!!!
+#endif
+
+// BOOKMARK: Types
+// NOTE: Floating point components
+
+typedef struct
+{
+    f32 x;
+    f32 y;
+} p, v2f, v2;
+
+typedef struct
+{
+    union
+    {
+        struct
+        {
+            f32 x;
+            f32 y;
+            f32 z;
+        };
+        struct
+        {
+            f32 r;
+            f32 g;
+            f32 b;
+        };
+        struct
+        {
+            p xy;
+            f32 unused;
+        };
+    };
+
+} color, v3f, v3;
+
+typedef struct
+{
+    f32 Width;
+    f32 Height;
+} dim;
+
+// NOTE: Int components
+
+typedef struct
+{
+    s32 x;
+    s32 y;
+} v2i;
+
+typedef struct dim_2d
+{
+    u32 Width;
+    u32 Height;
+} dim_2d;
 
 EXTERN_C_END
 

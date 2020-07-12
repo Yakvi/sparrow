@@ -1,58 +1,6 @@
 #if !defined(SPARROW_MATH_H)
 
-// BOOKMARK: Types
-// NOTE: Floating point components
-
-typedef struct
-{
-    f32 x;
-    f32 y;
-} p, v2f, v2;
-
-typedef struct
-{
-    union
-    {
-        struct
-        {
-            f32 x;
-            f32 y;
-            f32 z;
-        };
-        struct
-        {
-            f32 r;
-            f32 g;
-            f32 b;
-        };
-        struct
-        {
-            p xy;
-            f32 unused;
-        };
-    };
-
-} color, v3f, v3;
-
-typedef struct
-{
-    f32 Width;
-    f32 Height;
-} dim;
-
-// NOTE: Int components
-
-typedef struct
-{
-    s32 x;
-    s32 y;
-} v2i;
-
-typedef struct dim_2d
-{
-    u32 Width;
-    u32 Height;
-} dim_2d;
+#include "sparrow_intrin.h"
 
 // BOOKMARK: Scalar
 inline f32
