@@ -2,7 +2,7 @@
 
 // TODO(yakvi): CRT-free way of implementing:
 // Sin, Cos, Exp, Log: http://gruntthepeon.free.fr/ssemath/
-// Tan, ACos: ?
+// Tan, ACos: https://hg.libsdl.org/SDL/file/5c894fec85b9/src/stdlib/SDL_stdlib.c ?
 // ATan, ATan2 (also will need to test Sin/Cos implementations): https://github.com/michael-quinlan/ut-sse/blob/master/sse/sseMath.h
 // TODO(yavki): __cpuid to check for SSE 4.1 usage!
 

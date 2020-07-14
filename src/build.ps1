@@ -9,7 +9,6 @@ function Output-Line([String]$color = "Gray") {
 }
 
 function Output-Logs([String[]]$data, [string]$title = "", [string]$filename = "") {
-    $HasErrors = 0
     foreach ($line in $data) {
         If ($line -match "cannot open file '" + $filename) {
 
@@ -27,12 +26,6 @@ function Output-Logs([String[]]$data, [string]$title = "", [string]$filename = "
             Write-Host $line
         }
     }
-
-    if ($HasErrors -eq 1) {
-        Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine 
-        Write-Host "Compilation failed, " -ForegroundColor "Red" -NoNewLine
-        Write-Host $title -ForegroundColor "Cyan"
-    }
 }
 
 ### BOOKMARK: End helper function
@@ -48,6 +41,7 @@ $c += '-fp:fast'                       #Floating point behaviour. Precise behavi
 $c += '-fp:except-'                    #Floating point behaviour. Precise behaviour usually unnecessary.
 $c += '-Gm-'                           #Enables minimal rebuild. For faster compile.
 $c += '-Oi'                            #Generates intrinsic functions. For faster runtime.
+# NOTE: NO CRT, compiler side
 $c += '-EHa-'                          #Disable exception handling, -EHsc for c++
 $c += '-GS-'                           #Disable Buffer Security checks https://docs.microsoft.com/en-us/cpp/build/reference/gs-buffer-security-check
 $c += '-Gs9999999'                     #Push back __chkstk threshold https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows
@@ -134,9 +128,12 @@ Output-Logs -data $everscroll -title "everscroll dll"
 $raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp  $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
 
-
 # NOTE Live code editing: resume running
 del lock.tmp
+
+# NOTE Benchmarks
+$ssemath = &cl -nologo -fp:fast -fp:except- /DUSE_SSE2 /O2 /Tp $srcDir/thirdparty/sse-math/sse_mathfun_test.c
+Output-Logs -data $ssemath -title "SSE Math functions benchmark"
 
 # TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker
