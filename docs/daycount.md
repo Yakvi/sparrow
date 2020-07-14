@@ -335,3 +335,9 @@ In the meantime, I started cleaning out my code in preparation of the dependenci
     - C++ module (pretty barren at the moment)          3072 bytes
 
 Noting it here for future reference.
+
+## 28. July 14, 2020 - Implementing SSE Trigonometry
+
+Most of today was spent implementing the SSE libraries I stumbled upon. While the [first few functions](http://gruntthepeon.free.fr/ssemath/) were ported without too much of a hassle, porting atan and atan2 from the [second library](https://github.com/michael-quinlan/ut-sse/blob/master/sse/sseMath.h) has proven to be quite a challenge. The whole library is written in a pretty obscure C++, with a lot of operator overloading, operation chaining, etc. It also doesn't help at all that I'm still quite timid around bitwise operations. Lastly, to say that my trigonometry isn't at its best is to lie profusely. I'm walking in the dark, trying to find any sort of light. Alas, DuckDuckGo wasn't too helpful this time around.
+
+Nevertheless, I still brought 5 new math functions into the mix, both in `float` and `__m128`. So some progress was made, after all. And I had an additional "breakthrough" by the end of the day, by discovering [an extension](https://github.com/to-miz/sse_mathfun_extension/) to the [ssemath](http://gruntthepeon.free.fr/ssemath/) functions. If it follows the same pattern, implementing these should be a breeze. I'll be then missing only one function, `arccos`, to be able to implement [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math), and even there, I believe I found [a faster workaround](https://hero.handmade.network/forums/code-discussion/t/986-quaternions) to avoid using it at all.

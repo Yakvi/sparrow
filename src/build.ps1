@@ -104,36 +104,45 @@ Write-Host ""
 $win32file = "win32\win32_sparrow.c"
 # $win32file = "wintest.cpp"
 # $debug = "-O2"
+$optimized = '', ''
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE Live code editing: lock running
 echo "WAITING FOR PDB" > lock.tmp
 del *.pdb 2> lock.tmp
+# NOTE Precompiled libraries
+$win32executable = & cl $c -c -O2 -Ob3 $srcDir\core\sparrow_math_optimized.c
+Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
+$optimized += 'sparrow_math_optimized.obj'
+
 
 # NOTE WIN32 PLATFORM LAYER
 $win32executable = & cl $c $debug $srcDir\$win32file -Fmwin32_sparrow $linker $32linker
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
 
 # NOTE sparrow DLL
-$sparrow = & cl $c $dllc $debug $srcDir\sparrow.c  $linker $dlllinker
+$sparrow = & cl $c $dllc $debug $srcDir\sparrow.c $optimized $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
 
 # NOTE Module DLLs
-$writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c  $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $writer -title "writer dll"
 
-$everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $everscroll -title "everscroll dll"
 
-$raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp  $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp $optimized $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
 
 # NOTE Live code editing: resume running
 del lock.tmp
 
 # NOTE Benchmarks
-$ssemath = &cl -nologo -fp:fast -fp:except- /DUSE_SSE2 /O2 /Tp $srcDir/thirdparty/sse-math/sse_mathfun_test.c
-Output-Logs -data $ssemath -title "SSE Math functions benchmark"
+# $ssemath = &cl -nologo -fp:fast -fp:except- /O2 /Tp $srcDir/thirdparty/sse-math/sse2_mathfun_test.c
+# Output-Logs -data $ssemath -title "SSE Math functions benchmark"
+
+$mathoptimized = &cl $c -O2 -Tp $srcDir/core/sparrow_math_test.c $optimized
+Output-Logs -data $mathoptimized -title "Optimized Math functions benchmark"
 
 # TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker

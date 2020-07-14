@@ -8,30 +8,18 @@ void
 print4(__m128 v)
 {
     float* p = (float*)&v;
-#ifndef USE_SSE2
-    _mm_empty();
-#endif
+
     printf("[%13.8g, %13.8g, %13.8g, %13.8g]", p[0], p[1], p[2], p[3]);
 }
 
-void
-print2i(__m64 v)
-{
-    unsigned* p = (unsigned*)&v;
-    printf("[%08x %08x]", p[0], p[1]);
-}
-
-#ifdef USE_SSE2
-#include <emmintrin.h>
 void
 print4i(__m128i v)
 {
     unsigned* p = (unsigned*)&v;
     printf("[%08x %08x %08x %08x]", p[0], p[1], p[2], p[3]);
 }
-#endif
 
-#include "sse_mathfun.h"
+#include "sparrow_math_optimized.h"
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
@@ -48,6 +36,18 @@ print4i(__m128i v)
 #ifdef HAVE_ACML
 #include <acml_mv_m128.h>
 #endif
+
+#ifndef ALIGN16_BEG
+typedef __m128 v4sf;  // vector of 4 float (sse1)
+typedef __m128i v4si; // vector of 4 int (sse2)
+#ifdef _MSC_VER       /* visual c++ */
+#define ALIGN16_BEG __declspec(align(16))
+#define ALIGN16_END
+#else /* gcc or icc */
+#define ALIGN16_BEG
+#define ALIGN16_END __attribute__((aligned(16)))
+#endif
+#endif // !ALIGN16_BEG
 
 typedef ALIGN16_BEG union
 {
@@ -425,22 +425,77 @@ stupid_sincos_ps(v4sf x)
     return s;
 }
 
+float
+stupid_sincos_f(float x)
+{
+    float s, c;
+    sincos_f(x, &s, &c);
+    return s;
+}
+
+float
+stupid_atan2f(float x)
+{
+    float y = 1;
+    float r = atan2f(y, x);
+    return r;
+}
+
+v4sf
+stupid_atan2_ps(v4sf x)
+{
+    v4sf y = _mm_set_ps1(1);
+    v4sf r = atan2_ps(y, x);
+    return r;
+}
+float
+stupid_atan2_f(float x)
+{
+    float y = 1;
+    float r = 0; // atan2_f(y, x);
+    return r;
+}
+
 DECL_SCALAR_FN_BENCH(sinf);
+DECL_SCALAR_FN_BENCH(cephes_sinf);
+DECL_VECTOR_FN_BENCH(sin_ps);
+DECL_SCALAR_FN_BENCH(sin_f);
+
 DECL_SCALAR_FN_BENCH(cosf);
+DECL_SCALAR_FN_BENCH(cephes_cosf);
+DECL_VECTOR_FN_BENCH(cos_ps);
+DECL_SCALAR_FN_BENCH(cos_f);
+
 #ifdef HAVE_SINCOS_X86_FPU
 DECL_SCALAR_FN_BENCH(stupid_sincos_x86_fpu);
 #endif
-DECL_SCALAR_FN_BENCH(logf);
-DECL_SCALAR_FN_BENCH(expf);
-DECL_SCALAR_FN_BENCH(cephes_sinf);
-DECL_SCALAR_FN_BENCH(cephes_cosf);
-DECL_SCALAR_FN_BENCH(cephes_expf);
-DECL_SCALAR_FN_BENCH(cephes_logf);
-DECL_VECTOR_FN_BENCH(sin_ps);
-DECL_VECTOR_FN_BENCH(cos_ps);
 DECL_VECTOR_FN_BENCH(stupid_sincos_ps);
-DECL_VECTOR_FN_BENCH(exp_ps);
+DECL_SCALAR_FN_BENCH(stupid_sincos_f);
+
+DECL_SCALAR_FN_BENCH(logf);
+DECL_SCALAR_FN_BENCH(cephes_logf);
 DECL_VECTOR_FN_BENCH(log_ps);
+DECL_SCALAR_FN_BENCH(log_f);
+
+DECL_SCALAR_FN_BENCH(expf);
+DECL_SCALAR_FN_BENCH(cephes_expf);
+DECL_VECTOR_FN_BENCH(exp_ps);
+DECL_SCALAR_FN_BENCH(exp_f);
+
+DECL_SCALAR_FN_BENCH(sqrtf);
+DECL_VECTOR_FN_BENCH(_mm_sqrt_ss);
+DECL_SCALAR_FN_BENCH(sqrt_f);
+
+DECL_SCALAR_FN_BENCH(tanf);
+DECL_SCALAR_FN_BENCH(acosf);
+
+DECL_SCALAR_FN_BENCH(atanf);
+DECL_VECTOR_FN_BENCH(atan_ps);
+DECL_SCALAR_FN_BENCH(atan_f);
+
+DECL_SCALAR_FN_BENCH(stupid_atan2f);
+DECL_VECTOR_FN_BENCH(stupid_atan2_ps);
+
 #ifdef HAVE_VECLIB
 DECL_VECTOR_FN_BENCH(vsinf);
 DECL_VECTOR_FN_BENCH(vcosf);
@@ -457,7 +512,7 @@ DECL_VECTOR_FN_BENCH(__vrs4_logf);
 void
 run_bench(const char* s, int (*fn)())
 {
-    printf("benching %20s ..", s);
+    printf("benching %12s ..", s);
     fflush(stdout);
     double t0 = uclock_sec(), t1, tmax = 1.0;
     double niter = 0;
@@ -466,82 +521,13 @@ run_bench(const char* s, int (*fn)())
         t1 = uclock_sec();
     } while (t1 - t0 < tmax);
 #define REF_FREQ_MHZ 3900.0
-    printf(" -> %6.1f millions of vector evaluations/second -> %3.0f cycles/value on a %gMHz computer\n", floor(niter / (t1 - t0) / 1e5) / 10, (t1 - t0) * REF_FREQ_MHZ * 1e6 / niter / 4, REF_FREQ_MHZ);
+    printf(" -> %6.1fM vector evals/s -> %3.0f cycles/value on a %gMHz PC\n", floor(niter / (t1 - t0) / 1e5) / 10, (t1 - t0) * REF_FREQ_MHZ * 1e6 / niter / 4, REF_FREQ_MHZ);
 }
 
 void
 sanity_check()
 {
     printf("doing some sanity checks...\n");
-#ifndef USE_SSE2
-    V4SF v = {{1, 2, 3, 4}}, z = {{5, 6, 7, 8}};
-    v2si mm0, mm1;
-    COPY_XMM_TO_MM(v.v, mm0, mm1);
-    COPY_MM_TO_XMM(mm0, mm1, v.v);
-    printf("truncation to int: ");
-    print2i(mm0);
-    print2i(mm1);
-    printf("\n");
-    _mm_empty();
-    printf("float vector: ");
-    print4(v.v);
-    printf("\n");
-    fflush(stdout);
-    assert(v.f[0] == 1);
-    assert(v.f[1] == 2);
-    assert(v.f[2] == 3);
-    assert(v.f[3] == 4);
-
-    V4SF w;
-    w.v = v.v;
-    //printf("float vector: "); print4(w); printf("\n");
-    mm0 = _mm_cvttps_pi32(w.v);
-    w.v = _mm_movehl_ps(w.v, w.v);
-    mm1 = _mm_cvttps_pi32(w.v);
-    /*_mm_empty();
-  printf("truncation to int: "); print2i(mm0); print2i(mm1); printf("\n");
-  */
-    w.v = _mm_cvtpi32x2_ps(mm0, mm1);
-    print2i(((v2si*)&w.v)[0]);
-    print2i(((v2si*)&w.v)[1]);
-    _mm_empty();
-    v.v = w.v;
-    assert((((long long)&v.v) & 0xf) == 0);
-    printf("converted back to float: ");
-    print4(v.v);
-    printf("\n");
-    fflush(stdout);
-    assert(v.f[0] == 1);
-    assert(v.f[1] == 2);
-    assert(v.f[2] == 3);
-    assert(v.f[3] == 4);
-
-    w.v = _mm_movehl_ps(z.v, w.v);
-    printf("test for _mm_movehl_ps bug..\n");
-    print4(w.v);
-    printf("\n");
-    fflush(stdout);
-    if (w.f[0] != 3 ||
-        w.f[1] != 4 ||
-        w.f[2] != 7 ||
-        w.f[3] != 8) {
-        printf("your compiler has the nasty bug on _mm_movehl_ps: IT IS BROKEN\n");
-        exit(1);
-    }
-
-    printf("test for _mm_cmpxx_ps bug..\n");
-    V4SF r;
-    r.v = _mm_cmplt_ps(w.v, w.v);
-    if (r.i[0] != 0 || r.i[1] != 0 || r.i[2] != 0 || r.i[3] != 0) {
-        printf("your compiler has the nasty bug on all _mm_cmp*_ps functions: IT IS BROKEN\n");
-        exit(1);
-    }
-    r.v = _mm_cmpeq_ps(w.v, w.v);
-    if (r.i[0] != -1 || r.i[1] != -1 || r.i[2] != -1 || r.i[3] != -1) {
-        printf("your compiler has the nasty bug on all _mm_cmp*_ps functions: IT IS BROKEN\n");
-        exit(1);
-    }
-#endif // USE_SSE2
 }
 
 int
@@ -558,25 +544,54 @@ main()
         printf("some precision tests have failed\n");
     }
 
-    check_special_values();
+    // check_special_values();
+    printf("\n");
     run_bench("sinf", bench_sinf);
+    run_bench("cephes_sinf", bench_cephes_sinf);
+    run_bench("sin_ps", bench_sin_ps);
+    run_bench("sin_f", bench_sin_f);
+
+    printf("\n");
     run_bench("cosf", bench_cosf);
+    run_bench("cephes_cosf", bench_cephes_cosf);
+    run_bench("cos_ps", bench_cos_ps);
+    run_bench("cos_f", bench_cos_f);
+
+    printf("\n");
 #ifdef HAVE_SINCOS_X86_FPU
     run_bench("sincos (x87)", bench_stupid_sincos_x86_fpu);
 #endif
-    run_bench("expf", bench_expf);
-    run_bench("logf", bench_logf);
-
-    run_bench("cephes_sinf", bench_cephes_sinf);
-    run_bench("cephes_cosf", bench_cephes_cosf);
-    run_bench("cephes_expf", bench_cephes_expf);
-    run_bench("cephes_logf", bench_cephes_logf);
-
-    run_bench("sin_ps", bench_sin_ps);
-    run_bench("cos_ps", bench_cos_ps);
     run_bench("sincos_ps", bench_stupid_sincos_ps);
+    run_bench("sincos_f", bench_stupid_sincos_f);
+
+    printf("\n");
+    run_bench("expf", bench_expf);
+    run_bench("cephes_expf", bench_cephes_expf);
     run_bench("exp_ps", bench_exp_ps);
+    run_bench("exp_f", bench_exp_f);
+
+    printf("\n");
+    run_bench("logf", bench_logf);
+    run_bench("cephes_logf", bench_cephes_logf);
     run_bench("log_ps", bench_log_ps);
+    run_bench("log_f", bench_log_f);
+
+    printf("\n");
+    run_bench("sqrtf", bench_sqrtf);
+    run_bench("sqrt_ss", bench__mm_sqrt_ss);
+    run_bench("sqrt_f", bench_sqrt_f);
+
+    printf("\n");
+    run_bench("tanf", bench_tanf);
+    printf("\n");
+    run_bench("acosf", bench_acosf);
+    printf("\n");
+    run_bench("atanf", bench_atanf);
+    run_bench("atan_ps", bench_atan_ps);
+    run_bench("atan_f", bench_atan_f);
+    printf("\n");
+    run_bench("atan2f", bench_stupid_atan2f);
+    run_bench("atan2_ps", bench_stupid_atan2_ps);
 
 #ifdef HAVE_VECLIB
     run_bench("vsinf", bench_vsinf);
@@ -1094,127 +1109,53 @@ y *= z;
 }
 
 /*
-results on a macbook with 1.83GHz Core 1 Duo (apple gcc 4.0.1)
-command line: gcc -O2 -Wall -W -DHAVE_VECLIB -msse sse_mathfun_test.c -framework Accelerate
+results on an i7-3770K 3.90 GHz, using cl.exe (visual c++ community 2019), with USE_SSE2 defined
+command line: cl.exe /O2 /Tp sse_mathfun_test.c
 
 checking sines on [0*Pi, 1*Pi]
-max deviation from sinf(x): 5.96046e-08 at 0.679296388013*Pi, max deviation from cephes_sin(x): 0
-max deviation from cosf(x): 5.96046e-08 at 0.755605310477*Pi, max deviation from cephes_cos(x): 0
+max deviation from sinf(x): 5.96046e-08 at 0.193304238313*Pi, max deviation from cephes_sin(x): 0
+max deviation from cosf(x): 5.96046e-08 at 0.303994872157*Pi, max deviation from cephes_cos(x): 5.96046e-08
 deviation of sin(x)^2+cos(x)^2-1: 1.78814e-07 (ref deviation is 1.19209e-07)
    ->> precision OK for the sin_ps / cos_ps / sincos_ps <<-
 
 checking sines on [-1000*Pi, 1000*Pi]
-max deviation from sinf(x): 5.96046e-08 at  1821.37678456*Pi, max deviation from cephes_sin(x): 0
-max deviation from cosf(x): 5.96046e-08 at -999.820056289*Pi, max deviation from cephes_cos(x): 0
+max deviation from sinf(x): 5.96046e-08 at  338.694424873*Pi, max deviation from cephes_sin(x): 0
+max deviation from cosf(x): 5.96046e-08 at  338.694424873*Pi, max deviation from cephes_cos(x): 5.96046e-08
 deviation of sin(x)^2+cos(x)^2-1: 1.78814e-07 (ref deviation is 1.19209e-07)
    ->> precision OK for the sin_ps / cos_ps / sincos_ps <<-
 
 checking exp/log [-60, 60]
-max (relative) deviation from expf(x): 1.18758e-07 at  45.0583610535, max deviation from cephes_expf(x): 0
-max (absolute) deviation from logf(x): 1.19209e-07 at  1.66063511372, max deviation from cephes_logf(x): 0
+max (relative) deviation from expf(x): 1.18944e-07 at -56.8358421326, max deviation from cephes_expf(x): 0
+max (absolute) deviation from logf(x): 1.19209e-07 at -1.67546617985, max deviation from cephes_logf(x): 0
 deviation of x - log(exp(x)): 1.19209e-07 (ref deviation is 5.96046e-08)
    ->> precision OK for the exp_ps / log_ps <<-
 
-exp([        -1000,          -100,           100,          1000]) = [            0,             0, 2.4061436e+38, 2.4061436e+38]
-exp([          nan,           inf,          -inf,           nan]) = [2.4061436e+38, 2.4061436e+38,             0, 2.4061436e+38]
-log([            0,           -10,         1e+30, 1.0005271e-42]) = [          nan,           nan,     69.077553,    -87.336548]
-log([          nan,           inf,          -inf,           nan]) = [   -87.336548,     88.722839,           nan,    -87.336548]
-sin([          nan,           inf,          -inf,           nan]) = [          nan,           nan,           nan,           nan]
-cos([          nan,           inf,          -inf,           nan]) = [          nan,           nan,           nan,           nan]
-sin([       -1e+30,       -100000,         1e+30,        100000]) = [          inf,  -0.035749275,          -inf,   0.035749275]
-cos([       -1e+30,       -100000,         1e+30,        100000]) = [          nan,    -0.9993608,           nan,    -0.9993608]
-benching                 sinf .. ->    3.2 millions of vector evaluations/second -> 142 cycles/value on a 1830MHz computer
-benching                 cosf .. ->    3.2 millions of vector evaluations/second -> 142 cycles/value on a 1830MHz computer
-benching         sincos (x87) .. ->    2.8 millions of vector evaluations/second -> 161 cycles/value on a 1830MHz computer
-benching                 expf .. ->    3.0 millions of vector evaluations/second -> 148 cycles/value on a 1830MHz computer
-benching                 logf .. ->    3.0 millions of vector evaluations/second -> 150 cycles/value on a 1830MHz computer
-benching          cephes_sinf .. ->    4.5 millions of vector evaluations/second -> 100 cycles/value on a 1830MHz computer
-benching          cephes_cosf .. ->    4.9 millions of vector evaluations/second ->  92 cycles/value on a 1830MHz computer
-benching          cephes_expf .. ->    3.0 millions of vector evaluations/second -> 151 cycles/value on a 1830MHz computer
-benching          cephes_logf .. ->    2.6 millions of vector evaluations/second -> 172 cycles/value on a 1830MHz computer
-benching               sin_ps .. ->   18.1 millions of vector evaluations/second ->  25 cycles/value on a 1830MHz computer
-benching               cos_ps .. ->   18.2 millions of vector evaluations/second ->  25 cycles/value on a 1830MHz computer
-benching            sincos_ps .. ->   15.0 millions of vector evaluations/second ->  30 cycles/value on a 1830MHz computer
-benching               exp_ps .. ->   17.6 millions of vector evaluations/second ->  26 cycles/value on a 1830MHz computer
-benching               log_ps .. ->   15.5 millions of vector evaluations/second ->  29 cycles/value on a 1830MHz computer
-benching                vsinf .. ->   14.3 millions of vector evaluations/second ->  32 cycles/value on a 1830MHz computer
-benching                vcosf .. ->   14.4 millions of vector evaluations/second ->  32 cycles/value on a 1830MHz computer
-benching                vexpf .. ->   12.0 millions of vector evaluations/second ->  38 cycles/value on a 1830MHz computer
-benching                vlogf .. ->   13.1 millions of vector evaluations/second ->  35 cycles/value on a 1830MHz computer
 
+benching         sinf .. ->   23.2M vector evals/s ->  42 cycles/value on a 3900MHz PC
+benching  cephes_sinf .. ->   20.2M vector evals/s ->  48 cycles/value on a 3900MHz PC
+benching       sin_ps .. ->   41.4M vector evals/s ->  24 cycles/value on a 3900MHz PC
+benching        sin_f .. ->   18.9M vector evals/s ->  52 cycles/value on a 3900MHz PC
 
-on a 2600MHz opteron running linux, with the 64 bits acml math vector lib (gcc 4.2):
-command line: gcc-4.2 -msse -O3 -Wall -W sse_mathfun_test.c -lm -DHAVE_ACML -I /usr/local/acml3.6.0/pathscale64/include /usr/local/acml3.6.0/pathscale64/lib/libacml_mv.a
+benching         cosf .. ->   25.1M vector evals/s ->  39 cycles/value on a 3900MHz PC
+benching  cephes_cosf .. ->   19.9M vector evals/s ->  49 cycles/value on a 3900MHz PC
+benching       cos_ps .. ->   41.9M vector evals/s ->  23 cycles/value on a 3900MHz PC
+benching        cos_f .. ->   21.0M vector evals/s ->  46 cycles/value on a 3900MHz PC
 
-benching                 sinf .. ->    6.3 millions of vector evaluations/second -> 103 cycles/value on a 2600MHz computer
-benching                 cosf .. ->    5.6 millions of vector evaluations/second -> 115 cycles/value on a 2600MHz computer
-benching         sincos (x87) .. ->    4.2 millions of vector evaluations/second -> 153 cycles/value on a 2600MHz computer
-benching                 expf .. ->    1.1 millions of vector evaluations/second -> 546 cycles/value on a 2600MHz computer
-benching                 logf .. ->    4.7 millions of vector evaluations/second -> 138 cycles/value on a 2600MHz computer
-benching          cephes_sinf .. ->   11.6 millions of vector evaluations/second ->  56 cycles/value on a 2600MHz computer
-benching          cephes_cosf .. ->    8.7 millions of vector evaluations/second ->  74 cycles/value on a 2600MHz computer
-benching          cephes_expf .. ->    3.7 millions of vector evaluations/second -> 172 cycles/value on a 2600MHz computer
-benching          cephes_logf .. ->    5.5 millions of vector evaluations/second -> 117 cycles/value on a 2600MHz computer
-benching               sin_ps .. ->   26.1 millions of vector evaluations/second ->  25 cycles/value on a 2600MHz computer
-benching               cos_ps .. ->   26.1 millions of vector evaluations/second ->  25 cycles/value on a 2600MHz computer
-benching            sincos_ps .. ->   23.7 millions of vector evaluations/second ->  27 cycles/value on a 2600MHz computer
-benching               exp_ps .. ->   22.9 millions of vector evaluations/second ->  28 cycles/value on a 2600MHz computer
-benching               log_ps .. ->   21.6 millions of vector evaluations/second ->  30 cycles/value on a 2600MHz computer
-benching       acml vrs4_sinf .. ->   17.9 millions of vector evaluations/second ->  36 cycles/value on a 2600MHz computer
-benching       acml vrs4_cosf .. ->   18.3 millions of vector evaluations/second ->  35 cycles/value on a 2600MHz computer
-benching       acml vrs4_expf .. ->   28.6 millions of vector evaluations/second ->  23 cycles/value on a 2600MHz computer
-benching       acml vrs4_logf .. ->   23.6 millions of vector evaluations/second ->  27 cycles/value on a 2600MHz computer
+benching    sincos_ps .. ->   39.2M vector evals/s ->  25 cycles/value on a 3900MHz PC
+benching     sincos_f .. ->   16.4M vector evals/s ->  59 cycles/value on a 3900MHz PC
 
-on a 2GHz athlon-xp 2400+ , using mingw (gcc 3.4.5)
-command line:  gcc -mfpmath=sse -msse -O2 -Wall -W sse_mathfun_test.c
-benching                 sinf .. ->    3.4 millions of vector evaluations/second -> 144 cycles/value on a 2000MHz computer
-benching                 cosf .. ->    5.1 millions of vector evaluations/second ->  97 cycles/value on a 2000MHz computer
-benching         sincos (x87) .. ->    2.3 millions of vector evaluations/second -> 214 cycles/value on a 2000MHz computer
-benching                 expf .. ->    1.8 millions of vector evaluations/second -> 272 cycles/value on a 2000MHz computer
-benching                 logf .. ->    2.5 millions of vector evaluations/second -> 200 cycles/value on a 2000MHz computer
-benching          cephes_sinf .. ->    3.7 millions of vector evaluations/second -> 132 cycles/value on a 2000MHz computer
-benching          cephes_cosf .. ->    3.2 millions of vector evaluations/second -> 153 cycles/value on a 2000MHz computer
-benching          cephes_expf .. ->    1.2 millions of vector evaluations/second -> 407 cycles/value on a 2000MHz computer
-benching          cephes_logf .. ->    1.4 millions of vector evaluations/second -> 355 cycles/value on a 2000MHz computer
-benching               sin_ps .. ->   17.2 millions of vector evaluations/second ->  29 cycles/value on a 2000MHz computer
-benching               cos_ps .. ->   17.0 millions of vector evaluations/second ->  29 cycles/value on a 2000MHz computer
-benching            sincos_ps .. ->   14.7 millions of vector evaluations/second ->  34 cycles/value on a 2000MHz computer
-benching               exp_ps .. ->   17.2 millions of vector evaluations/second ->  29 cycles/value on a 2000MHz computer
-benching               log_ps .. ->   14.7 millions of vector evaluations/second ->  34 cycles/value on a 2000MHz computer
+benching         expf .. ->   31.5M vector evals/s ->  31 cycles/value on a 3900MHz PC
+benching  cephes_expf .. ->    6.1M vector evals/s -> 159 cycles/value on a 3900MHz PC
+benching       exp_ps .. ->   33.8M vector evals/s ->  29 cycles/value on a 3900MHz PC
+benching        exp_f .. ->   14.9M vector evals/s ->  65 cycles/value on a 3900MHz PC
 
+benching         logf .. ->   31.6M vector evals/s ->  31 cycles/value on a 3900MHz PC
+benching  cephes_logf .. ->    5.9M vector evals/s -> 163 cycles/value on a 3900MHz PC
+benching       log_ps .. ->   31.7M vector evals/s ->  31 cycles/value on a 3900MHz PC
+benching        log_f .. ->   19.0M vector evals/s ->  51 cycles/value on a 3900MHz PC
 
-on the same 2GHz athlon-xp 2400+ , using cl.exe (visual c++ express 2005)
-command line: cl.exe //arch:SSE //O2 //TP //MD sse_mathfun_test.c
+benching        sqrtf .. ->  123.9M vector evals/s ->   8 cycles/value on a 3900MHz PC
+benching      sqrt_ss .. ->  186.4M vector evals/s ->   5 cycles/value on a 3900MHz PC
+benching       sqrt_f .. ->  123.9M vector evals/s ->   8 cycles/value on a 3900MHz PC
 
-benching                 sinf .. ->    3.1 millions of vector evaluations/second -> 160 cycles/value on a 2000MHz computer
-benching                 cosf .. ->    3.9 millions of vector evaluations/second -> 127 cycles/value on a 2000MHz computer
-benching         sincos (x87) .. ->    2.8 millions of vector evaluations/second -> 175 cycles/value on a 2000MHz computer
-benching                 expf .. ->    2.0 millions of vector evaluations/second -> 239 cycles/value on a 2000MHz computer
-benching                 logf .. ->    2.6 millions of vector evaluations/second -> 192 cycles/value on a 2000MHz computer
-benching          cephes_sinf .. ->    2.5 millions of vector evaluations/second -> 198 cycles/value on a 2000MHz computer
-benching          cephes_cosf .. ->    2.8 millions of vector evaluations/second -> 176 cycles/value on a 2000MHz computer
-benching          cephes_expf .. ->    0.9 millions of vector evaluations/second -> 546 cycles/value on a 2000MHz computer
-benching          cephes_logf .. ->    1.3 millions of vector evaluations/second -> 370 cycles/value on a 2000MHz computer
-benching               sin_ps .. ->   17.2 millions of vector evaluations/second ->  29 cycles/value on a 2000MHz computer
-benching               cos_ps .. ->   17.3 millions of vector evaluations/second ->  29 cycles/value on a 2000MHz computer
-benching            sincos_ps .. ->   15.5 millions of vector evaluations/second ->  32 cycles/value on a 2000MHz computer
-benching               exp_ps .. ->   17.8 millions of vector evaluations/second ->  28 cycles/value on a 2000MHz computer
-benching               log_ps .. ->   10.4 millions of vector evaluations/second ->  48 cycles/value on a 2000MHz computer
-
-On the i7-3770K 3.90 GHz, using cl.exe (visual c++ community 2019), with USE_SSE2 defined
-command line: cl.exe /DUSE_SSE2 /O2 /Tp sse_mathfun_test.c
-
-benching                 sinf .. ->   28.6 millions of vector evaluations/second ->  34 cycles/value on a 3900MHz computer
-benching                 cosf .. ->   30.9 millions of vector evaluations/second ->  31 cycles/value on a 3900MHz computer
-benching                 expf .. ->   34.0 millions of vector evaluations/second ->  29 cycles/value on a 3900MHz computer
-benching                 logf .. ->   35.1 millions of vector evaluations/second ->  28 cycles/value on a 3900MHz computer
-benching          cephes_sinf .. ->   26.4 millions of vector evaluations/second ->  37 cycles/value on a 3900MHz computer
-benching          cephes_cosf .. ->   22.2 millions of vector evaluations/second ->  44 cycles/value on a 3900MHz computer
-benching          cephes_expf .. ->    5.9 millions of vector evaluations/second -> 163 cycles/value on a 3900MHz computer
-benching          cephes_logf .. ->    5.6 millions of vector evaluations/second -> 172 cycles/value on a 3900MHz computer
-benching               sin_ps .. ->   45.5 millions of vector evaluations/second ->  21 cycles/value on a 3900MHz computer
-benching               cos_ps .. ->   45.3 millions of vector evaluations/second ->  21 cycles/value on a 3900MHz computer
-benching            sincos_ps .. ->   45.5 millions of vector evaluations/second ->  21 cycles/value on a 3900MHz computer
-benching               exp_ps .. ->   36.1 millions of vector evaluations/second ->  27 cycles/value on a 3900MHz computer
-benching               log_ps .. ->   33.4 millions of vector evaluations/second ->  29 cycles/value on a 3900MHz computer
 */

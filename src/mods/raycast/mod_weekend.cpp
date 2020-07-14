@@ -16,9 +16,10 @@ MODULE_MAIN(void* Memory)
         for (u32 X = 0;
              X < (s32)Console->Size.Width;
              ++X) {
-            f64 r = double(X) / (Console->Size.Width - 1);
-            f64 g = double(Y) / (Console->Size.Height - 1);
-            f64 b = 0.25;
+            f64 r = X / Sin((f32)(Console->Size.Width - 1));
+            f64 g = Y / Cos((f32)(Console->Size.Height - 1));
+            f64 b = Log((f32)X + Y);
+            r += Exp((f32)X - Y);
 
             PixelColor.r = static_cast<f32>(255.999 * r);
             PixelColor.g = static_cast<f32>(255.999 * g);
