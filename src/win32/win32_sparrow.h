@@ -1,7 +1,7 @@
 #if !defined(WIN32_SPARROW_H)
 
 #include "min_crt.h"
-#include "sparrow_platform.h"
+#include "core/sparrow_platform.h"
 #include "sparrow_text.h"
 #include "fake_windows.h"
 

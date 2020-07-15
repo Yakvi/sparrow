@@ -111,9 +111,9 @@ $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 echo "WAITING FOR PDB" > lock.tmp
 del *.pdb 2> lock.tmp
 # NOTE Precompiled libraries
-$win32executable = & cl $c -c -O2 -Ob3 $srcDir\core\sparrow_math_optimized.c
+$win32executable = & cl $c -MT -c -O2 -Ob3 $srcDir\math\sparrow_trig_opt.c
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
-$optimized += 'sparrow_math_optimized.obj'
+$optimized += 'sparrow_trig_opt.obj'
 
 
 # NOTE WIN32 PLATFORM LAYER
@@ -141,7 +141,7 @@ del lock.tmp
 # $ssemath = &cl -nologo -fp:fast -fp:except- /O2 /Tp $srcDir/thirdparty/sse-math/sse2_mathfun_test.c
 # Output-Logs -data $ssemath -title "SSE Math functions benchmark"
 
-$mathoptimized = &cl $c -O2 -Tp $srcDir/core/sparrow_math_test.c $optimized
+$mathoptimized = &cl $c -O2 -Tp $srcDir/test/sparrow_trig_test.c $optimized
 Output-Logs -data $mathoptimized -title "Optimized Math functions benchmark"
 
 # TODO: This would be cool to try porting to our engine in pure C

@@ -4,12 +4,19 @@
 // Tan, Cot, ATan, ATan2: https://github.com/to-miz/sse_mathfun_extension
 // TODO(yavki): __cpuid to check for SSE 4.1 usage!
 
-#include "core/sparrow_math_optimized.h"
+#include "math/sparrow_trig.h"
 
 inline f32
 SquareRoot(f32 Value)
 {
     f32 Result = sqrt_f(Value);
+    return (Result);
+}
+
+inline f32
+InvSquareRoot(f32 Value)
+{
+    f32 Result = rsqrt_f(Value);
     return (Result);
 }
 
@@ -52,10 +59,48 @@ Log(f32 Value)
     return (Result);
 }
 
-inline f32 Tan();
-inline f32 ACos();
-inline f32 ATan();
-inline f32 ATan2();
+// Elevates the base to the specified power
+inline f32
+Power(f32 Base, f32 Exponent)
+{
+    f32 Result = exp_f(Exponent * log_f(Base));
+    return (Result);
+}
+
+// Computes tangent based on provided angle
+inline f32
+Tan(f32 X)
+{
+    f32 Result = tan_f(X);
+    return (Result);
+}
+
+// Computes the Cotangent of X
+inline f32
+Cot(f32 X)
+{
+    f32 Result = cot_f(X);
+    return (Result);
+}
+
+// Computes the arctangent of X
+inline f32
+ArcTan(f32 X)
+{
+    f32 Result = atan_f(X);
+    return (Result);
+}
+
+// Computes the arctangent of y / x given y and x, but with a range of (−π, π].
+// In other words, atan2(y, x) is the angle between the positive x-axis of a plane
+// and the point (x, y) on it, with positive sign for counter-clockwise angles
+// (upper half-plane, y > 0), and negative sign for clockwise angles (lower half-plane, y < 0).
+inline f32
+ArcTan2(f32 Y, f32 X)
+{
+    f32 Result = atan2_f(Y, X);
+    return (Result);
+}
 
 #define SPARROW_INTRIN_H
 #endif

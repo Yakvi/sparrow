@@ -14,11 +14,11 @@ InitConsole(struct console* Console, u32 Width, u32 Height, color Color)
     Console->CursorPos = V2I(0, 0);
 
     struct pixel* Row = Console->Pixels;
-    for (u32 Y = 0;
+    for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
-        for (u32 X = 0;
+        for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
 
@@ -40,8 +40,8 @@ GetPixel(struct console* Console, v2i Coords)
 {
     Assert(Coords.x >= 0);
     Assert(Coords.y >= 0);
-    Assert((u32)Coords.x < Console->Size.Width);
-    Assert((u32)Coords.y < Console->Size.Height);
+    Assert(Coords.x < Console->Size.Width);
+    Assert(Coords.y < Console->Size.Height);
 
     u32 Y = Console->Size.Width * Coords.y;
     u32 Pos = Y + Coords.x;
@@ -79,12 +79,12 @@ VerticalGradient(struct console* Console, color Start, color End)
     f32 InvertedHeight = 1.0f / Console->Size.Height;
 
     struct pixel* Row = Console->Pixels;
-    for (u32 Y = 0;
+    for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
         color Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
-        for (u32 X = 0;
+        for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
 
@@ -100,8 +100,8 @@ Point(struct console* Console, v2i Pos, v3 Color)
 {
     Assert(Pos.x >= 0);
     Assert(Pos.y >= 0);
-    Assert((u32)Pos.x < Console->Size.Width);
-    Assert((u32)Pos.y < Console->Size.Height);
+    Assert(Pos.x < Console->Size.Width);
+    Assert(Pos.y < Console->Size.Height);
 
     GetPixel(Console, Pos)->Color = Color;
 }
@@ -110,10 +110,10 @@ local void
 PrintGlyph(struct console* Console, char* Char, v2i Pos, v3 Color)
 {
     struct glyph Glyph = GetGlyph(Char);
-    for (u32 Y = 0;
+    for (s32 Y = 0;
          Y < Glyph.Dim.Height;
          ++Y) {
-        for (u32 X = 0;
+        for (s32 X = 0;
              X < Glyph.Dim.Width;
              ++X) {
             if (Glyph.Data[Glyph.Dim.Width * Y + X] == '#') {
@@ -126,11 +126,11 @@ PrintGlyph(struct console* Console, char* Char, v2i Pos, v3 Color)
 local void
 PrintString(struct console* Console, char* String, v2i Pos, v3 Color)
 {
-    if ((u32)(Pos.y + GLYPH_HEIGHT) < Console->Size.Height) {
+    if ((Pos.y + GLYPH_HEIGHT) < Console->Size.Height) {
         for (char* At = String;
              *At;
              ++At) {
-            if ((u32)(Pos.x + GLYPH_WIDTH) >= Console->Size.Width)
+            if ((Pos.x + GLYPH_WIDTH) >= Console->Size.Width)
                 break;
 
             PrintGlyph(Console, At, Pos, Color);
@@ -164,8 +164,8 @@ Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color)
             ++Pos.x;
         }
         // Try to draw
-        if (((u32)Pos.x < Console->Size.Width) &&
-            (((u32)Pos.y < Console->Size.Height))) {
+        if ((Pos.x < Console->Size.Width) &&
+            ((Pos.y < Console->Size.Height))) {
             Point(Console, Pos, Color);
         }
     }
@@ -194,7 +194,7 @@ Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor)
 {
     Assert(Dim.Width >= 0);
     Assert(Dim.Height >= 0);
-    for (u32 Offset = 0;
+    for (s32 Offset = 0;
          Offset < Dim.Height;
          ++Offset) {
         Line(Console, AddV2i(TopLeft, V2I(0, Offset)), Dim.Width, Line_Horizontal, BoxColor);
@@ -208,7 +208,7 @@ Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor)
 local dim_2d
 TextBox(struct console* Console, v2i TopLeft, color BoxColor, char* Input, color StringColor)
 {
-    dim_2d Dim = {4 + GLYPH_WIDTH * StringLength(Input), 3 + GLYPH_HEIGHT};
+    dim_2d Dim = {(s32)(4 + GLYPH_WIDTH * StringLength(Input)), (s32)(3 + GLYPH_HEIGHT)};
     Box(Console, TopLeft, Dim, BoxColor);
     PrintString(Console, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
     return (Dim);

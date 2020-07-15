@@ -48,13 +48,13 @@ local b32 ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char*
 inline void
 V2iGridClamp(struct console* Console, v2i* Pos)
 {
-    if ((u32)Pos->x >= Console->Size.Width) {
+    if (Pos->x >= Console->Size.Width) {
         Pos->x = Console->Size.Width - 1;
     }
     else if (Pos->x < 0) {
         Pos->x = 0;
     }
-    if ((u32)Pos->y >= Console->Size.Height) {
+    if (Pos->y >= Console->Size.Height) {
         Pos->y = Console->Size.Height - 1;
     }
     else if (Pos->y < 0) {
@@ -64,13 +64,13 @@ V2iGridClamp(struct console* Console, v2i* Pos)
 inline void
 V2fGridClamp(struct console* Console, v2f* Pos)
 {
-    if ((u32)Pos->x >= Console->Size.Width) {
+    if (Pos->x >= Console->Size.Width) {
         Pos->x = 0;
     }
     else if (Pos->x < 0) {
         Pos->x = (f32)Console->Size.Width - 1;
     }
-    if ((u32)Pos->y >= Console->Size.Height) {
+    if (Pos->y >= Console->Size.Height) {
         Pos->y = 0;
     }
     else if (Pos->y < 0) {

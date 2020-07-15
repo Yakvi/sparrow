@@ -8,11 +8,11 @@ DrawSolidColorRectangle(struct frame_buffer* Buffer, color Color, v2i Base, dim_
 
     if (Buffer) {
         u8* Row = Buffer->Pixels + Base.y * Buffer->Pitch;
-        for (u32 Y = 0;
+        for (s32 Y = 0;
              Y < Size.Height;
              ++Y) {
             u32* Pixel = (u32*)Row + Base.x;
-            for (u32 X = 0;
+            for (s32 X = 0;
                  X < Size.Width;
                  ++X) {
                 *Pixel++ = (((u8)Color.r << 16) |

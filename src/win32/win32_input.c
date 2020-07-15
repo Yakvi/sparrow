@@ -98,7 +98,7 @@ Win32_ReadInput(void* Window, struct user_input* Input)
         }
     }
     v2i CursorPos;
-    struct dim_2d ClientDim = Win32_GetClientDim(Window);
+    dim_2d ClientDim = Win32_GetClientDim(Window);
     if (GetCursorPos(&CursorPos) && ScreenToClient(Window, &CursorPos)) {
         Input->Cursor.x = CursorPos.x;
         Input->Cursor.y = CursorPos.y;

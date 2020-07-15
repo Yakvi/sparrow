@@ -23,7 +23,7 @@ typedef struct memory
 {
     memory_index Size;
     void* Data;
-}memory;
+} memory;
 
 #define SPARROW_PLATFORM
 #endif

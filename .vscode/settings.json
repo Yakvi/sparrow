@@ -35,6 +35,7 @@
     "sparrow_console_tests.c": "cpp",
     "sparrow_console_update.c": "cpp",
     "console_update.c": "cpp",
-    "xlocale": "cpp"
+    "xlocale": "cpp",
+    "system_error": "cpp"
   }
 }

@@ -6,8 +6,8 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2d ConsoleSize, 
     if (Pixel) {
         Assert(Pixel->Pos.x >= 0);
         Assert(Pixel->Pos.y >= 0);
-        Assert((u32)Pixel->Pos.x < ConsoleSize.Width);
-        Assert((u32)Pixel->Pos.y < ConsoleSize.Height);
+        Assert(Pixel->Pos.x < ConsoleSize.Width);
+        Assert(Pixel->Pos.y < ConsoleSize.Height);
 
         v2i PixelBase = {
             (u32)(Pixel->Pos.x * RealSize.Width),
@@ -32,11 +32,11 @@ DrawAllPixels(struct frame_buffer* Buffer, struct console* Console)
         (u32)(RealSize.Height + 1)};
 
     struct pixel* Row = Console->Pixels;
-    for (u32 Y = 0;
+    for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
-        for (u32 X = 0;
+        for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
 

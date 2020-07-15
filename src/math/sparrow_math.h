@@ -1,34 +1,11 @@
 #if !defined(SPARROW_MATH_H)
 
-#include "sparrow_intrin.h"
-
-// BOOKMARK: Scalar
-inline f32
-Lerp(f32 A, f32 B, f32 t)
-{
-    f32 Result = (1 - t) * A + (B * t);
-    return (Result);
-}
-
-inline s32
-RoundF32ToInt(f32 number)
-{
-    s32 Result = 0;
-    if (number > 0) {
-        Assert(number + 0.5f > 0);
-        Result = (s32)(number + 0.5f);
-    }
-    else if (number < 0) {
-        Assert(number - 0.5f < 0);
-        Result = (s32)(number - 0.5f);
-    }
-
-    return (Result);
-}
+#include "core/sparrow_intrin.h"
+#include "sparrow_vector.h"
 
 // BOOKMARK: Vector 2
 inline dim_2d
-DIM_2D(u32 Width, u32 Height)
+DIM_2D(s32 Width, s32 Height)
 {
     dim_2d Result = {Width, Height};
     return (Result);
@@ -115,25 +92,6 @@ Color(f32 X, f32 Y, f32 Z)
 {
     return V3(X, Y, Z);
 }
-
-// typedef struct
-// {
-//     union
-//     {
-//         struct
-//         {
-//             p top_left;
-//             p bottom_right;
-//         };
-//         struct
-//         {
-//             p origin;
-//             f32 width;
-//             f32 height;
-//         };
-//     };
-
-// } rect;
 
 // BOOKMARK: Color constants
 // TODO: Move this out somewhere else?

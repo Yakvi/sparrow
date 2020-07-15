@@ -6,13 +6,13 @@ PixelOverlay(struct console* Console)
 {
     struct pixel* Row = Console->Pixels;
     b32 IsRowOdd = false;
-    for (u32 Y = 0;
+    for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
         IsRowOdd = Y % 2;
 
-        for (u32 X = 0;
+        for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
             // TODO: Clamp!
