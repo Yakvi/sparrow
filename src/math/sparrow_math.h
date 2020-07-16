@@ -1,42 +1,18 @@
 #if !defined(SPARROW_MATH_H)
+//
+// NOTE: Math constants
+//
+#define Pi32 3.14159265359f
+#define Pi180 0.01745329251f
+#define Pi64 3.14159265358979323846
+#define Tau32 6.28318530717958647692f
+
+// TODO: fast floor/ceil? https://gist.github.com/mmozeiko/56db3df14ab380152d6875383d0f4afd
 
 #include "core/sparrow_intrin.h"
 #include "sparrow_vector.h"
 
 // BOOKMARK: Vector 2
-inline dim_2d
-DIM_2D(s32 Width, s32 Height)
-{
-    dim_2d Result = {Width, Height};
-    return (Result);
-}
-
-inline p
-P(f32 X, f32 Y)
-{
-    p Result = {X, Y};
-    return (Result);
-}
-
-inline v2f
-V2F(f32 X, f32 Y)
-{
-    return P(X, Y);
-}
-
-inline v2i
-V2I(s32 X, s32 Y)
-{
-    v2i Result = {X, Y};
-    return (Result);
-}
-
-inline dim
-DIM(f32 width, f32 height)
-{
-    dim Result = {width, height};
-    return (Result);
-}
 
 inline v2f
 AddV2(v2f A, v2f B)
@@ -78,38 +54,23 @@ RoundV2ToV2i(v2f Source)
     return (Result);
 }
 
-// BOOKMARK: Vector 3
-
-inline v3
-V3(f32 X, f32 Y, f32 Z)
-{
-    v3 Result = {X, Y, Z};
-    return (Result);
-}
-
-inline color
-Color(f32 X, f32 Y, f32 Z)
-{
-    return V3(X, Y, Z);
-}
-
 // BOOKMARK: Color constants
 // TODO: Move this out somewhere else?
 // clang-format off
-# define Color_Black     Color(0,    0,    0)
-# define Color_White     Color(0xFF, 0xFF, 0xFF)
+# define Color_Black     RGB(0,    0,    0)
+# define Color_White     RGB(0xFF, 0xFF, 0xFF)
 
-# define Color_Gray05    Color(0x55, 0x55, 0x55)
-# define Color_Gray11    Color(0xAA, 0xAA, 0xAA)
-# define Color_Gray13    Color(0xDD, 0xDD, 0xDD)
+# define Color_Gray05    RGB(0x55, 0x55, 0x55)
+# define Color_Gray11    RGB(0xAA, 0xAA, 0xAA)
+# define Color_Gray13    RGB(0xDD, 0xDD, 0xDD)
 
-# define Color_Red       Color(0xFF, 0,    0)
-# define Color_Green     Color(0,    0xFF, 0)
-# define Color_Blue      Color(0,    0,    0xFF)
+# define Color_Red       RGB(0xFF, 0,    0)
+# define Color_Green     RGB(0,    0xFF, 0)
+# define Color_Blue      RGB(0,    0,    0xFF)
 
-# define Color_Yellow    Color(0xFF, 0xFF, 0)
-# define Color_Cyan      Color(0,    0xFF, 0xFF)
-# define Color_Pink      Color(0xFF, 0,    0xFF)
+# define Color_Yellow    RGB(0xFF, 0xFF, 0)
+# define Color_Cyan      RGB(0,    0xFF, 0xFF)
+# define Color_Pink      RGB(0xFF, 0,    0xFF)
 // clang-format on
 
 inline b32
@@ -121,10 +82,10 @@ ColorsEqual(v3 A, v3 B)
     return (Result);
 }
 
-inline color
-ColorLerp(color A, color B, f32 t)
+inline color3
+ColorLerp(color3 A, color3 B, f32 t)
 {
-    color Result;
+    color3 Result;
     Result.r = Lerp(A.r, B.r, t);
     Result.g = Lerp(A.g, B.g, t);
     Result.b = Lerp(A.b, B.b, t);

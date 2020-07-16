@@ -16,8 +16,8 @@ DemoKeyboardCursor(struct console* Console, v2f Pos, v2f Offset)
 void
 DemoFont(struct console* Console)
 {
-    PrintString(Console, "THE QUICK BROWN FOX JUMPS OVER LAZY DOG", V2I(10, 10), Color(0x55, 0xDD, 0xFF));
-    PrintString(Console, "the quick brown fox jumps over lazy dog", V2I(10, 20), Color(0x55, 0xDD, 0xFF));
+    PrintString(Console, "THE QUICK BROWN FOX JUMPS OVER LAZY DOG", V2I(10, 10), RGB(0x55, 0xDD, 0xFF));
+    PrintString(Console, "the quick brown fox jumps over lazy dog", V2I(10, 20), RGB(0x55, 0xDD, 0xFF));
 }
 
 void
@@ -31,7 +31,7 @@ DemoMouseCursor(struct console* Console)
 void
 DemoBoxes(struct console* Console, v2i CursorPos)
 {
-    Box(Console, V2I(10, 30), DIM_2D(15, 8), Color_Gray13);
+    Box(Console, V2I(10, 30), DIM_2I(15, 8), Color_Gray13);
     TextBox(Console, V2I(10, 40), Color_Gray11, "I'm boxxy", Color_Black);
     if (ButtonHover(Console, CursorPos, V2I(10, 60), "Hover me!")) {
         PrintString(Console, "YAY!", V2I(10, 80), Color_Black);

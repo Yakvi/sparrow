@@ -33,24 +33,24 @@ global_variable u8 GlobalRunning;
 #define PATH_BUFFER_LENGTH STR_MAX
 global_variable struct frame_buffer Win32_FrameBuffer;
 
-inline dim_2d
+inline dim_2i
 Win32_DimFromRect(rect Source)
 {
-    dim_2d Result;
+    dim_2i Result;
     Result.Width = Source.right - Source.left;
     Result.Height = Source.bottom - Source.top;
 
     return (Result);
 }
 
-inline dim_2d
+inline dim_2i
 Win32_GetClientDim(void* Window)
 {
     Assert(Window);
     rect WindowRect;
     GetClientRect(Window, &WindowRect);
 
-    dim_2d Result = Win32_DimFromRect(WindowRect);
+    dim_2i Result = Win32_DimFromRect(WindowRect);
 
     return (Result);
 }
@@ -59,7 +59,7 @@ Win32_GetClientDim(void* Window)
 #include "win32_input.c"
 
 local void
-Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2d Dim)
+Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2i Dim)
 {
     // Assert(Dim);
     if (Dim.Width > 0 && Dim.Height > 0) {
@@ -81,7 +81,7 @@ Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2d Dim)
 }
 
 local void
-Win32_UpdateBuffer(void* DeviceContext, struct frame_buffer* Buffer, dim_2d Window)
+Win32_UpdateBuffer(void* DeviceContext, struct frame_buffer* Buffer, dim_2i Window)
 {
     Assert(DeviceContext);
     Assert(Buffer->Pixels);
@@ -134,7 +134,7 @@ void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s
             void* DeviceContext = BeginPaint(Window, &ps);
             Assert(DeviceContext);
 
-            dim_2d Dim = Win32_DimFromRect(ps.paintRect);
+            dim_2i Dim = Win32_DimFromRect(ps.paintRect);
             Win32_UpdateBuffer(DeviceContext, &Win32_FrameBuffer, Dim);
             EndPaint(Window, &ps);
         } break;

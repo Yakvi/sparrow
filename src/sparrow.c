@@ -46,7 +46,7 @@ UpdateState(struct memory* Memory,
         struct console* Console = &GameState->Console;
         ClearConsole(Console, Input);
 
-        VerticalGradient(Console, Color(20, 130, 200), Color(6, 146, 180));
+        VerticalGradient(Console, RGB(20, 130, 200), RGB(6, 146, 180));
 
         Main(&GameState->ModuleMemory, Input, Console);
 

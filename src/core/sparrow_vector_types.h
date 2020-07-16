@@ -67,7 +67,7 @@ typedef union v3
         return Elements[Index];
     }
 #endif
-} color, v3f, v3;
+} color3, rgb, v3f, v3;
 
 typedef union v4
 {
@@ -119,7 +119,7 @@ typedef union v4
         v2 zw;
     };
 
-    __m128 InternalElementsSSE;
+    __m128 VectorString;
 
     float Elements[4];
 
@@ -129,7 +129,7 @@ typedef union v4
         return Elements[Index];
     }
 #endif
-} v4;
+} color4, rgba, v4, v4f;
 
 typedef union mat4
 {
@@ -171,7 +171,7 @@ typedef union quat
 
     float Elements[4];
 
-    __m128 InternalElementsSSE;
+    __m128 VectorString;
 } quat;
 
 // NOTE: Int components
@@ -198,7 +198,7 @@ typedef union v2i
         return Elements[Index];
     }
 #endif //__cplusplus
-} v2i, dim_2d;
+} v2i, dim_2i;
 
 #define SPARROW_VECTOR_TYPES_H
 #endif

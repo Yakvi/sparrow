@@ -1,7 +1,7 @@
 #include "console_platform.h"
 
 local void
-DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2d ConsoleSize, dim RealSize, dim_2d Size)
+DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2i ConsoleSize, dim RealSize, dim_2i Size)
 {
     if (Pixel) {
         Assert(Pixel->Pos.x >= 0);
@@ -27,7 +27,7 @@ DrawAllPixels(struct frame_buffer* Buffer, struct console* Console)
         (f32)Buffer->Width / (f32)Console->Size.Width,
         (f32)Buffer->Height / (f32)Console->Size.Height};
 
-    dim_2d Size = {
+    dim_2i Size = {
         (u32)(RealSize.Width + 1),
         (u32)(RealSize.Height + 1)};
 

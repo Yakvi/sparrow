@@ -349,3 +349,7 @@ Most of today went into adapting code of [SSE Math Functions extensions](https:/
 I'm done with Trig for now. I copied over [cephes](http://www.netlib.org/cephes/) math library and maybe even eventually will attempt to implement `asin` and `acos` (the latter, as it turns out, being a fancy inversion of `asin`). But I'm a bit fatigued by now. This is too much of an unfamiliar ground for me, so I'll try to avoid it. 
 
 I spent the rest of the day reshuffling the file structure (again), as well as dependency structure (again). In the end, I settled for having a  separate `math` folder, and started redefining my vector types in the newly created `sparrow_vector_types.h`. Now the work will begin to bring [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math) into my project.
+
+## 30. July 16, 2020 - Writing vector helpers
+
+I started building my vector library from a few scalar definitions (which might be eventually moved somewhere else) and vector initialization helpers. Nothing to write home about.

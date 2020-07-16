@@ -4,7 +4,7 @@
 #define GLYPH_HEIGHT 8
 struct glyph
 {
-    dim_2d Dim;
+    dim_2i Dim;
     char* Data;
 };
 

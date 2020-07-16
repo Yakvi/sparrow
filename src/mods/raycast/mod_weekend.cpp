@@ -8,7 +8,7 @@ MODULE_MAIN(void* Memory)
 {
     InitConsole(Console, 256, 256, Color_White);
 
-    color PixelColor;
+    color3 PixelColor;
     for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {

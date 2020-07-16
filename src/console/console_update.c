@@ -3,11 +3,11 @@
 #include "sparrow_text.h"
 
 local void
-InitConsole(struct console* Console, u32 Width, u32 Height, color Color)
+InitConsole(struct console* Console, u32 Width, u32 Height, color3 Color)
 {
     Console->IsInitialized = false;
 
-    Console->Size = DIM_2D(Width, Height);
+    Console->Size = V2I(Width, Height);
     Console->Length = Console->Size.Width * Console->Size.Height;
     Console->Center = V2I((s32)(Console->Size.Width * 0.5f),
                           (s32)(Console->Size.Height * 0.5f));
@@ -72,7 +72,7 @@ ClearConsole(struct console* Console, struct user_input* Input)
 }
 
 local void
-VerticalGradient(struct console* Console, color Start, color End)
+VerticalGradient(struct console* Console, color3 Start, color3 End)
 {
     struct pixel* Pixels = Console->Pixels;
     // f32 InvertedWidth = 1.0f / Console->Size.Width;
@@ -83,12 +83,12 @@ VerticalGradient(struct console* Console, color Start, color End)
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
-        color Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
+        color3 Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
         for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
 
-            // color NewColor = ColorLerp(Color, End, (f32)X * InvertedWidth);
+            // color3 NewColor = ColorLerp(Color, End, (f32)X * InvertedWidth);
             Pixel++->Color = Color;
         }
         Row += Console->Size.Width;
@@ -147,7 +147,7 @@ enum LineDirection
 };
 
 local void
-Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color)
+Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color3 Color)
 {
 #if 1
     Assert(Direction == Line_Vertical || Direction == Line_Horizontal);
@@ -190,7 +190,7 @@ Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color)
 }
 
 local void
-Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor)
+Box(struct console* Console, v2i TopLeft, dim_2i Dim, color3 BoxColor)
 {
     Assert(Dim.Width >= 0);
     Assert(Dim.Height >= 0);
@@ -205,10 +205,10 @@ Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor)
     Line(Console, AddV2i(TopLeft, V2I(0, Dim.Height)), Dim.Width + 1, Line_Horizontal, Color_Black);
 }
 
-local dim_2d
-TextBox(struct console* Console, v2i TopLeft, color BoxColor, char* Input, color StringColor)
+local dim_2i
+TextBox(struct console* Console, v2i TopLeft, color3 BoxColor, char* Input, color3 StringColor)
 {
-    dim_2d Dim = {(s32)(4 + GLYPH_WIDTH * StringLength(Input)), (s32)(3 + GLYPH_HEIGHT)};
+    dim_2i Dim = {(s32)(4 + GLYPH_WIDTH * StringLength(Input)), (s32)(3 + GLYPH_HEIGHT)};
     Box(Console, TopLeft, Dim, BoxColor);
     PrintString(Console, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
     return (Dim);
@@ -219,10 +219,10 @@ ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char* Input)
 {
     b32 Result = false;
 
-    dim_2d Dim = TextBox(Console, TopLeft, Color_Gray13, Input, Color_Black);
+    dim_2i Dim = TextBox(Console, TopLeft, Color_Gray13, Input, Color_Black);
     if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) &&
         (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
-        TextBox(Console, TopLeft, Color(0xCC, 0xCC, 0xCC), Input, Color_Black);
+        TextBox(Console, TopLeft, RGB(0xCC, 0xCC, 0xCC), Input, Color_Black);
         // Line(Console, TopLeft, Dim.Width, Line_Horizontal, Color_Black);
         // Line(Console, TopLeft, Dim.Height, Line_Vertical, Color_Black);
         // Line(Console, AddV2i(TopLeft, V2I(Dim.Width, 0)), Dim.Height, Line_Vertical, (color)Color_White);

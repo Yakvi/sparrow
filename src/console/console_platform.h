@@ -17,7 +17,7 @@ enum PixelFlags
 struct pixel
 {
     v2i Pos;
-    color Color;
+    color3 Color;
     u32 Flags;
 };
 
@@ -27,22 +27,22 @@ struct console
     b32 IsInitialized;
     v2i CursorPos;
 
-    dim_2d Size;
+    dim_2i Size;
     u32 Length;
     v2i Center;
 
     struct pixel Pixels[MAX_CONSOLE_HEIGHT * MAX_CONSOLE_WIDTH]; // TODO(yakvi): Abstract it out? Overkill?
 };
 
-local void InitConsole(struct console* Console, u32 Width, u32 Height, color Color);
+local void InitConsole(struct console* Console, u32 Width, u32 Height, color3 Color);
 local struct pixel* GetPixel(struct console* Console, v2i Coords);
-local void PrintGlyph(struct console* Console, char* Char, v2i Pos, v3 Color);
-local void PrintString(struct console* Console, char* String, v2i Pos, v3 Color);
-local void VerticalGradient(struct console* Console, color Start, color End);
+local void PrintGlyph(struct console* Console, char* Char, v2i Pos, color3 Color);
+local void PrintString(struct console* Console, char* String, v2i Pos, color3 Color);
+local void VerticalGradient(struct console* Console, color3 Start, color3 End);
 inline void Point(struct console* Console, v2i Pos, v3 Color);
-local void Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color Color);
-local void Box(struct console* Console, v2i TopLeft, dim_2d Dim, color BoxColor);
-local dim_2d TextBox(struct console* Console, v2i TopLeft, color BoxColor, char* Input, color StringColor);
+local void Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color3 Color);
+local void Box(struct console* Console, v2i TopLeft, dim_2i Dim, color3 BoxColor);
+local dim_2i TextBox(struct console* Console, v2i TopLeft, color3 BoxColor, char* Input, color3 StringColor);
 local b32 ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char* Input);
 
 inline void

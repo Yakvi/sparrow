@@ -112,10 +112,6 @@ typedef double f64;
 //
 // NOTE: Array Utilities
 //
-#define Pi32 3.14159265359f
-#define Pi64 3.14159265358979323846
-#define Tau32 6.28318530717958647692f
-
 #define ArrayWithSize(Array) Array, sizeof(Array)
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 #define ArrayWithCount(Input) Input, ArrayCount(Input)
