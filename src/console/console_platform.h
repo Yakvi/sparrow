@@ -34,7 +34,7 @@ struct console
     struct pixel Pixels[MAX_CONSOLE_HEIGHT * MAX_CONSOLE_WIDTH]; // TODO(yakvi): Abstract it out? Overkill?
 };
 
-local void InitConsole(struct console* Console, u32 Width, u32 Height, color3 Color);
+local void InitConsole(struct console* Console, s32 Width, s32 Height, color3 Color);
 local struct pixel* GetPixel(struct console* Console, v2i Coords);
 local void PrintGlyph(struct console* Console, char* Char, v2i Pos, color3 Color);
 local void PrintString(struct console* Console, char* String, v2i Pos, color3 Color);

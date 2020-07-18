@@ -353,3 +353,11 @@ I spent the rest of the day reshuffling the file structure (again), as well as d
 ## 30. July 16, 2020 - Writing vector helpers
 
 I started building my vector library from a few scalar definitions (which might be eventually moved somewhere else) and vector initialization helpers. Nothing to write home about.
+
+## 31. July 18, 2020 - Writing more vector helpers
+
+I added Add, Subtract, Multiply and Divide functions to the different vector scenarios, as well as made extensions/shortcuts for C++. I then plugged it all in the viewer to test it out.
+
+One thing that immediately jumped to my attention that I have swapped top and bottom. I mean, it kind of was a point beforehand, but I'm starting to think that I need to account for the origin position during the console definition. Will try to tackle it next time. 
+
+Also yay, this project is officially one "month" old! Or about half a year, depends on your point of view. 

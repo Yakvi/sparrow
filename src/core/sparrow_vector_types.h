@@ -67,7 +67,7 @@ typedef union v3
         return Elements[Index];
     }
 #endif
-} color3, rgb, v3f, v3;
+} color3, rgb, v3f, v3, p3, float3;
 
 typedef union v4
 {
@@ -129,7 +129,7 @@ typedef union v4
         return Elements[Index];
     }
 #endif
-} color4, rgba, v4, v4f;
+} color4, rgba, v4, v4f, float4;
 
 typedef union mat4
 {

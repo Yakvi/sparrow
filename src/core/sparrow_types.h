@@ -129,10 +129,10 @@ typedef double f64;
 #else
 #error SEE/NEON optimizations are not available for this compiler yet!!!!
 #endif
+EXTERN_C_END
 
 #include "sparrow_vector_types.h"
 
-EXTERN_C_END
 
 #define SPARROW_TYPES_H
 #endif

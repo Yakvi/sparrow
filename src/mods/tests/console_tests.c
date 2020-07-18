@@ -5,7 +5,7 @@ DemoKeyboardCursor(struct console* Console, v2f Pos, v2f Offset)
 {
     b32 Result = true;
 
-    Pos = AddV2(Pos, Offset);
+    Pos = AddV2f(Pos, Offset);
 
     V2fGridClamp(Console, &Pos);
     Point(Console, RoundV2ToV2i(Pos), Color_Gray05);

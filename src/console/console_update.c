@@ -3,7 +3,7 @@
 #include "sparrow_text.h"
 
 local void
-InitConsole(struct console* Console, u32 Width, u32 Height, color3 Color)
+InitConsole(struct console* Console, s32 Width, s32 Height, color3 Color)
 {
     Console->IsInitialized = false;
 
