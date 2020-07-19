@@ -17,7 +17,7 @@ LoadGameState(struct memory* Memory)
         Assert(Memory->Size > sizeof(struct game_state));
         Result = (struct game_state*)Memory->Data;
         if (!Result->IsInitialized) {
-            InitConsole(&Result->Console, 140, 50, Color_Black);
+            InitConsole(&Result->Console, 140, 50, Console_BottomUp, Color_Black);
             Result->Player.Pos = V2F(0, 0);
 
             Result->UpdateCompleted = false;

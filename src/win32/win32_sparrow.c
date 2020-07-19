@@ -37,7 +37,7 @@ inline dim_2i
 Win32_DimFromRect(rect Source)
 {
     dim_2i Result;
-    Result.Width = Source.right - Source.left;
+    Result.Width  = Source.right - Source.left;
     Result.Height = Source.bottom - Source.top;
 
     return (Result);
@@ -69,12 +69,12 @@ Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2i Dim)
             Win32_MemoryFree(Buffer->Pixels);
         }
 
-        u32 PixelSize = Dim.Height * Dim.Width * BytesPerPixel;
-        Buffer->Width = Dim.Width;
-        Buffer->Height = Dim.Height;
+        u32 PixelSize         = Dim.Height * Dim.Width * BytesPerPixel;
+        Buffer->Width         = Dim.Width;
+        Buffer->Height        = Dim.Height;
         Buffer->BytesPerPixel = BytesPerPixel;
-        Buffer->Pitch = Dim.Width * BytesPerPixel;
-        Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
+        Buffer->Pitch         = Dim.Width * BytesPerPixel;
+        Buffer->Pixels        = Win32_MemoryAlloc(PixelSize);
 
         Assert(Buffer->Pixels);
     }
@@ -91,12 +91,12 @@ Win32_UpdateBuffer(void* DeviceContext, struct frame_buffer* Buffer, dim_2i Wind
 
     bitmap_info bi = {0};
 
-    bi.header.size = sizeof(bi.header);
-    bi.header.width = Buffer->Width;
-    bi.header.height = Buffer->Height; // rows will go top-down
-    bi.header.planes = 1;
+    bi.header.size         = sizeof(bi.header);
+    bi.header.width        = Buffer->Width;
+    bi.header.height       = Buffer->Height; // rows will go top-down
+    bi.header.planes       = 1;
     bi.header.bitsPerPixel = Buffer->BytesPerPixel * 8;
-    bi.header.compression = BI_RGB;
+    bi.header.compression  = BI_RGB;
 
     StretchDIBits(DeviceContext,
                   0, 0, Window.Width, Window.Height,
@@ -157,15 +157,15 @@ local b32
 Win32_FileExists(char* Filename)
 {
     s32 Attributes = GetFileAttributesA(Filename);
-    b32 Result = Attributes != -1;
+    b32 Result     = Attributes != -1;
 
     return (Result);
 }
 
 local void
-Win32_TryLoadDLL(char* Lockfile,
+Win32_TryLoadDLL(char*                Lockfile,
                  struct win32_module* Module,
-                 b32 IsMod)
+                 b32                  IsMod)
 {
     b32 LockFileExists = Win32_FileExists(Lockfile);
     if (!LockFileExists) {
@@ -178,7 +178,7 @@ Win32_TryLoadDLL(char* Lockfile,
                     Module->Main = GetProcAddress(Module->Library, "ModuleMain");
                 }
                 else {
-                    Module->Main = GetProcAddress(Module->Library, "UpdateState");
+                    Module->Main   = GetProcAddress(Module->Library, "UpdateState");
                     Module->Render = GetProcAddress(Module->Library, "Render");
                 }
             }
@@ -187,8 +187,8 @@ Win32_TryLoadDLL(char* Lockfile,
     else {
         if (Module->Library && FreeLibrary(Module->Library)) {
             Module->Library = 0;
-            Module->Main = 0;
-            Module->Render = 0;
+            Module->Main    = 0;
+            Module->Render  = 0;
         }
     }
     if (IsMod) {
@@ -202,7 +202,7 @@ Win32_TryLoadDLL(char* Lockfile,
 local struct text_buffer
 Win32_AllocatePathBuffer(char* Input)
 {
-    char* Buffer = Win32_MemoryAlloc(PATH_BUFFER_LENGTH);
+    char*              Buffer = Win32_MemoryAlloc(PATH_BUFFER_LENGTH);
     struct text_buffer Result = Text(0, PATH_BUFFER_LENGTH, Buffer);
     if (Input) {
         TextConcat(&Result, Input);
@@ -214,7 +214,7 @@ local struct win32_module
 Win32_InitModule(struct text_buffer* ModuleDirectory, char* Filename)
 {
     struct win32_module Result = {0};
-    struct text_buffer Path = Win32_AllocatePathBuffer(ModuleDirectory->Data);
+    struct text_buffer  Path   = Win32_AllocatePathBuffer(ModuleDirectory->Data);
     TextConcat(&Path, Filename);
     Assert(Path.Length > 0);
     Result.Name = Path.Data;
@@ -226,7 +226,7 @@ local struct text_buffer
 Win32_GetWorkingDirectory()
 {
     struct text_buffer Result = Win32_AllocatePathBuffer(0);
-    Result.Length = GetCurrentDirectoryA(Result.MaxLength, Result.Data); // TODO: Replace this with wide function!
+    Result.Length             = GetCurrentDirectoryA(Result.MaxLength, Result.Data); // TODO: Replace this with wide function!
     Assert(Result.Length > 0);
     return (Result);
 }
@@ -241,7 +241,8 @@ Win32_GetModuleDirectory(char* WorkingDirectory)
 #else
     // TODO: Copy core inside the main exe?
     // TextConcat(&Result, "\\Modules\\");
-    TextConcat(&Result, "\\");
+    TextConcat(&Result, "\\build\\");
+    // TextConcat(&Result, "\\");
 #endif SPARROW_DEV
 
     return (Result);
@@ -261,16 +262,16 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 {
 #if MULTITHREADING_DEV
     char* Param = "Test thread\n";
-    u32 ThreadId;
+    u32   ThreadId;
     void* ThreadHandle = CreateThread(0, 0, Test, Param, 0, &ThreadId);
     CloseHandle(ThreadHandle);
 #endif
 
-    win_class WindowClass = {0};
-    WindowClass.instance = Instance;
-    WindowClass.className = "ProjectSparrowWindowClass";
-    WindowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    WindowClass.cursor = LoadCursorA(0, IDC_ARROW); // TODO: We'll need to investigate removing cursor and implementing our own at some point
+    win_class WindowClass  = {0};
+    WindowClass.instance   = Instance;
+    WindowClass.className  = "ProjectSparrowWindowClass";
+    WindowClass.style      = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    WindowClass.cursor     = LoadCursorA(0, IDC_ARROW); // TODO: We'll need to investigate removing cursor and implementing our own at some point
     WindowClass.windowProc = Win32_DefaultWindowProc;
     Assert_exec(RegisterClassA(&WindowClass));
 
@@ -295,12 +296,12 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Win32_MainMemory = Win32_MainMemoryInit(MiB(200));
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
-    struct text_buffer ModuleDirectory = Win32_GetModuleDirectory(WorkingDirectory.Data);
-    struct text_buffer LockfilePath = Win32_AllocatePathBuffer(ModuleDirectory.Data);
+    struct text_buffer ModuleDirectory  = Win32_GetModuleDirectory(WorkingDirectory.Data);
+    struct text_buffer LockfilePath     = Win32_AllocatePathBuffer(ModuleDirectory.Data);
     TextConcat(&LockfilePath, "lock.tmp");
 
     struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
-    struct win32_module Mod = Win32_InitModule(&ModuleDirectory, "mod_weekend.dll");
+    struct win32_module Mod  = Win32_InitModule(&ModuleDirectory, "mod_weekend.dll");
 
     GlobalRunning = true;
     while (GlobalRunning) {
@@ -334,7 +335,7 @@ void
 WinMainCRTStartup(void)
 {
     char BigArray[4096];
-    BigArray[0] = 0;
+    BigArray[0]  = 0;
     u32 ExitCode = WinMain(GetModuleHandleA(0), 0, 0, 0);
     ExitProcess(ExitCode);
 }

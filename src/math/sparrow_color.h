@@ -28,9 +28,7 @@ RGBA(f32 R, f32 G, f32 B, f32 A)
 inline b32
 ColorsEqual(v3 A, v3 B)
 {
-    b32 Result = (A.r == B.r) &&
-                 (A.g == B.g) &&
-                 (A.b == B.b);
+    b32 Result = (A.r == B.r) && (A.g == B.g) && (A.b == B.b);
     return (Result);
 }
 
@@ -44,6 +42,15 @@ ColorLerp(color3 A, color3 B, f32 t)
 
     return (Result);
 }
+EXTERN_C_END
+
+#ifdef __cplusplus
+// clang-format off
+inline color3 RGB(u32 R, u32 G, u32 B) { return RGB((f32)R, (f32)G, (f32)B); }
+inline color3 RGB(s32 R, s32 G, s32 B) { return RGB((f32)R, (f32)G, (f32)B); }
+inline color3 RGB(f64 R, f64 G, f64 B) { return RGB((f32)R, (f32)G, (f32)B); }
+// clang-format on
+#endif // __cplusplus
 
 // NOTE: Color constants
 // clang-format off
@@ -62,8 +69,6 @@ ColorLerp(color3 A, color3 B, f32 t)
 # define Color_Cyan      RGB(0,    0xFF, 0xFF)
 # define Color_Pink      RGB(0xFF, 0,    0xFF)
 // clang-format on
-
-EXTERN_C_END
 
 #define SPARROW_COLOR_H
 #endif

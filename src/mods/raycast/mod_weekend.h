@@ -7,26 +7,48 @@
 
 struct ray
 {
-    p3 Origin;
-    v3 Direction;
+    p3  Origin;
+    v3  Direction;
+    v3  Normal;
+    f32 InvLength;
 };
 
-// TODO: implement proper unit vector in sparrow_vector!
-inline v3
-UnitVector(v3 A)
+#include "mod_raycast_geometry.h"
+
+struct camera
 {
-    f32 LenSquared = (A.x * A.x) + (A.y * A.y) + (A.z * A.z);
-    v3 Result = A * (1.0f / SquareRoot(LenSquared));
-    return (Result);
-}
+    b32 IsInitialized;
+    f32 AspectRatio;
+    s32 ImageWidth;
+    s32 ImageHeight;
+
+    f32 ViewportHeight;
+    f32 ViewportWidth;
+    f32 FocalLength;
+
+    v3 Origin;
+    v3 Horizontal;
+    v3 Vertical;
+    v3 LowerLeftCorner;
+};
+
+#define SPHERES_COUNT 1
+
+struct world
+{
+    camera MainCamera;
+    sphere Spheres[SPHERES_COUNT];
+};
 
 inline ray
-RAY(p3 Origin, v3 Direction)
+CreateRay(p3 Origin, v3 Direction)
 {
     ray Result;
 
-    Result.Origin = Origin;
-    Result.Direction = UnitVector(Direction);
+    Result.Origin    = Origin;
+    Result.Direction = Direction;
+    Result.Normal    = Normalize(Direction);
+    Result.InvLength = 1.0f / LenSquared(Result.Direction);
 
     return (Result);
 }

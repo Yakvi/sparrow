@@ -103,7 +103,7 @@ Write-Host ""
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32\win32_sparrow.c"
 # $win32file = "wintest.cpp"
-# $debug = "-O2"
+$debug = "-O2"
 $optimized = '', ''
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -124,12 +124,12 @@ Output-Logs -data $win32executable -title "win32 platform layer" -filename "win3
 $sparrow = & cl $c $dllc $debug $srcDir\sparrow.c $optimized $linker $dlllinker
 Output-Logs -data $sparrow -title "sparrow dll"
 
-# NOTE Module DLLs
-$writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
-Output-Logs -data $writer -title "writer dll"
+# # NOTE Module DLLs
+# $writer = & cl $c $dllc $debug $srcDir\mods\writer\mod_writer.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+# Output-Logs -data $writer -title "writer dll"
 
-$everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
-Output-Logs -data $everscroll -title "everscroll dll"
+# $everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+# Output-Logs -data $everscroll -title "everscroll dll"
 
 $raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp $optimized $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
@@ -141,8 +141,8 @@ del lock.tmp
 # $ssemath = &cl -nologo -fp:fast -fp:except- /O2 /Tp $srcDir/thirdparty/sse-math/sse2_mathfun_test.c
 # Output-Logs -data $ssemath -title "SSE Math functions benchmark"
 
-$mathoptimized = &cl $c -O2 -Tp $srcDir/test/sparrow_trig_test.c $optimized
-Output-Logs -data $mathoptimized -title "Optimized Math functions benchmark"
+# $mathoptimized = &cl $c -O2 -Tp $srcDir/test/sparrow_trig_test.c $optimized
+# Output-Logs -data $mathoptimized -title "Optimized Math functions benchmark"
 
 # TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker

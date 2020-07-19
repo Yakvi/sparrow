@@ -361,3 +361,47 @@ I added Add, Subtract, Multiply and Divide functions to the different vector sce
 One thing that immediately jumped to my attention that I have swapped top and bottom. I mean, it kind of was a point beforehand, but I'm starting to think that I need to account for the origin position during the console definition. Will try to tackle it next time. 
 
 Also yay, this project is officially one "month" old! Or about half a year, depends on your point of view. 
+
+## 31. July 19, 2020 - Raytracing basics
+
+I finally started making my way through the [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) ebook-tutorial. It was actually this project which prompted me to: 
+
+* Introduce a module system
+* Implement C++ support in the core modules
+* Build some trig functions (courtesy of [Julien Pommier](http://gruntthepeon.free.fr/ssemath/) and [Tolga Mizrak](https://github.com/to-miz/sse_mathfun_extension))
+* Build a pretty comprehensive vector library (courtesy of [Zakary Strange et al.](https://github.com/HandmadeMath/Handmade-Math/))
+
+So, basically, day 25 onwards. Not bad at all, all things considering. Now, looking back at the changes of today. 
+
+First of all, I finalized the `sparrow_vector.h`, for now. Many interesting things remain in the `HandmadeMath`, like matrix operations, common graphics actions, etc. But, for what's it worth, for now I feel that's enough. Already we're talking about dozens of symbols, between the pure C implementations, shortcut functions, as well as C++ overrides and operator functions. This stuff creeps up on you pretty fast. 
+
+I'm actually considering writing two headers for it, one for C projects and another one for C++ projects, as well as compiling the library as a separate translation unit. Kinda kills the point of `inline` though...
+
+Anyway, we now have: 
+
+* Vector 2 with floating point members
+* Vector 2 with integer members (I guess I could union them together with the one above but for now I don't feel it's worth potential confusion)
+* Vector 3 (floating point)
+* Vector 4 (floating point)
+
+For each one of these, I have:
+
+* "Constructor" function
+* `Add` (including +=)
+* `Sub` (including -=)
+* `Mul` (including *=)
+* `Div` (including /=)
+* `Compare`
+* `Inner` (dot product)
+* `Hadamard`
+* `LenSquared`
+* `Length`
+* `Normalize` (unit vector)
+
+Plus I have conversions between v2f and v2i, and a `Cross` product for v3. Again, pretty happy with the set for now. 
+
+In the meantime, I started making my way through the [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html). As usual, I'm proceeding with a deliberate slowness, trying to fully understand what I'm typing in. It makes me want also to watch Casey's streams about Handmade Ray...
+
+I also hooked the raytracer to my input system and the framerate is quite good in the optimized build! This reminds me that I'll need to implement at least a framerate indicator at one point. Not today. 
+
+![Raytracing a ball. Interesting artifacts appear now and then.](media/Day32/day32.gif)

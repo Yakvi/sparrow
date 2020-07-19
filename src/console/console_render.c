@@ -13,8 +13,10 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2i ConsoleSize, 
             (u32)(Pixel->Pos.x * RealSize.Width),
             (u32)(Pixel->Pos.y * RealSize.Height)};
 
-        Assert(PixelBase.x + Size.Width <= Buffer->Width);
-        Assert(PixelBase.y + Size.Height <= Buffer->Height);
+        s32 OverflowX = (PixelBase.x + Size.Width) - Buffer->Width;
+        if (OverflowX >= 0) { Size.Width -= OverflowX; }
+        s32 OverflowY = (PixelBase.y + Size.Height) - Buffer->Height;
+        if (OverflowY >= 0) { Size.Height -= OverflowY; }
 
         DrawSolidColorRectangle(Buffer, Pixel->Color, PixelBase, Size);
     }

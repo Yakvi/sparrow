@@ -120,6 +120,7 @@ typedef double f64;
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 #define Abs(a) ((a) > 0 ? (a) : -(a))
 #define Mod(a, m) ((a) % (m)) >= 0 ? ((a) % (m)) : (((a) % (m)) + (m))
+#define Square(a) ((a) * (a))
 
 #if COMPILER_MSVC
 #include <intrin.h> // few other headers for intrinsic functions (rdtsc, cpuid, SSE, SSE2, etc..)

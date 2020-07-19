@@ -3,15 +3,18 @@
 #include "sparrow_text.h"
 
 local void
-InitConsole(struct console* Console, s32 Width, s32 Height, color3 Color)
+InitConsole(struct console* Console, s32 Width, s32 Height, u32 PixelOrder, color3 Color)
 {
     Console->IsInitialized = false;
 
-    Console->Size = V2I(Width, Height);
-    Console->Length = Console->Size.Width * Console->Size.Height;
-    Console->Center = V2I((s32)(Console->Size.Width * 0.5f),
+    Console->Size         = V2I(Width, Height);
+    Console->InvertedSize = V2F(1.0f / (Width - 1), 1.0f / (Height - 1));
+    Console->PixelCount   = Console->Size.Width * Console->Size.Height;
+    Console->Center       = V2I((s32)(Console->Size.Width * 0.5f),
                           (s32)(Console->Size.Height * 0.5f));
-    Console->CursorPos = V2I(0, 0);
+    Console->CursorPos    = V2I(0, 0);
+
+    Console->PixelOrder = PixelOrder;
 
     struct pixel* Row = Console->Pixels;
     for (s32 Y = 0;
@@ -23,9 +26,14 @@ InitConsole(struct console* Console, s32 Width, s32 Height, color3 Color)
              ++X) {
 
             Assert(Pixel);
-            if (!Console->IsInitialized) {
+
+            if (Console->PixelOrder == Console_BottomUp) {
                 Pixel->Pos = V2I(X, (Console->Size.Height - 1 - Y));
             }
+            else {
+                Pixel->Pos = V2I(X, Y);
+            }
+
             Pixel->Color = Color;
             Pixel->Flags = 0;
             ++Pixel;
@@ -43,15 +51,22 @@ GetPixel(struct console* Console, v2i Coords)
     Assert(Coords.x < Console->Size.Width);
     Assert(Coords.y < Console->Size.Height);
 
-    u32 Y = Console->Size.Width * Coords.y;
+    u32 Y   = Console->Size.Width * Coords.y;
     u32 Pos = Y + Coords.x;
 
-    Assert(Pos < Console->Length);
+    Assert(Pos < Console->PixelCount);
 
     struct pixel* Result = Console->Pixels + Pos;
 
+#if SPARROW_DEV
     Assert(Result->Pos.x == Coords.x);
-    Assert(Result->Pos.y == Console->Size.Height - 1 - Coords.y);
+    if (Console->PixelOrder == Console_BottomUp) {
+        Assert(Result->Pos.y == Console->Size.Height - 1 - Coords.y);
+    }
+    else {
+        Assert(Result->Pos.y == Coords.y);
+    }
+#endif
 
     return (Result);
 }
@@ -67,7 +82,7 @@ ClearConsole(struct console* Console, struct user_input* Input)
     // NOTE: Cursor clamping
     V2iGridClamp(Console, &CursorPos);
 
-    Console->CursorPos = CursorPos;
+    Console->CursorPos                           = CursorPos;
     GetPixel(Console, Console->CursorPos)->Flags = Pixel_Hovered;
 }
 
@@ -83,7 +98,7 @@ VerticalGradient(struct console* Console, color3 Start, color3 End)
          Y < Console->Size.Height;
          ++Y) {
         struct pixel* Pixel = Row;
-        color3 Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
+        color3        Color = ColorLerp(Start, End, (f32)Y * InvertedHeight);
         for (s32 X = 0;
              X < Console->Size.Width;
              ++X) {
@@ -164,8 +179,7 @@ Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color3 Color)
             ++Pos.x;
         }
         // Try to draw
-        if ((Pos.x < Console->Size.Width) &&
-            ((Pos.y < Console->Size.Height))) {
+        if ((Pos.x < Console->Size.Width) && ((Pos.y < Console->Size.Height))) {
             Point(Console, Pos, Color);
         }
     }
@@ -220,8 +234,7 @@ ButtonHover(struct console* Console, v2i CursorPos, v2i TopLeft, char* Input)
     b32 Result = false;
 
     dim_2i Dim = TextBox(Console, TopLeft, Color_Gray13, Input, Color_Black);
-    if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) &&
-        (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
+    if ((CursorPos.x >= TopLeft.x) && (CursorPos.x < (TopLeft.x + (s32)Dim.Width)) && (CursorPos.y >= TopLeft.y) && (CursorPos.y < (TopLeft.y + (s32)Dim.Height))) {
         TextBox(Console, TopLeft, RGB(0xCC, 0xCC, 0xCC), Input, Color_Black);
         // Line(Console, TopLeft, Dim.Width, Line_Horizontal, Color_Black);
         // Line(Console, TopLeft, Dim.Height, Line_Vertical, Color_Black);

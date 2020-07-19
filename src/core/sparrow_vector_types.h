@@ -49,14 +49,20 @@ typedef union v3
 
     struct
     {
-        v2 xy;
+        v2    xy;
         float Ignored0_;
     };
 
     struct
     {
         float Ignored1_;
-        v2 yz;
+        v2    yz;
+    };
+
+    struct
+    {
+        float Ignored2_;
+        v2    xz;
     };
 
     float Elements[3];
@@ -100,7 +106,7 @@ typedef union v4
 
     struct
     {
-        v2 xy;
+        v2    xy;
         float Ignored0_;
         float Ignored1_;
     };
@@ -108,7 +114,7 @@ typedef union v4
     struct
     {
         float Ignored2_;
-        v2 yz;
+        v2    yz;
         float Ignored3_;
     };
 
@@ -116,7 +122,7 @@ typedef union v4
     {
         float Ignored4_;
         float Ignored5_;
-        v2 zw;
+        v2    zw;
     };
 
     __m128 VectorString;
