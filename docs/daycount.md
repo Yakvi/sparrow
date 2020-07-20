@@ -405,3 +405,13 @@ In the meantime, I started making my way through the [Ray Tracing in One Weekend
 I also hooked the raytracer to my input system and the framerate is quite good in the optimized build! This reminds me that I'll need to implement at least a framerate indicator at one point. Not today. 
 
 ![Raytracing a ball. Interesting artifacts appear now and then.](media/Day32/day32.gif)
+
+## 32. July 20, 2020 - Understanding quadratic equations
+
+I spent a couple hours trying to understand better the math behind the sphere hit code. I never studied vector algebra in school, so right now I'm generally struggling with what I see. 
+
+I started from looking up what `Discriminant` in the `Hit` function means, and [quickly realized](https://en.wikipedia.org/wiki/Discriminant) that it has t do exactly with the [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_function). The formula for Degree 2 immediately jumped to my eyes as the same one featured in the tutorial. 
+
+Overall, I didn't understand much of it. However, it seems something simple enough to try and understand on my own. First, I'll need to return to the formula by which the sphere was calculated, and try to understand how it arrived until here. 
+
+Pretty much it. Other than that, made some refactoring and fixed a bug with the color output (color overflows). 

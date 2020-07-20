@@ -103,7 +103,7 @@ Write-Host ""
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32\win32_sparrow.c"
 # $win32file = "wintest.cpp"
-$debug = "-O2"
+# $debug = "-O2"
 $optimized = '', ''
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()

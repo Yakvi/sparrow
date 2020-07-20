@@ -11,6 +11,7 @@ struct sphere
 {
     p3  Center;
     f32 Radius;
+    f32 RadiusSq;
 };
 
 inline sphere
@@ -18,28 +19,43 @@ CreateSphere(p3 Center, f32 Radius)
 {
     sphere Result;
 
-    Result.Center = Center;
-    Result.Radius = Radius;
+    Result.Center   = Center;
+    Result.Radius   = Radius;
+    Result.RadiusSq = Square(Radius);
 
     return (Result);
 }
 
-local f32
-Hit(ray Ray, sphere* Sphere, f32 MinDistance, f32 MaxDistance)
+local b32
+Hit(ray Ray, sphere* Sphere, f32 MinDistance, f32 MaxDistance, p3* HitNormal)
 {
-    f32 Result = -1.0f;
+    b32 Result = false;
 
     // Attempt to throw the ray at the sphere center
-    v3  OC = Ray.Origin - Sphere->Center;
-    f32 a  = LenSquared(Ray.Direction);
-    f32 b  = Inner(OC, Ray.Direction);
-    f32 c  = LenSquared(OC) - Square(Sphere->Radius);
+    v3  DirectHitVector   = Ray.Origin - Sphere->Center;
+    f32 RayDirectionLenSq = LenSquared(Ray.Direction);
+    f32 AngleCoefficient  = Inner(DirectHitVector, Ray.Direction);
+    f32 SphereNormalLenSq = LenSquared(DirectHitVector) - Sphere->RadiusSq;
 
-    f32 discriminant = Square(b) - (a * c);
+    f32 Discriminant = Square(AngleCoefficient) - (RayDirectionLenSq * SphereNormalLenSq);
 
-    if (discriminant >= 0) {
+    if (Discriminant > 0) {
+        f32 DiscRoot = SquareRoot(Discriminant);
+        
         // Find the ray length at hit
-        Result = (-b - SquareRoot(discriminant)) * Ray.InvLength;
+        f32 HitPoint1 = (-AngleCoefficient - DiscRoot) * Ray.InvLenSquared;
+        f32 HitPoint2 = (-AngleCoefficient + DiscRoot) * Ray.InvLenSquared;
+        // Check if any hit is valid and record it
+        if (MinDistance < HitPoint1 && HitPoint1 < MaxDistance) {
+            p3 HitPos  = RayAt(Ray, HitPoint1);
+            *HitNormal = Normalize(HitPos - Sphere->Center);// / Sphere->Radius;
+            Result     = true;
+        }
+        else if (MinDistance < HitPoint2 && HitPoint2 < MaxDistance) {
+            p3 HitPos  = RayAt(Ray, HitPoint2);
+            *HitNormal = Normalize(HitPos - Sphere->Center);// / Sphere->Radius;
+            Result     = true;
+        }
     }
 
     return (Result);
