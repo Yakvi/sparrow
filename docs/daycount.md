@@ -327,7 +327,7 @@ After some lengthy googling, I was surprised how few things are out there. These
 
 So, I'm lucky that, once again, [the thread that started it all](https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows) came to the rescue. Next time, I'll be able to invent most of the functions used by `handmade-math` and hopefully be able to cheese my way out of the remaining couple.
 
-In the meantime, I started cleaning out my code in preparation of the dependencies introduction/adaptation. I moved around some vector/type code, removed header files cross-dependency, added back some standard headers for intrinsics and compiler-used code. As far as I can tell, this doesn't add any bloat to the executables. Speaking of, the release versions are currently sitting at the following values: 
+In the meantime, I started cleaning out my code in preparation of the dependencies introduction/adaptation. I moved around some vector/type code, removed header files cross-dependency, added back some standard headers for intrinsics and compiler-used code. As far as I can tell, this doesn't add any bloat to the executables. Speaking of, the release versions are currently sitting at the following values:
 
     - Win32 executable                                  6656 bytes
     - Sparrow dll (with "console" rendering system)     4096 bytes
@@ -346,9 +346,9 @@ Nevertheless, I still brought 5 new math functions into the mix, both in `float`
 
 Most of today went into adapting code of [SSE Math Functions extensions](https://github.com/to-miz/sse_mathfun_extension/) to my tastes. It now works, in my opinion much better than my yesterday's attempts.
 
-I'm done with Trig for now. I copied over [cephes](http://www.netlib.org/cephes/) math library and maybe even eventually will attempt to implement `asin` and `acos` (the latter, as it turns out, being a fancy inversion of `asin`). But I'm a bit fatigued by now. This is too much of an unfamiliar ground for me, so I'll try to avoid it. 
+I'm done with Trig for now. I copied over [cephes](http://www.netlib.org/cephes/) math library and maybe even eventually will attempt to implement `asin` and `acos` (the latter, as it turns out, being a fancy inversion of `asin`). But I'm a bit fatigued by now. This is too much of an unfamiliar ground for me, so I'll try to avoid it.
 
-I spent the rest of the day reshuffling the file structure (again), as well as dependency structure (again). In the end, I settled for having a  separate `math` folder, and started redefining my vector types in the newly created `sparrow_vector_types.h`. Now the work will begin to bring [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math) into my project.
+I spent the rest of the day reshuffling the file structure (again), as well as dependency structure (again). In the end, I settled for having a separate `math` folder, and started redefining my vector types in the newly created `sparrow_vector_types.h`. Now the work will begin to bring [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math) into my project.
 
 ## 30. July 16, 2020 - Writing vector helpers
 
@@ -358,63 +358,63 @@ I started building my vector library from a few scalar definitions (which might 
 
 I added Add, Subtract, Multiply and Divide functions to the different vector scenarios, as well as made extensions/shortcuts for C++. I then plugged it all in the viewer to test it out.
 
-One thing that immediately jumped to my attention that I have swapped top and bottom. I mean, it kind of was a point beforehand, but I'm starting to think that I need to account for the origin position during the console definition. Will try to tackle it next time. 
+One thing that immediately jumped to my attention that I have swapped top and bottom. I mean, it kind of was a point beforehand, but I'm starting to think that I need to account for the origin position during the console definition. Will try to tackle it next time.
 
-Also yay, this project is officially one "month" old! Or about half a year, depends on your point of view. 
+Also yay, this project is officially one "month" old! Or about half a year, depends on your point of view.
 
 ## 31. July 19, 2020 - Raytracing basics
 
-I finally started making my way through the [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) ebook-tutorial. It was actually this project which prompted me to: 
+I finally started making my way through the [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) ebook-tutorial. It was actually this project which prompted me to:
 
-* Introduce a module system
-* Implement C++ support in the core modules
-* Build some trig functions (courtesy of [Julien Pommier](http://gruntthepeon.free.fr/ssemath/) and [Tolga Mizrak](https://github.com/to-miz/sse_mathfun_extension))
-* Build a pretty comprehensive vector library (courtesy of [Zakary Strange et al.](https://github.com/HandmadeMath/Handmade-Math/))
+- Introduce a module system
+- Implement C++ support in the core modules
+- Build some trig functions (courtesy of [Julien Pommier](http://gruntthepeon.free.fr/ssemath/) and [Tolga Mizrak](https://github.com/to-miz/sse_mathfun_extension))
+- Build a pretty comprehensive vector library (courtesy of [Zakary Strange et al.](https://github.com/HandmadeMath/Handmade-Math/))
 
-So, basically, day 25 onwards. Not bad at all, all things considering. Now, looking back at the changes of today. 
+So, basically, day 25 onwards. Not bad at all, all things considering. Now, looking back at the changes of today.
 
-First of all, I finalized the `sparrow_vector.h`, for now. Many interesting things remain in the `HandmadeMath`, like matrix operations, common graphics actions, etc. But, for what's it worth, for now I feel that's enough. Already we're talking about dozens of symbols, between the pure C implementations, shortcut functions, as well as C++ overrides and operator functions. This stuff creeps up on you pretty fast. 
+First of all, I finalized the `sparrow_vector.h`, for now. Many interesting things remain in the `HandmadeMath`, like matrix operations, common graphics actions, etc. But, for what's it worth, for now I feel that's enough. Already we're talking about dozens of symbols, between the pure C implementations, shortcut functions, as well as C++ overrides and operator functions. This stuff creeps up on you pretty fast.
 
 I'm actually considering writing two headers for it, one for C projects and another one for C++ projects, as well as compiling the library as a separate translation unit. Kinda kills the point of `inline` though...
 
-Anyway, we now have: 
+Anyway, we now have:
 
-* Vector 2 with floating point members
-* Vector 2 with integer members (I guess I could union them together with the one above but for now I don't feel it's worth potential confusion)
-* Vector 3 (floating point)
-* Vector 4 (floating point)
+- Vector 2 with floating point members
+- Vector 2 with integer members (I guess I could union them together with the one above but for now I don't feel it's worth potential confusion)
+- Vector 3 (floating point)
+- Vector 4 (floating point)
 
 For each one of these, I have:
 
-* "Constructor" function
-* `Add` (including +=)
-* `Sub` (including -=)
-* `Mul` (including *=)
-* `Div` (including /=)
-* `Compare`
-* `Inner` (dot product)
-* `Hadamard`
-* `LenSquared`
-* `Length`
-* `Normalize` (unit vector)
+- "Constructor" function
+- `Add` (including +=)
+- `Sub` (including -=)
+- `Mul` (including \*=)
+- `Div` (including /=)
+- `Compare`
+- `Inner` (dot product)
+- `Hadamard`
+- `LenSquared`
+- `Length`
+- `Normalize` (unit vector)
 
-Plus I have conversions between v2f and v2i, and a `Cross` product for v3. Again, pretty happy with the set for now. 
+Plus I have conversions between v2f and v2i, and a `Cross` product for v3. Again, pretty happy with the set for now.
 
 In the meantime, I started making my way through the [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html). As usual, I'm proceeding with a deliberate slowness, trying to fully understand what I'm typing in. It makes me want also to watch Casey's streams about Handmade Ray...
 
-I also hooked the raytracer to my input system and the framerate is quite good in the optimized build! This reminds me that I'll need to implement at least a framerate indicator at one point. Not today. 
+I also hooked the raytracer to my input system and the framerate is quite good in the optimized build! This reminds me that I'll need to implement at least a framerate indicator at one point. Not today.
 
 ![Raytracing a ball. Interesting artifacts appear now and then.](media/Day32/day32.gif)
 
 ## 32. July 20, 2020 - Understanding quadratic equations
 
-I spent a couple hours trying to understand better the math behind the sphere hit code. I never studied vector algebra in school, so right now I'm generally struggling with what I see. 
+I spent a couple hours trying to understand better the math behind the sphere hit code. I never studied vector algebra in school, so right now I'm generally struggling with what I see.
 
-I started from looking up what `Discriminant` in the `Hit` function means, and [quickly realized](https://en.wikipedia.org/wiki/Discriminant) that it has t do exactly with the [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_function). The formula for Degree 2 immediately jumped to my eyes as the same one featured in the tutorial. 
+I started from looking up what `Discriminant` in the `Hit` function means, and [quickly realized](https://en.wikipedia.org/wiki/Discriminant) that it has t do exactly with the [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_function). The formula for Degree 2 immediately jumped to my eyes as the same one featured in the tutorial.
 
-Overall, I didn't understand much of it. However, it seems something simple enough to try and understand on my own. First, I'll need to return to the formula by which the sphere was calculated, and try to understand how it arrived until here. 
+Overall, I didn't understand much of it. However, it seems something simple enough to try and understand on my own. First, I'll need to return to the formula by which the sphere was calculated, and try to understand how it arrived until here.
 
-Pretty much it. Other than that, made some refactoring and fixed a bug with the color output (color overflows). 
+Pretty much it. Other than that, made some refactoring and fixed a bug with the color output (color overflows).
 
 ## 33. July 25, 2020 - Quadratic Math Considerations
 
@@ -422,41 +422,41 @@ Last time, I tried to investigate quadratic functions a bit. The main problem is
 
 At its simplest, a quadratic function is where one of its elements is... quadratic, i.e. squared (hence the name). Thefore the single-variable quadratic function has the form `ax² + bx + c = 0`, where `a` cannot be `0`. (source: [Wikipedia](https://en.wikipedia.org/wiki/Quadratic_function)). The reason for the latter is simple: if there's no a, there's no quadratic function. (Does it mean we can still have `ax² + c = 0` or `ax² + bx = 0`?). Its function is a parabola, quite easy. I do remember some of this!
 
-Now, the function from which we left off is `t = b² - 4ac` or, in its "simplified form", `t = (b/2)² - ac`. So why does it look like this? 
+Now, the function from which we left off is `t = b² - 4ac` or, in its "simplified form", `t = (b/2)² - ac`. So why does it look like this?
 
 Let's remember that, for each point on a ray, we can test if it hits the sphere using the following formula:
 
 ![Breakdown of the sphere hit test](media/Day33/img1.png)
 
-But we don't care about testing every single point on a ray by plugging in arbitrary `t` values (_Or do we? Note for the future..._). We want to find `t`, and, in this context, the terms can be renamed as follows: 
+But we don't care about testing every single point on a ray by plugging in arbitrary `t` values (_Or do we? Note for the future..._). We want to find `t`, and, in this context, the terms can be renamed as follows:
 
 ![Renaming the terms](media/Day33/img2.png)
 
-And adapted to programming like this: 
+And adapted to programming like this:
 
 ![Programmer-friendly view](media/Day33/img3.png)
 
-Now, let's set aside for a moment `ax²` and `c`, and let's inspect further `bx`. Here, `t` is multiplied to a member of a dot product, so let's try and see what would it take to extract it from here: 
+Now, let's set aside for a moment `ax²` and `c`, and let's inspect further `bx`. Here, `t` is multiplied to a member of a dot product, so let's try and see what would it take to extract it from here:
 
 ![Extracting t](media/Day33/img4.png)
 
-We can see that algebraic equations simply allow us to extract `t` from the dot product, which finally brings us to our quadratic equation 
+We can see that algebraic equations simply allow us to extract `t` from the dot product, which finally brings us to our quadratic equation
 
 ![Final quadratic equation](media/Day33/img5.png)
 
-where `x` is the element to be found, and `a` cannot be 0. 
+where `x` is the element to be found, and `a` cannot be 0.
 
-So far, so good. Now what is a discriminant and why are we trying to find it? 
+So far, so good. Now what is a discriminant and why are we trying to find it?
 
-Discriminant (noted as `D` or `Δ`) is a number which determines whether a quadratic equation has 1, 2 or 0 real roots. For our purposes, it signifies how many intersects with a sphere a given ray has. 
+Discriminant (noted as `D` or `Δ`) is a number which determines whether a quadratic equation has 1, 2 or 0 real roots. For our purposes, it signifies how many intersects with a sphere a given ray has.
 
 We can then, based on this information, find the actual `t`/s, if any.
 
-For [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_equation#Discriminant), discriminant has a very precise shape. For an equation `ax² + bx + c = 0` (where `a` is not 0), 
+For [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_equation#Discriminant), discriminant has a very precise shape. For an equation `ax² + bx + c = 0` (where `a` is not 0),
 
 ![Quadratic formula](media/day33/img7.png)
 
- If `a` _is_ 0, there's no reason for this complexity, as the answer is 1. In our case, this would happen when direction is 0, but it's not something that we would ever allow (because this would mean, for example, allowing division by 0 elsewhere), and I'm not even sure is possible.
+If `a` _is_ 0, there's no reason for this complexity, as the answer is 1. In our case, this would happen when direction is 0, but it's not something that we would ever allow (because this would mean, for example, allowing division by 0 elsewhere), and I'm not even sure is possible.
 
 Anyway, once you have your `D` you can go ahead and find the actual `t` by applying the ["quadratic formula"](https://en.wikipedia.org/wiki/Quadratic_formula):
 
@@ -474,7 +474,7 @@ where `h` is half `b`. Ultmately, if `D` is greater than 0, `t` is calculated us
 
 And that's pretty much it. After that you might want to package your data somehow and prepare for output.
 
-I guess it makes a bit more sense to me now. Maybe. In the meantime, I packaged this knowledge in the following manner for sphere hit code: 
+I guess it makes a bit more sense to me now. Maybe. In the meantime, I packaged this knowledge in the following manner for sphere hit code:
 
     v3  DirectHitVector   = Ray.Origin - Sphere->Center;
     f32 RayDirectionLenSq = LenSquared(Ray.Direction);                      // a
