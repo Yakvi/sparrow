@@ -415,3 +415,81 @@ I started from looking up what `Discriminant` in the `Hit` function means, and [
 Overall, I didn't understand much of it. However, it seems something simple enough to try and understand on my own. First, I'll need to return to the formula by which the sphere was calculated, and try to understand how it arrived until here. 
 
 Pretty much it. Other than that, made some refactoring and fixed a bug with the color output (color overflows). 
+
+## 33. July 25, 2020 - Quadratic Math Considerations
+
+Last time, I tried to investigate quadratic functions a bit. The main problem is that, in the code I'm looking at, quadratic algebra is mixed with vectors, and I only have a superficial understanding of both.
+
+At its simplest, a quadratic function is where one of its elements is... quadratic, i.e. squared (hence the name). Thefore the single-variable quadratic function has the form `ax² + bx + c = 0`, where `a` cannot be `0`. (source: [Wikipedia](https://en.wikipedia.org/wiki/Quadratic_function)). The reason for the latter is simple: if there's no a, there's no quadratic function. (Does it mean we can still have `ax² + c = 0` or `ax² + bx = 0`?). Its function is a parabola, quite easy. I do remember some of this!
+
+Now, the function from which we left off is `t = b² - 4ac` or, in its "simplified form", `t = (b/2)² - ac`. So why does it look like this? 
+
+Let's remember that, for each point on a ray, we can test if it hits the sphere using the following formula:
+
+![Breakdown of the sphere hit test](media/Day33/img1.png)
+
+But we don't care about testing every single point on a ray by plugging in arbitrary `t` values (_Or do we? Note for the future..._). We want to find `t`, and, in this context, the terms can be renamed as follows: 
+
+![Renaming the terms](media/Day33/img2.png)
+
+And adapted to programming like this: 
+
+![Programmer-friendly view](media/Day33/img3.png)
+
+Now, let's set aside for a moment `ax²` and `c`, and let's inspect further `bx`. Here, `t` is multiplied to a member of a dot product, so let's try and see what would it take to extract it from here: 
+
+![Extracting t](media/Day33/img4.png)
+
+We can see that algebraic equations simply allow us to extract `t` from the dot product, which finally brings us to our quadratic equation 
+
+![Final quadratic equation](media/Day33/img5.png)
+
+where `x` is the element to be found, and `a` cannot be 0. 
+
+So far, so good. Now what is a discriminant and why are we trying to find it? 
+
+Discriminant (noted as `D` or `Δ`) is a number which determines whether a quadratic equation has 1, 2 or 0 real roots. For our purposes, it signifies how many intersects with a sphere a given ray has. 
+
+We can then, based on this information, find the actual `t`/s, if any.
+
+For [quadratic equations](https://en.wikipedia.org/wiki/Quadratic_equation#Discriminant), discriminant has a very precise shape. For an equation `ax² + bx + c = 0` (where `a` is not 0), 
+
+![Quadratic formula](media/day33/img7.png)
+
+ If `a` _is_ 0, there's no reason for this complexity, as the answer is 1. In our case, this would happen when direction is 0, but it's not something that we would ever allow (because this would mean, for example, allowing division by 0 elsewhere), and I'm not even sure is possible.
+
+Anyway, once you have your `D` you can go ahead and find the actual `t` by applying the ["quadratic formula"](https://en.wikipedia.org/wiki/Quadratic_formula):
+
+![Quadratic formula](media/day33/img6.png)
+
+where the square rooted part is actually `D`.
+
+Shirley goes further and simplifies `D` to become
+
+![Quadratic formula](media/day33/img8.png)
+
+where `h` is half `b`. Ultmately, if `D` is greater than 0, `t` is calculated using the formula
+
+![Quadratic formula](media/day33/img9.png)
+
+And that's pretty much it. After that you might want to package your data somehow and prepare for output.
+
+I guess it makes a bit more sense to me now. Maybe. In the meantime, I packaged this knowledge in the following manner for sphere hit code: 
+
+    v3  DirectHitVector   = Ray.Origin - Sphere->Center;
+    f32 RayDirectionLenSq = LenSquared(Ray.Direction);                      // a
+    f32 AngleCoefficient  = Inner(DirectHitVector, Ray.Direction);          // h
+    f32 SphereNormalLenSq = LenSquared(DirectHitVector) - Sphere->RadiusSq; // c
+
+    // find the discriminant based on formula h² - ac
+    f32 Discriminant = Square(AngleCoefficient) - (RayDirectionLenSq * SphereNormalLenSq);
+
+    if (Discriminant > 0) {
+        f32 DiscRoot = SquareRoot(Discriminant);
+
+        // Find the ray length at hit
+        f32 HitPoint1 = (-AngleCoefficient - DiscRoot) * Ray.InvLenSquared;
+        f32 HitPoint2 = (-AngleCoefficient + DiscRoot) * Ray.InvLenSquared;
+
+        // Do stuff with t
+    }

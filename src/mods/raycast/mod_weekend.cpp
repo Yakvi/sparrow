@@ -49,7 +49,7 @@ RayColor(world* World, ray Ray)
     for (u32 Index = 0; Index < ArrayCount(World->Spheres); ++Index) {
         sphere* Sphere = World->Spheres + Index;
         p3      HitNormal;
-        if (Hit(Ray, Sphere, 0.0f, 20.0f, &HitNormal)) {
+        if (RayHit(Ray, Sphere, 0.0f, 20.0f, &HitNormal)) {
 
             Result = (HitNormal + RGB(1, 1, 1)) * 0.5f;
 

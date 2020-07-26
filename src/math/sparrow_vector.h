@@ -868,6 +868,17 @@ NormalizeV4(v4 A)
 
     return (Result);
 }
+
+#if SPARROW_DEV
+local void
+Validate(v3 A)
+{
+    Assert(A.x || A.y || A.z);
+}
+#else
+#define Validate(name) name
+#endif
+
 EXTERN_C_END
 
 #ifdef __cplusplus
