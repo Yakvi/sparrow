@@ -1,4 +1,5 @@
-#include "sparrow_types.h"
+#include "core/sparrow_types.h"
+
 #include <windows.h>
 
 #pragma comment(lib, "user32.lib")
@@ -12,9 +13,9 @@ struct frame_buffer
     u8* Pixels;
 };
 
-static b32 GlobalRunning;
+static b32                          GlobalRunning;
 global_variable struct frame_buffer Win32_FrameBuffer;
-static s32 Offset;
+static s32                          Offset;
 
 local void*
 Win32_MemoryAlloc(memory_index Size)
@@ -41,7 +42,7 @@ Render(frame_buffer* Buffer)
 {
     if (Buffer) {
         u32 Pitch = Buffer->Width * Buffer->BytesPerPixel;
-        u8* Row = Buffer->Pixels;
+        u8* Row   = Buffer->Pixels;
         for (u32 y = 0;
              y < Buffer->Height;
              ++y) {
@@ -49,9 +50,9 @@ Render(frame_buffer* Buffer)
             for (u32 x = 0;
                  x < Buffer->Width;
                  ++x) {
-                u8 Red = (u8)(y + Offset);
+                u8 Red   = (u8)(y + Offset);
                 u8 Green = (u8)(x + y);
-                u8 Blue = (u8)(x + Offset);
+                u8 Blue  = (u8)(x + Offset);
 
                 *Pixel++ = ((Red << 0) | (Green << 8) | (Blue << 16) | 0);
             }
@@ -70,11 +71,11 @@ Win32_RequestFrameBuffer(u16 width, u16 height)
         Win32_MemoryFree(Win32_FrameBuffer.Pixels);
     }
 
-    u32 PixelSize = height * width * BytesPerPixel;
-    Win32_FrameBuffer.Width = width;
-    Win32_FrameBuffer.Height = height;
+    u32 PixelSize                   = height * width * BytesPerPixel;
+    Win32_FrameBuffer.Width         = width;
+    Win32_FrameBuffer.Height        = height;
     Win32_FrameBuffer.BytesPerPixel = BytesPerPixel;
-    Win32_FrameBuffer.Pixels = (u8*)Win32_MemoryAlloc(PixelSize);
+    Win32_FrameBuffer.Pixels        = (u8*)Win32_MemoryAlloc(PixelSize);
 
     Render(&Win32_FrameBuffer);
 }
@@ -84,19 +85,19 @@ Win32_UpdateBuffer(HDC DeviceContext, RECT WindowRect)
 {
     Assert(Win32_FrameBuffer.Pixels);
 
-    s32 BitmapWidth = Win32_FrameBuffer.Width;
+    s32 BitmapWidth  = Win32_FrameBuffer.Width;
     s32 BitmapHeight = Win32_FrameBuffer.Height;
 
-    u32 WindowWidth = WindowRect.right - WindowRect.left;
+    u32 WindowWidth  = WindowRect.right - WindowRect.left;
     u32 WindowHeight = WindowRect.bottom - WindowRect.top;
 
     BITMAPINFO bi = {0};
 
-    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth = BitmapWidth;
-    bi.bmiHeader.biHeight = BitmapHeight; // rows will go top-down
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = Win32_FrameBuffer.BytesPerPixel * 8;
+    bi.bmiHeader.biSize        = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth       = BitmapWidth;
+    bi.bmiHeader.biHeight      = BitmapHeight; // rows will go top-down
+    bi.bmiHeader.biPlanes      = 1;
+    bi.bmiHeader.biBitCount    = Win32_FrameBuffer.BytesPerPixel * 8;
     bi.bmiHeader.biCompression = BI_RGB;
 
     StretchDIBits(DeviceContext,
@@ -115,7 +116,7 @@ LRESULT __stdcall Win32_DefaultWindowProc(HWND Window, u32 Message, WPARAM WPara
         case WM_SIZE: {
             RECT ClientRect;
             GetClientRect(Window, &ClientRect);
-            u16 Width = (u16)(ClientRect.right - ClientRect.left);
+            u16 Width  = (u16)(ClientRect.right - ClientRect.left);
             u16 Height = (u16)(ClientRect.bottom - ClientRect.top);
             Win32_RequestFrameBuffer(Width, Height);
         } break;
@@ -140,17 +141,25 @@ LRESULT __stdcall Win32_DefaultWindowProc(HWND Window, u32 Message, WPARAM WPara
     return (Result);
 }
 
+#include <stdio.h>
+
 int CALLBACK
 WinMain(HINSTANCE Instance, HINSTANCE PrevInstance,
         char* CmdLine, int ShowCmd)
 {
-    WNDCLASS WindowClass = {0};
-    WindowClass.hInstance = Instance;
+    WNDCLASS WindowClass      = {0};
+    WindowClass.hInstance     = Instance;
     WindowClass.lpszClassName = "ProjectSparrowWindowClass";
-    WindowClass.style = CS_HREDRAW | CS_VREDRAW;
-    WindowClass.hCursor = LoadCursorA(0, IDC_ARROW);
-    WindowClass.lpfnWndProc = Win32_DefaultWindowProc;
+    WindowClass.style         = CS_HREDRAW | CS_VREDRAW;
+    WindowClass.hCursor       = LoadCursorA(0, IDC_ARROW);
+    WindowClass.lpfnWndProc   = Win32_DefaultWindowProc;
     Assert_exec(RegisterClassA(&WindowClass));
+
+    LARGE_INTEGER Test;
+    QueryPerformanceFrequency(&Test);
+    char Buffer[128];
+    wsprintf(Buffer, "Cycles per second: %d\n", Test.QuadPart);
+    OutputDebugStringA(Buffer);
 
     // TODO: show window after all initialized?
     HWND Window = CreateWindowExA(0,
@@ -173,7 +182,7 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance,
         }
         Render(&Win32_FrameBuffer);
 
-        HDC DeviceContext = GetDC(Window);
+        HDC  DeviceContext = GetDC(Window);
         RECT WindowRect;
         GetClientRect(Window, &WindowRect);
         Win32_UpdateBuffer(DeviceContext, WindowRect);

@@ -493,3 +493,9 @@ I guess it makes a bit more sense to me now. Maybe. In the meantime, I packaged 
 
         // Do stuff with t
     }
+
+## 34. July 30, 2020 - Frame length timing
+
+I am now timing frame start and end. Unfortunately, I cannot yet output the actual numbers on the screen, however I'm already tracking if we hit 60/30 fps (or more). In release mode, we're currently hitting 60fps in our ball raytracer!
+
+Also, I solved a small mystery: PerformanceFrequency was capped at 10 Mhz. Seems like [this is intended](https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps#direct-tsc-usage), as `QueryPerformanceFrequency` shouldn't necessarily return accurate clock speeds. In any case, it still should be fine if I only use `QueryPerformanceCounter` for measuring, and I do. If necessary, more digging should be available [here](https://answers.microsoft.com/en-us/windows/forum/all/queryperformancefrequency-qpc-is-10-mhz-since/d0fb399d-5dfd-4a7a-af5f-220751953ad0).

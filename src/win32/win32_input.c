@@ -1,7 +1,7 @@
 #include "fake_windows.h"
 
 local struct user_input*
-InitializeInput(void)
+Win32_InitializeInput(void)
 {
     struct user_input* Result = Win32_MemoryAlloc(sizeof(struct user_input));
     return (Result);

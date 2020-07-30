@@ -102,7 +102,6 @@ Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32\win32_sparrow.c"
-# $win32file = "wintest.cpp"
 # $debug = "-O2"
 $optimized = '', ''
 
@@ -143,6 +142,9 @@ del lock.tmp
 
 # $mathoptimized = &cl $c -O2 -Tp $srcDir/test/sparrow_trig_test.c $optimized
 # Output-Logs -data $mathoptimized -title "Optimized Math functions benchmark"
+
+# $wintest = &cl $c $debug -Tp $srcDir/experiments/wintest.cpp
+# Output-Logs -data $wintest -title "Windows API testing"
 
 # TODO: This would be cool to try porting to our engine in pure C
 # $win32executable = & cl $c -EHsc $srcDir\experiments\confps.cpp -Fmwin32_sparrow $linker $32linker

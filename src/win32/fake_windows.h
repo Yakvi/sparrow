@@ -13,13 +13,15 @@ void __stdcall ExitProcess(u32 ExitCode);
 void* __stdcall CreateThread(void* ThreadAttributes, memory_index dwStackSize, void* StartingRoutine,
                              void* RoutineParam, u32 CreationFlags, u32* ThreadId);
 void __stdcall CloseHandle(void* Handle);
+void __stdcall QueryPerformanceCounter(s64* Counter);
+void __stdcall QueryPerformanceFrequency(s64* Counter);
 
 // NOTE: Window Class flags
 enum WindowClass
 {
-    CS_VREDRAW = 0x1,
-    CS_HREDRAW = 0x2,
-    CS_OWNDC = 0x40,
+    CS_VREDRAW    = 0x1,
+    CS_HREDRAW    = 0x2,
+    CS_OWNDC      = 0x40,
     CW_USEDEFAULT = 0x80000000
 };
 
@@ -27,41 +29,41 @@ void* __stdcall DefWindowProcA(void* Window, u32 Message, u32 WParam, s64 LParam
 typedef void*(__stdcall* window_proc)(void* Window, u32 Message, u32 WParam, s64 LParam);
 typedef struct
 {
-    u32 style;
-    u32 unused;
+    u32         style;
+    u32         unused;
     window_proc windowProc;
-    s64 unused2;
-    void* instance;
-    void* icon;
-    void* cursor;
-    void* background;
-    char* menuName;
-    char* className;
+    s64         unused2;
+    void*       instance;
+    void*       icon;
+    void*       cursor;
+    void*       background;
+    char*       menuName;
+    char*       className;
 } win_class;
 
 u8* RegisterClassA(win_class* WindowClass);
 
 enum WindowProperties
 {
-    WS_OVERLAPPED = 0,
-    WS_MAXIMIZEBOX = 0x10000L,
-    WS_MINIMIZEBOX = 0x20000L,
-    WS_THICKFRAME = 0x40000,
-    WS_SYSMENU = 0x80000,
-    WS_CAPTION = 0xC00000,
+    WS_OVERLAPPED       = 0,
+    WS_MAXIMIZEBOX      = 0x10000L,
+    WS_MINIMIZEBOX      = 0x20000L,
+    WS_THICKFRAME       = 0x40000,
+    WS_SYSMENU          = 0x80000,
+    WS_CAPTION          = 0xC00000,
     WS_OVERLAPPEDWINDOW = 0xCF0000, // WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-    WS_VISIBLE = 0x10000000
+    WS_VISIBLE          = 0x10000000
 };
 
 typedef struct
 {
     void* window;
-    u64 message;
-    u64 WParam;
-    s64 LParam;
-    u32 time;
-    v2i point;
-    u8 __pad[4];
+    u64   message;
+    u64   WParam;
+    s64   LParam;
+    u32   time;
+    v2i   point;
+    u8    __pad[4];
 } message;
 
 typedef struct
@@ -81,18 +83,18 @@ void* __stdcall LoadCursorA(int, u8* CursorRef);
 // NOTE: Windows messages
 enum WindowMessage
 {
-    WM_DESTROY = 0x0002,
-    WM_SIZE = 0x5,
-    WM_CLOSE = 0x10,
-    WM_QUIT = 0x12,
-    WM_PAINT = 0xF,
+    WM_DESTROY     = 0x0002,
+    WM_SIZE        = 0x5,
+    WM_CLOSE       = 0x10,
+    WM_QUIT        = 0x12,
+    WM_PAINT       = 0xF,
     WM_ACTIVATEAPP = 0x1C,
-    WM_KEYDOWN = 0x0100,
-    WM_KEYUP = 0x0101,
-    WM_SYSKEYUP = 0x105,
-    WM_MOUSEMOVE = 0x200,
+    WM_KEYDOWN     = 0x0100,
+    WM_KEYUP       = 0x0101,
+    WM_SYSKEYUP    = 0x105,
+    WM_MOUSEMOVE   = 0x200,
     WM_MBUTTONDOWN = 0x207,
-    WM_MBUTTONUP = 0x208,
+    WM_MBUTTONUP   = 0x208,
 };
 
 b32 __stdcall GetMessageA(message* mess, void* window, u32 unused, u32 unused2);
@@ -103,21 +105,21 @@ void __stdcall PostQuitMessage(int exit_code);
 // NOTE: Key presses
 enum KeyPress
 {
-    VK_BACK = 0x08,
-    VK_TAB = 0x09,
-    VK_RETURN = 0x0D,
-    VK_SHIFT = 0x10,
+    VK_BACK    = 0x08,
+    VK_TAB     = 0x09,
+    VK_RETURN  = 0x0D,
+    VK_SHIFT   = 0x10,
     VK_CONTROL = 0x11,
-    VK_MENU = 0x12, // ALT
-    VK_PAUSE = 0x13,
+    VK_MENU    = 0x12, // ALT
+    VK_PAUSE   = 0x13,
     VK_CAPITAL = 0x14,
-    VK_ESCAPE = 0x1B,
-    VK_SPACE = 0x20,
-    VK_LEFT = 0x25,
-    VK_UP = 0x26,
-    VK_RIGHT = 0x27,
-    VK_DOWN = 0x28,
-    VK_DELETE = 0x2E,
+    VK_ESCAPE  = 0x1B,
+    VK_SPACE   = 0x20,
+    VK_LEFT    = 0x25,
+    VK_UP      = 0x26,
+    VK_RIGHT   = 0x27,
+    VK_DOWN    = 0x28,
+    VK_DELETE  = 0x2E,
     /*
     * VK_0 - VK_9 are the same as ASCII '0' - '9' (0x30 - 0x39)
     * 0x3A - 0x40 : unassigned
@@ -136,45 +138,45 @@ enum Mouse
 enum RasterOp
 {
     BLACKNESS = 0x00000042,
-    SRCCOPY = 0x00CC0020,
+    SRCCOPY   = 0x00CC0020,
     WHITENESS = 0x00FF0062
 };
 
 enum DIBColors
 {
-    DIB_RGB_COLORS = 0x00,
-    DIB_PAL_COLORS = 0x01,
+    DIB_RGB_COLORS  = 0x00,
+    DIB_PAL_COLORS  = 0x01,
     DIB_PAL_INDICES = 0x02
 };
 
 enum BitmapCompression
 {
-    BI_RGB = 0,
-    BI_RLE8 = 1,
-    BI_RLE4 = 2,
+    BI_RGB       = 0,
+    BI_RLE8      = 1,
+    BI_RLE4      = 2,
     BI_BITFIELDS = 3,
-    BI_JPEG = 4,
-    BI_PNG = 5,
+    BI_JPEG      = 4,
+    BI_PNG       = 5,
 };
 
 typedef struct
 {
     void* hdc;
-    b32 eraseBg;
-    rect paintRect;
-    b32 reserved0;
-    b32 reserved1;
-    u8 reserved2[36];
+    b32   eraseBg;
+    rect  paintRect;
+    b32   reserved0;
+    b32   reserved1;
+    u8    reserved2[36];
 } paint_struct;
 
 typedef struct
 {
-    u32 type;
-    u32 width;
-    u32 height;
-    u32 widthBytes;
-    u32 planes;
-    u32 bitsPerPixel;
+    u32   type;
+    u32   width;
+    u32   height;
+    u32   widthBytes;
+    u32   planes;
+    u32   bitsPerPixel;
     void* data;
 } bitmap;
 
@@ -204,7 +206,7 @@ typedef struct
 typedef struct
 {
     bitmap_info_header header;
-    rbg_quad colors[1];
+    rbg_quad           colors[1];
 } bitmap_info;
 
 // NOTE: UI
@@ -226,9 +228,9 @@ s32 __stdcall ReleaseDC(void* Window, void* HDC);
 enum MemoryFlags
 {
     PAGE_READWRITE = 0x4,
-    MEM_COMMIT = 0x1000,
-    MEM_RESERVE = 0x2000,
-    MEM_RELEASE = 0x8000,
+    MEM_COMMIT     = 0x1000,
+    MEM_RESERVE    = 0x2000,
+    MEM_RELEASE    = 0x8000,
 };
 #define Align32(bits) ((((bits) + 31) & (~31)) / 8)
 void* __stdcall VirtualAlloc(void* address, memory_index size, u32 type, u32 protect);

@@ -19,6 +19,13 @@ typedef struct user_input
     v2f MovementKeys;
 } user_input;
 
+typedef struct platform
+{
+    user_input *Input;
+    f32 FrameDeltaMs;
+    f32 FrameDeltaCycles;
+} platform;
+
 typedef struct memory
 {
     memory_index Size;

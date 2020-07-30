@@ -21,7 +21,7 @@ LoadGameState(struct memory* Memory)
             Result->Player.Pos = V2F(0, 0);
 
             Result->UpdateCompleted = false;
-            Result->IsInitialized = true;
+            Result->IsInitialized   = true;
         }
     }
     else {
@@ -34,14 +34,15 @@ LoadGameState(struct memory* Memory)
 #include "mods/tests/console_tests.c"
 
 void
-UpdateState(struct memory* Memory,
-            struct user_input* Input,
-            console_module Main)
+UpdateState(struct memory*   Memory,
+            struct platform* Platform,
+            console_module   Main)
 {
     // NOTE: This is a "console" grid.
     // We need to be able to set each "pixel" with a specific colour
     // Then, at the render phase, these would be painted as squares.
     struct game_state* GameState = LoadGameState(Memory);
+    struct user_input* Input     = Platform->Input;
     if (!GameState->UpdateCompleted) {
         struct console* Console = &GameState->Console;
         ClearConsole(Console, Input);
@@ -53,6 +54,16 @@ UpdateState(struct memory* Memory,
 #if 0 
         RunConsoleTests(Console, Input);
 #endif
+        // NOTE: "Post-processing"
+        color3 FPSPixel = Color_Red;
+        if (Platform->FrameDeltaMs < 16.0f) {
+            FPSPixel = Color_Green;
+        }
+        else if (Platform->FrameDeltaMs < 33.0f) {
+            FPSPixel = Color_Yellow;
+        }
+
+        Point(Console, V2I(0, 0), FPSPixel);
 
 // #define RUNONCE 1
 #ifdef RUNONCE

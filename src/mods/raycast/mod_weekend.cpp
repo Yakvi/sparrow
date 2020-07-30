@@ -41,17 +41,17 @@ InitRaycaster(camera* Camera, console* Console)
 }
 
 local color3
-RayColor(world* World, ray Ray)
+RayColor(world* World, ray* Ray)
 {
     color3 Result       = Color_Pink;
     b32    PixelColored = false;
 
     for (u32 Index = 0; Index < ArrayCount(World->Spheres); ++Index) {
-        sphere* Sphere = World->Spheres + Index;
-        p3      HitNormal;
-        if (RayHit(Ray, Sphere, 0.0f, 20.0f, &HitNormal)) {
+        sphere*      Sphere = World->Spheres + Index;
+        ray_hit_info HitInfo;
+        if (RayHit(Ray, Sphere, 0.0f, 20.0f, &HitInfo)) {
 
-            Result = (HitNormal + RGB(1, 1, 1)) * 0.5f;
+            Result = (HitInfo.Normal + RGB(1, 1, 1)) * 0.5f;
 
             PixelColored = true;
             break;
@@ -59,7 +59,7 @@ RayColor(world* World, ray Ray)
     }
 
     if (!PixelColored) {
-        f32 Pos = 0.5f * (Ray.Direction.y + 1.0f);
+        f32 Pos = 0.5f * (Ray->Direction.y + 1.0f);
         Result  = ColorLerp(RGB(1, 1, 1), RGB(0.5, 0.7, 1.0), Pos);
     }
 
@@ -81,9 +81,9 @@ DrawScene(console* Console, world* World)
             f32 v = Y * Console->InvertedSize.Height;
 
             v3  Direction = Camera.Base + Camera.Horizontal * u + Camera.Vertical * v;
-            ray Raycast   = CreateRay(Camera.Origin, Direction);
+            ray Ray       = CreateRay(Camera.Origin, Direction);
 
-            color3 PixelColor = RayColor(World, Raycast);
+            color3 PixelColor = RayColor(World, &Ray);
 
             SetColor(Console, V2I(X, Y), PixelColor);
         }
@@ -108,8 +108,8 @@ MODULE_MAIN(world* World)
 {
     if (!World->MainCamera.IsInitialized) {
         InitRaycaster(&World->MainCamera, Console);
-        SpawnEntities(World);
     }
+    SpawnEntities(World);
 
     // UpdateEntities(Input, World);
 

@@ -3,15 +3,15 @@
 /**
  * GLOBAL PLATFORM LAYER TODO LIST
  * (to be considered barebones)
- * 
+ *
  * NOTE: Graphics
  * Fullscreen toggle
  * Fixed Framerate
  * Hardware acceleration
- * 
+ *
  * NOTE: Game Update
  * DeltaTime for frame
- * 
+ *
  * NOTE: Engine tech
  * Multithreading
  * Multiple DLL handling
@@ -25,7 +25,7 @@
  * Audio reproduction system
  * Asset loading
  *    - Lazy asset loading
- * 
+ *
 */
 
 global_variable u8 GlobalRunning;
@@ -248,6 +248,26 @@ Win32_GetModuleDirectory(char* WorkingDirectory)
     return (Result);
 }
 
+inline s64
+Win32_GetWallClock()
+{
+    s64 Result;
+    QueryPerformanceCounter(&Result);
+
+    return (Result);
+}
+
+local struct platform*
+Win32_InitializePlatform(void)
+{
+    struct platform* Result  = Win32_MemoryAlloc(sizeof(struct platform));
+    Result->Input            = Win32_InitializeInput();
+    Result->FrameDeltaMs     = 0.0f;
+    Result->FrameDeltaCycles = 0.0f;
+
+    return (Result);
+}
+
 #define MULTITHREADING_DEV 0
 #if MULTITHREADING_DEV
 u32 __stdcall Test(void* Param)
@@ -288,12 +308,11 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Assert(Window);
     void* DeviceContext = GetDC(Window);
 
-    struct user_input* Input = InitializeInput();
-
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Win32_GetClientDim(Window));
     // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim?
 
-    Win32_MainMemory = Win32_MainMemoryInit(MiB(200));
+    Win32_MainMemory             = Win32_MainMemoryInit(MiB(200));
+    struct platform* PlatformAPI = Win32_InitializePlatform();
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
     struct text_buffer ModuleDirectory  = Win32_GetModuleDirectory(WorkingDirectory.Data);
@@ -303,21 +322,33 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
     struct win32_module Mod  = Win32_InitModule(&ModuleDirectory, "mod_weekend.dll");
 
+    s64 CyclesPerSecond;
+    QueryPerformanceFrequency(&CyclesPerSecond);
+    s64 FrameStartTime = Win32_GetWallClock();
+    s64 FrameEndTime   = Win32_GetWallClock();
+
     GlobalRunning = true;
     while (GlobalRunning) {
-        // TODO(yakvi): DeltaTime calculations!
+
         Win32_TryLoadDLL(LockfilePath.Data, &Game, false);
         Win32_TryLoadDLL(LockfilePath.Data, &Mod, true);
 
-        Win32_ReadInput(Window, Input);
+        Win32_ReadInput(Window, PlatformAPI->Input);
+
+        FrameEndTime = Win32_GetWallClock();
         if (Game.IsLoaded && Mod.IsLoaded) {
+            PlatformAPI->FrameDeltaCycles = (f32)(FrameEndTime - FrameStartTime);
+            PlatformAPI->FrameDeltaMs     = (PlatformAPI->FrameDeltaCycles / CyclesPerSecond) * 1000;
+            FrameStartTime                = FrameEndTime;
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {
                 // NOTE: Game logic
                 // TODO: Run this for each module
-                Game.Main(Win32_MainMemory, Input, Mod.Main);
+                Game.Main(Win32_MainMemory, PlatformAPI, Mod.Main);
                 Game.Render(Win32_MainMemory, &Win32_FrameBuffer);
             }
+
+            FrameEndTime = Win32_GetWallClock();
         }
         else {
             // NOTE(yakvi): Game not loaded (waiting for DLL)

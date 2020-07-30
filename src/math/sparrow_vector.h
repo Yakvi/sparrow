@@ -598,6 +598,8 @@ inline v3&  operator/=(v3& A, f32 B)  { return (A = A / B); }
 inline v4&  operator/=(v4& A, v4 B)   { return (A = A / B); }
 inline v4&  operator/=(v4& A, f32 B)  { return (A = A / B); }
 
+inline v3&  operator-(v3& A)  { return (A *= -1); }
+
 // clang-format on
 #endif // __cplusplus
 
