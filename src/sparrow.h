@@ -22,10 +22,10 @@ struct player
 struct game_state
 {
     struct console Console;
-    struct player Player;
-    b32 UpdateCompleted;
-    b32 IsInitialized;
-    char ModuleMemory[MiB(2)];
+    struct player  Player;
+    b32            UpdateCompleted;
+    b32            IsInitialized;
+    struct memory* ModuleMemory;
 };
 
 #define SPARROW_H

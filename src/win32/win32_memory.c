@@ -23,11 +23,11 @@ Win32_MemoryAlloc(memory_index Size)
 }
 
 local struct memory*
-Win32_MainMemoryInit(memory_index Size)
+Win32_MemoryInit(memory_index Size)
 {
     struct memory* Result = Win32_MemoryAlloc(Size + sizeof(struct memory));
-    Result->Size = Size;
-    Result->Data = Result + sizeof(struct memory);
+    Result->Size          = Size;
+    Result->Data          = (u8*)Result + sizeof(struct memory);
 
     return (Result);
 }

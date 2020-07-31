@@ -2,6 +2,12 @@
 #include "console_glyphs.h"
 #include "sparrow_text.h"
 
+inline void
+SetConsoleMode(struct console* Console, u32 PixelOrder)
+{
+    Console->PixelOrder = PixelOrder;
+}
+
 local void
 InitConsole(struct console* Console, s32 Width, s32 Height, u32 PixelOrder, color3 Color)
 {
@@ -14,7 +20,7 @@ InitConsole(struct console* Console, s32 Width, s32 Height, u32 PixelOrder, colo
                           (s32)(Console->Size.Height * 0.5f));
     Console->CursorPos    = V2I(0, 0);
 
-    Console->PixelOrder = PixelOrder;
+    SetConsoleMode(Console, PixelOrder);
 
     struct pixel* Row = Console->Pixels;
     for (s32 Y = 0;
@@ -27,7 +33,7 @@ InitConsole(struct console* Console, s32 Width, s32 Height, u32 PixelOrder, colo
 
             Assert(Pixel);
 
-            if (Console->PixelOrder == Console_BottomUp) {
+            if (Console->PixelOrder == Console_TopDown) {
                 Pixel->Pos = V2I(X, (Console->Size.Height - 1 - Y));
             }
             else {
@@ -51,16 +57,24 @@ GetPixel(struct console* Console, v2i Coords)
     Assert(Coords.x < Console->Size.Width);
     Assert(Coords.y < Console->Size.Height);
 
-    u32 Y   = Console->Size.Width * Coords.y;
-    u32 Pos = Y + Coords.x;
+    // 1 if PixelOrder is TopDown, 0 BottomUp
+    // If Pixel order is top down, offset is total height - y
+    s32 YOffset = (Console->Size.Height - 1) * Console->PixelOrder;
+    // If Pixel order is bottom up, offset is double y (for subtraction)
+    YOffset += Coords.y * 2 * !Console->PixelOrder;
+    s32 Y = (YOffset - Coords.y);
+    Assert(Y >= 0);
+
+    Y *= Console->Size.Width;
+    u32 Pos = Coords.x + Y;
 
     Assert(Pos < Console->PixelCount);
 
     struct pixel* Result = Console->Pixels + Pos;
 
-#if SPARROW_DEV
+#if 0
     Assert(Result->Pos.x == Coords.x);
-    if (Console->PixelOrder == Console_BottomUp) {
+    if (Console->PixelOrder == Console_TopDown) {
         Assert(Result->Pos.y == Console->Size.Height - 1 - Coords.y);
     }
     else {
@@ -171,16 +185,16 @@ Line(struct console* Console, v2i Left, u32 Length, u32 Direction, color3 Color)
     for (s32 Offset = 0;
          Offset < (s32)Length;
          ++Offset) {
+        // Try to draw
+        if ((Pos.x < Console->Size.Width) && ((Pos.y < Console->Size.Height))) {
+            Point(Console, Pos, Color);
+        }
         // Offset
         if (Direction == Line_Vertical) {
             ++Pos.y;
         }
         else {
             ++Pos.x;
-        }
-        // Try to draw
-        if ((Pos.x < Console->Size.Width) && ((Pos.y < Console->Size.Height))) {
-            Point(Console, Pos, Color);
         }
     }
 #else

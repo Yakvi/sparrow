@@ -499,3 +499,17 @@ I guess it makes a bit more sense to me now. Maybe. In the meantime, I packaged 
 I am now timing frame start and end. Unfortunately, I cannot yet output the actual numbers on the screen, however I'm already tracking if we hit 60/30 fps (or more). In release mode, we're currently hitting 60fps in our ball raytracer!
 
 Also, I solved a small mystery: PerformanceFrequency was capped at 10 Mhz. Seems like [this is intended](https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps#direct-tsc-usage), as `QueryPerformanceFrequency` shouldn't necessarily return accurate clock speeds. In any case, it still should be fine if I only use `QueryPerformanceCounter` for measuring, and I do. If necessary, more digging should be available [here](https://answers.microsoft.com/en-us/windows/forum/all/queryperformancefrequency-qpc-is-10-mhz-since/d0fb399d-5dfd-4a7a-af5f-220751953ad0).
+
+## 35. July 31, 2020 - stb_sprintf and linked lists
+
+I have added a piece of code that, at least for the time being, will remain relatively opaque to me: one of the Sean [Barrett](http://nothings.org/)'s single-header libraries, `stb_sprintf`. I'm fine with it, again for the time being: I trust Sean's expertise, and I know precisely what this library does. I also stripped it down (and will probably strip down even more in the future) so that it does the mininimum necessary. 
+
+Right now, I'm using it for debug stuff, i.e. showing yesterday's FPS counters, but I'm sure it'll come even more handy at some point. If I'm ever entering in the advanced string manipulation territory (which I should), I'll need to define my own string format, and have the function work with my memory, strings, etc. 
+
+Anyway, I now have my FPS counters, showing that raytracing in debug mode is SLOW (I still get 100+ fps in optimized mode though... on 225p). Much room for wide/multithreaded optimizations IF I really want to embark on this journey.
+
+![Framerate counter, 225p](media/day35/framerate.png)
+
+![Framerate counter, 1080p](media/day35/1080p.png)
+
+I also finally came around implementing the memory arena. The reason for it is that, in my "weekend" raytracer I've added a linked list, a perfect excuse to finally bring over the arena. This made me realize that I already have one ready, as one of `yak_libs` I worked on late last year. Hooking it up was pretty straightforward, I spent more time figuring out how do the linked lists work again.

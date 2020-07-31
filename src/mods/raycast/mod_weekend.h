@@ -24,15 +24,63 @@ struct camera
     v3 Vertical;
     v3 LowerLeftCorner;
     v3 Base;
+
+    ray* Rays;
 };
 
-#define SPHERES_COUNT 1
+struct collider
+{
+    sphere Sphere;
+    // TODO: Other collision types in union + type enum?
+
+    hit_record LastHit;
+
+    collider* Prev;
+    collider* Next;
+};
 
 struct world
 {
     camera MainCamera;
-    sphere Spheres[SPHERES_COUNT];
+
+    collider* ColliderSentinel;
+    collider* FirstAvailableCollider;
+
+    b32 IsInitialized;
 };
+
+inline collider*
+SpawnCollider(memory* Memory, world* World)
+{
+    collider* Result = 0;
+    if (World->FirstAvailableCollider) {
+        Result                        = World->FirstAvailableCollider;
+        World->FirstAvailableCollider = World->FirstAvailableCollider->Prev;
+    }
+    else {
+        Result = GetStruct(Memory, collider);
+    }
+    // prev <-> sent ---> prev <-> coll <-> sent
+    Result->Next = World->ColliderSentinel;
+    Result->Prev = World->ColliderSentinel->Prev;
+
+    World->ColliderSentinel->Prev = Result;
+    Result->Prev->Next = Result;
+
+
+
+    return (Result);
+}
+
+inline void
+RemoveCollider(memory* Memory, world* World, collider* Collider)
+{
+    collider* Temp                = World->FirstAvailableCollider;
+    World->FirstAvailableCollider = Collider;
+    Collider->Prev->Next          = Collider->Next;
+    Collider->Next->Prev          = Collider->Prev;
+    Collider->Prev                = World->FirstAvailableCollider;
+}
 
 #define RAYTRACING_IN_A_WEEKEND_H
 #endif

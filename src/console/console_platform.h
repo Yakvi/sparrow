@@ -1,11 +1,11 @@
 #if !defined(SPARROW_CONSOLE_PLATFORM_H)
 
 #define MODULE_DEF(memory) (memory, struct user_input * Input, struct console * Console)
-#define MODULE_MAIN(memory) void ModuleMain MODULE_DEF(memory)
-typedef void(*console_module) MODULE_DEF(void* ModuleMemory);
+#define MODULE_MAIN() void ModuleMain MODULE_DEF(struct memory* Memory)
+typedef void(*console_module) MODULE_DEF(struct memory* ModuleMemory);
 
-#define MAX_CONSOLE_WIDTH 800  // 140
-#define MAX_CONSOLE_HEIGHT 800 // 40
+#define MAX_CONSOLE_WIDTH 1920  // 140
+#define MAX_CONSOLE_HEIGHT 1080 // 40
 
 enum PixelFlags
 {
@@ -23,8 +23,8 @@ struct pixel
 
 enum ConsolePixelOrder
 {
-    Console_TopDown,
-    Console_BottomUp
+    Console_BottomUp,
+    Console_TopDown
 };
 
 struct console
@@ -44,6 +44,7 @@ struct console
     struct pixel Pixels[MAX_CONSOLE_HEIGHT * MAX_CONSOLE_WIDTH]; // TODO(yakvi): Abstract it out? Overkill?
 };
 
+local void          SetConsoleMode(struct console* Console, u32 PixelOrder);
 local void          InitConsole(struct console* Console, s32 Width, s32 Height, u32 PixelOrder, color3 Color);
 local struct pixel* GetPixel(struct console* Console, v2i Coords);
 local void          PrintGlyph(struct console* Console, char* Char, v2i Pos, color3 Color);

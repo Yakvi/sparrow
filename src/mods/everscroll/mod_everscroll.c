@@ -96,8 +96,10 @@ GetScreenId(s32 Input, struct everscroll_state* Scroll)
     return (Result);
 }
 
-MODULE_MAIN(struct everscroll_state* Scroll)
+MODULE_MAIN()
 {
+    struct everscroll_state* Scroll = (struct everscroll_state*)Memory->Data;
+
     s32 ScreenId = GetScreenId((s32)Input->MovementKeys.y, Scroll);
     LoadScreen(Console, ScreenId);
 }

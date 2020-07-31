@@ -5,7 +5,7 @@ function Output-Line([String]$color = "Gray") {
     [String]$m = $matches.Values[0].trim()
     $i = [int] $line.IndexOf($m)
     $line.Substring(0, $i) | Write-Host -ForegroundColor $color -NoNewline
-    $line.Substring($i) | Write-Host -ForegroundColor "Gray" 
+    $line.Substring($i) | Write-Host -ForegroundColor "Gray"
 }
 
 function Output-Logs([String[]]$data, [string]$title = "", [string]$filename = "") {
@@ -84,9 +84,9 @@ $32linker += 'gdi32.lib'
 # $32linker += '-LIBPATH:H:\C\_Deps\Lib'
 # $32linker += 'winmm.lib'
 # $32linker += 'shell32.lib'
-# NOTE: Extra parameters for sparrow.dll 
+# NOTE: Extra parameters for sparrow.dll
 $dllc = '-FmSPARROW', '-LD'
-$dllc += '-GR-'              
+$dllc += '-GR-'
 $dlllinker += '-EXPORT:UpdateState', '-EXPORT:Render'
 $dlllinker += '-PDB:sparrow-' + $(Get-Date -Format mm-ss-ms) + '.pdb'
 
@@ -96,19 +96,19 @@ $dlllinker += '-PDB:sparrow-' + $(Get-Date -Format mm-ss-ms) + '.pdb'
 if(!(Test-Path -Path ..\$buildDir)) { mkdir ..\$buildDir }
 pushd ..\$buildDir
 Clear
-Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine 
+Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine
 Write-Host "Compilation started." -ForegroundColor "Cyan"
 Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32\win32_sparrow.c"
-# $debug = "-O2"
+$debug = "-O2"
 $optimized = '', ''
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
 # NOTE Live code editing: lock running
 echo "WAITING FOR PDB" > lock.tmp
-del *.pdb 2> lock.tmp
+del *.pdb 2> lock.tmp #FIXME: debugger crashing
 # NOTE Precompiled libraries
 $win32executable = & cl $c -MT -c -O2 -Ob3 $srcDir\math\sparrow_trig_opt.c
 Output-Logs -data $win32executable -title "win32 platform layer" -filename "win32_sparrow.exe"
@@ -154,8 +154,8 @@ popd
 
 # NOTE: Compiling Diagnostics
 $CompileTime = $CompileTimer.Elapsed
-Write-Host 
-Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine 
+Write-Host
+Write-Host "[$(Get-Date -Format $dateFormat)]: " -ForegroundColor "Yellow" -NoNewLine
 Write-Host "Compilation finished in " -ForegroundColor "Cyan"              -NoNewLine
 Write-Host $([string]::Format("{0:d1}s {1:d3}ms", $CompileTime.seconds, $CompileTime.milliseconds)) -ForegroundColor "Green"
 

@@ -263,7 +263,7 @@ Win32_InitializePlatform(void)
     struct platform* Result  = Win32_MemoryAlloc(sizeof(struct platform));
     Result->Input            = Win32_InitializeInput();
     Result->FrameDeltaMs     = 0.0f;
-    Result->FrameDeltaCycles = 0.0f;
+    Result->FrameDeltaCycles = 0;
 
     return (Result);
 }
@@ -311,7 +311,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Win32_GetClientDim(Window));
     // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim?
 
-    Win32_MainMemory             = Win32_MainMemoryInit(MiB(200));
+    Win32_MainMemory             = Win32_MemoryInit(MiB(200));
     struct platform* PlatformAPI = Win32_InitializePlatform();
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();
@@ -337,8 +337,8 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
 
         FrameEndTime = Win32_GetWallClock();
         if (Game.IsLoaded && Mod.IsLoaded) {
-            PlatformAPI->FrameDeltaCycles = (f32)(FrameEndTime - FrameStartTime);
-            PlatformAPI->FrameDeltaMs     = (PlatformAPI->FrameDeltaCycles / CyclesPerSecond) * 1000;
+            PlatformAPI->FrameDeltaCycles = (u32)(FrameEndTime - FrameStartTime);
+            PlatformAPI->FrameDeltaMs     = ((f32)PlatformAPI->FrameDeltaCycles / CyclesPerSecond) * 1000;
             FrameStartTime                = FrameEndTime;
             // TODO: Render asynchronously?
             if (Win32_IsTimeToRender()) {

@@ -18,14 +18,31 @@ DemoFont(struct console* Console)
 {
     PrintString(Console, "THE QUICK BROWN FOX JUMPS OVER LAZY DOG", V2I(10, 10), RGB(0x55, 0xDD, 0xFF));
     PrintString(Console, "the quick brown fox jumps over lazy dog", V2I(10, 20), RGB(0x55, 0xDD, 0xFF));
+    char* TestString = "Text formatting test";
+    char  Buffer[120];
+    PrintString(Console, TestString, V2I(10, 100), Color_Black);
+
+    FormatText(Buffer, "Int formatting test: %i", -10);
+    PrintString(Console, Buffer, V2I(10, 110), Color_Black);
+
+    FormatText(Buffer, "UInt formatting test: %u", 10);
+    PrintString(Console, Buffer, V2I(10, 120), Color_Black);
+
+    FormatText(Buffer, "Float formatting test: %0.10f", Pi32);
+    PrintString(Console, Buffer, V2I(10, 130), Color_Black);
+
+    FormatText(Buffer, "Double formatting test: %0.12f", Pi64);
+    PrintString(Console, Buffer, V2I(10, 140), Color_Black);
 }
 
 void
 DemoMouseCursor(struct console* Console)
 {
     struct pixel* Pixel = GetPixel(Console, Console->CursorPos);
-    Assert(Pixel->Flags & Pixel_Hovered);
-    Pixel->Color = Color_White;
+    if (Pixel) {
+        // Assert(Pixel->Flags & Pixel_Hovered);
+        Pixel->Color = Color_White;
+    }
 }
 
 void

@@ -1,6 +1,7 @@
 #if !defined(SPARROW_PLATFORM)
 
 #include "sparrow_types.h"
+#include "sparrow_memory.h"
 
 typedef struct frame_buffer
 {
@@ -21,16 +22,10 @@ typedef struct user_input
 
 typedef struct platform
 {
-    user_input *Input;
-    f32 FrameDeltaMs;
-    f32 FrameDeltaCycles;
+    user_input* Input;
+    f32         FrameDeltaMs;
+    u32         FrameDeltaCycles;
 } platform;
-
-typedef struct memory
-{
-    memory_index Size;
-    void* Data;
-} memory;
 
 #define SPARROW_PLATFORM
 #endif

@@ -4,8 +4,10 @@ struct ray
 {
     p3  Origin;
     v3  Direction;
-    v3  Normal;
+    f32 DirectionLenSquared;
+    f32 DirectionInvLenSquared;
     f32 InvLenSquared;
+    v3  Normal;
 };
 
 struct ray_hit_info
@@ -26,12 +28,13 @@ SetFaceNormal(ray* Ray, ray_hit_info* HitInfo, v3 OutwardNormal)
 inline ray
 CreateRay(p3 Origin, v3 Direction)
 {
-    ray Result;
+    ray Result = {};
 
-    Result.Origin        = Origin;
-    Result.Direction     = Direction;
-    Result.Normal        = Normalize(Direction);
-    Result.InvLenSquared = 1.0f / LenSquared(Result.Direction);
+    Result.Origin                 = Origin;
+    Result.Direction              = Direction;
+    Result.DirectionLenSquared    = LenSquared(Result.Direction);
+    Result.DirectionInvLenSquared = 1.0f / Result.DirectionLenSquared;
+    Result.Normal                 = Normalize(Direction);
 
     return (Result);
 }
