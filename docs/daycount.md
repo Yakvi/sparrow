@@ -502,9 +502,9 @@ Also, I solved a small mystery: PerformanceFrequency was capped at 10 Mhz. Seems
 
 ## 35. July 31, 2020 - stb_sprintf and linked lists
 
-I have added a piece of code that, at least for the time being, will remain relatively opaque to me: one of the Sean [Barrett](http://nothings.org/)'s single-header libraries, `stb_sprintf`. I'm fine with it, again for the time being: I trust Sean's expertise, and I know precisely what this library does. I also stripped it down (and will probably strip down even more in the future) so that it does the mininimum necessary. 
+I have added a piece of code that, at least for the time being, will remain relatively opaque to me: one of the Sean [Barrett](http://nothings.org/)'s single-header libraries, `stb_sprintf`. I'm fine with it, again for the time being: I trust Sean's expertise, and I know precisely what this library does. I also stripped it down (and will probably strip down even more in the future) so that it does the mininimum necessary.
 
-Right now, I'm using it for debug stuff, i.e. showing yesterday's FPS counters, but I'm sure it'll come even more handy at some point. If I'm ever entering in the advanced string manipulation territory (which I should), I'll need to define my own string format, and have the function work with my memory, strings, etc. 
+Right now, I'm using it for debug stuff, i.e. showing yesterday's FPS counters, but I'm sure it'll come even more handy at some point. If I'm ever entering in the advanced string manipulation territory (which I should), I'll need to define my own string format, and have the function work with my memory, strings, etc.
 
 Anyway, I now have my FPS counters, showing that raytracing in debug mode is SLOW (I still get 100+ fps in optimized mode though... on 225p). Much room for wide/multithreaded optimizations IF I really want to embark on this journey.
 
@@ -513,3 +513,11 @@ Anyway, I now have my FPS counters, showing that raytracing in debug mode is SLO
 ![Framerate counter, 1080p](media/day35/1080p.png)
 
 I also finally came around implementing the memory arena. The reason for it is that, in my "weekend" raytracer I've added a linked list, a perfect excuse to finally bring over the arena. This made me realize that I already have one ready, as one of `yak_libs` I worked on late last year. Hooking it up was pretty straightforward, I spent more time figuring out how do the linked lists work again.
+
+## 36. August 1, 2020 - Visualizing rays and adding randomness
+
+I found an online graphing tool called [Desmos](https://www.desmos.com/) and tried to play with it to visualize the sphere raycasting function. While I don't think I found what I looked for, I definitely found [something](https://www.desmos.com/calculator/kihjluohq9). Cool tool, should play more with it. Would be even cooler if it supported vector math out of the box. Someone [did make a vector](https://www.desmos.com/calculator/rsei6rd3qe) in it but it seems super complicated.
+
+![Rayhit "function" in Desmos](media/day36/desmos.png)
+
+Anyway, my code contribution for today consisted in taking a few random number generator functions from [Mattias Gustavsson](https://github.com/mattiasgustavsson/libs/blob/main/docs/rnd.md). I didn't need the whole suite of functions, so I only took the few I needed. I opted for the speed over equal distribution (and some sacrifice in State size). Still need to test it.

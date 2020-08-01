@@ -40,7 +40,7 @@ RayHit(ray* Ray, sphere Sphere, f32 MinDistance, f32 MaxDistance, ray_hit_info* 
     Validate(Ray->Direction);
     v3  DirectHitVector   = Ray->Origin - Sphere.Center;
     f32 RayDirectionLenSq = Ray->DirectionLenSquared;                      // a
-    f32 AngleCoefficient  = Inner(DirectHitVector, Ray->Direction);        // h
+    f32 AngleCoefficient  = Inner(DirectHitVector, Ray->Direction);        // h (b/2)
     f32 SphereNormalLenSq = LenSquared(DirectHitVector) - Sphere.RadiusSq; // c
 
     // find the discriminant based on formula h² - ac
