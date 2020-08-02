@@ -61,10 +61,16 @@ GetEffectiveSize(struct memory* Memory, memory_index DesiredSize, u32 Alignment)
 }
 
 inline void*
+MemoryCursor(struct memory* Memory)
+{
+    void* Result = Memory->Data + Memory->Used;
+    return (Result);
+}
+
+inline void*
 PushMemory(struct memory* Memory, memory_index SizeInit, u32 Alignment, u32 Flags, ...)
 {
-
-    void* Result = Memory->Data + Memory->Used;
+    void* Result = MemoryCursor(Memory);
 
     memory_index Size = GetEffectiveSize(Memory, SizeInit, Alignment);
 
@@ -82,8 +88,9 @@ PushMemory(struct memory* Memory, memory_index SizeInit, u32 Alignment, u32 Flag
 local struct memory*
 MemoryInit(struct memory* Memory, memory_index Size)
 {
-    struct memory* Result = (struct memory*)GetSize(Memory, (Size + sizeof(struct memory)));
+    struct memory* Result = (struct memory*)GetSize(Memory, (Size + sizeof(struct memory)), 4, MemoryFlag_NoClear);
     Result->Size          = Size;
+    Result->Used          = 0;
     Result->Data          = (u8*)Result + sizeof(struct memory);
 
     return (Result);

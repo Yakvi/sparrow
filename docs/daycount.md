@@ -521,3 +521,19 @@ I found an online graphing tool called [Desmos](https://www.desmos.com/) and tri
 ![Rayhit "function" in Desmos](media/day36/desmos.png)
 
 Anyway, my code contribution for today consisted in taking a few random number generator functions from [Mattias Gustavsson](https://github.com/mattiasgustavsson/libs/blob/main/docs/rnd.md). I didn't need the whole suite of functions, so I only took the few I needed. I opted for the speed over equal distribution (and some sacrifice in State size). Still need to test it.
+
+## 37. August 2, 2020 - Multisampling and Diffuse mapping
+
+I started looking in multisampling-based antializing. In the [guide](https://raytracing.github.io/books/RayTracingInOneWeekend.html#antialiasing), Shirley suggested using ~100 samples per pixel on our 400x225 screen. I quickly discovered that the numbers tend to explode: even on our tiny resolution, 90,000 pixels quickly become 9,000,000 samples. This both tanks the performance and destroys our memory (since we're keeping the rays in the memory for performance reasons). 
+
+While this is an interesting problem to solve, I'm starting to understand where do all the teraflops go nowadays in the "RTX-enabled" cards. I'm not even hitting "half-HD", 720p! Of course, I'm sure my math is janky and my structs are bloated... Still, it's pretty clear why we preferred raster triangle rendering for so long. To render my 90k pixel scene I'm using almost 5 gigs of memory! And it's only to store the rays!
+
+![A cool bug I encountered while implementing multisampling. It was produced from incorrect calculation of the ray index. It's achieved by mutiplying the x index (Y * Width + X) by the sample index](media/day37/multisampling_bug.png) 
+
+I still don't have enough profiling power to be able to safely say "this thing eats most of my performance power", or "that thing might be smaller" or something. On the other hand, I'm not _really_ that concerned about it. Fun thing about Sparrow, is that it allows me to follow exercises like this, and then simply jump off this module to a next one, while bringing over the pieces I enjoyed (like the yesterday's random number generator, vector3 library or a camera system I've been slowly bulding). 
+
+Oh, I also implemented another random generator from the [same library](https://raw.githubusercontent.com/mattiasgustavsson/libs/main/rnd.h)
+
+Lastly, I finally moved away from drawing normals to something more interesting: diffuse lighting! I did however encounter some weird bug which I'm not exactly sure what's it's caused by. Maybe because I prenormalize the ray direction? Will need to experiment more with it.
+
+![Another cool bug I encountered while implementing diffuse lighting. This one is a bit more frustrating.](media/day37/diffuse_bug.png) 

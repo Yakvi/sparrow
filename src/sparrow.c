@@ -22,7 +22,7 @@ LoadGameState(struct memory* Memory)
 
             Result->UpdateCompleted = false;
             Result->IsInitialized   = true;
-            Result->ModuleMemory    = MemoryInit(Memory, MiB(100));
+            Result->ModuleMemory    = MemoryInit(Memory, GiB(5));
         }
     }
     else {
@@ -37,15 +37,32 @@ local void
 ShowFPSCounter(struct console* Console, f32 MsDelta, u32 Cycles)
 {
     char   MSCount[100];
-    color3 FPSPixel = Color_Red;
+    color3 FPSState = Color_Red;
     if (MsDelta < 16.0f) {
-        FPSPixel = Color_Green;
+        FPSState = Color_Green;
     }
     else if (MsDelta < 33.0f) {
-        FPSPixel = Color_Yellow;
+        FPSState = Color_Yellow;
     }
-    FormatText(MSCount, "MS: %.1f, FPS: %.1f, Cycles: %'u", MsDelta, 1000 / MsDelta, Cycles);
-    TextBox(Console, V2I(0, 0), FPSPixel, MSCount, Color_Black);
+    FormatText(MSCount, "MS: %.1f, FPS: %.3f, Cycles: %'u", MsDelta, 1000 / MsDelta, Cycles);
+    TextBox(Console, V2I(0, 0), FPSState, MSCount, Color_Black);
+}
+
+local void
+ShowMemoryCounter(struct console* Console, struct memory* ModuleMemory, dim_2i Pos, char* Label)
+{
+    char   MemoryBuf[100];
+    color3 MemoryState   = Color_Red;
+    f32    InvMemorySize = 1.0f / ModuleMemory->Size;
+    f32    MemoryDelta   = (ModuleMemory->Size - ModuleMemory->Used) * InvMemorySize;
+    if (MemoryDelta > 0.30f) {
+        MemoryState = Color_Green;
+    }
+    else if (MemoryDelta > 0.15f) {
+        MemoryState = Color_Yellow;
+    }
+    FormatText(MemoryBuf, "%s Memory: %$_I64d, Used: %$_I64d", Label, ModuleMemory->Size, ModuleMemory->Used);
+    TextBox(Console, Pos, MemoryState, MemoryBuf, Color_Black);
 }
 
 #include "mods/tests/console_tests.c"
@@ -84,6 +101,8 @@ UpdateState(struct memory*   Memory,
 #endif
 
         ShowFPSCounter(Console, Platform->FrameDeltaMs, Platform->FrameDeltaCycles);
+        ShowMemoryCounter(Console, Memory, V2I(0, 10), "Main");
+        ShowMemoryCounter(Console, GameState->ModuleMemory, V2I(0, 20), "Module");
         SetConsoleMode(Console, PixelOrder);
 
 // #define RUNONCE 1

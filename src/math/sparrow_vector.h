@@ -751,6 +751,50 @@ NormalizeV3(v3 A)
     return (Result);
 }
 
+inline v3
+Clamp01V3(v3 A)
+{
+    v3 Result;
+
+    Result.x = Clamp01(A.x);
+    Result.y = Clamp01(A.y);
+    Result.z = Clamp01(A.z);
+
+    return (Result);
+}
+
+inline v3
+RandomRangeV3(struct rng_state* State, s32 Min, s32 Max)
+{
+    v3 Result;
+    Result.x = RandomRange(State, Min, Max);
+    Result.y = RandomRange(State, Min, Max);
+    Result.z = RandomRange(State, Min, Max);
+
+    return (Result);
+}
+
+inline v3
+Random01V3(struct rng_state* State)
+{
+    v3 Result;
+    Result.x = RandomNext01(State);
+    Result.y = RandomNext01(State);
+    Result.z = RandomNext01(State);
+
+    return (Result);
+}
+
+inline v3
+SquareRootV3(v3 A)
+{
+    v3 Result;
+    Result.x = SquareRoot(A.x);
+    Result.y = SquareRoot(A.y);
+    Result.z = SquareRoot(A.z);
+    return (Result);
+}
+
 // v4
 inline f32
 InnerV4(v4 A, v4 B)
@@ -909,6 +953,11 @@ inline v2f Normalize(v2f A) { return NormalizeV2f(A); }
 inline v2i Normalize(v2i A) { return NormalizeV2i(A); }
 inline v3  Normalize(v3 A)  { return NormalizeV3(A);  }
 inline v4  Normalize(v4 A)  { return NormalizeV4(A);  }
+
+inline v3 Clamp01(v3 A) { return Clamp01V3(A); }
+
+inline v3 SquareRoot(v3 A) { return SquareRootV3(A); }
+
 // clang-format on
 #endif // __cplusplus
 

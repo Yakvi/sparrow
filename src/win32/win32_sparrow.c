@@ -311,7 +311,7 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     Win32_AllocateFrameBuffer(&Win32_FrameBuffer, Win32_GetClientDim(Window));
     // Win32_AllocateFrameBuffer(&Win32_FrameBuffer, 1280, 720); // TODO(yakvi): Fixed window dim?
 
-    Win32_MainMemory             = Win32_MemoryInit(MiB(200));
+    Win32_MainMemory             = Win32_MemoryInit(GiB(6));
     struct platform* PlatformAPI = Win32_InitializePlatform();
 
     struct text_buffer WorkingDirectory = Win32_GetWorkingDirectory();

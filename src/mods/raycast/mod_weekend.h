@@ -11,13 +11,8 @@
 struct camera
 {
     b32 IsInitialized;
-    f32 AspectRatio;
-    s32 ImageWidth;
-    s32 ImageHeight;
-
-    f32 ViewportHeight;
-    f32 ViewportWidth;
-    f32 FocalLength;
+    s32 SamplesPerPixel;
+    f32 Scale;
 
     v3 Origin;
     v3 Horizontal;
@@ -65,9 +60,7 @@ SpawnCollider(memory* Memory, world* World)
     Result->Prev = World->ColliderSentinel->Prev;
 
     World->ColliderSentinel->Prev = Result;
-    Result->Prev->Next = Result;
-
-
+    Result->Prev->Next            = Result;
 
     return (Result);
 }
