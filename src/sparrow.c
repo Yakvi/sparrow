@@ -44,7 +44,7 @@ ShowFPSCounter(struct console* Console, f32 MsDelta, u32 Cycles)
     else if (MsDelta < 33.0f) {
         FPSState = Color_Yellow;
     }
-    FormatText(MSCount, "MS: %.1f, FPS: %.3f, Cycles: %'u", MsDelta, 1000 / MsDelta, Cycles);
+    FormatText(MSCount, "MS: %.1f, FPS: %.3f, Cycles: %$_u", MsDelta, 1000 / MsDelta, Cycles);
     TextBox(Console, V2I(0, 0), FPSState, MSCount, Color_Black);
 }
 
@@ -101,8 +101,8 @@ UpdateState(struct memory*   Memory,
 #endif
 
         ShowFPSCounter(Console, Platform->FrameDeltaMs, Platform->FrameDeltaCycles);
-        ShowMemoryCounter(Console, Memory, V2I(0, 10), "Main");
-        ShowMemoryCounter(Console, GameState->ModuleMemory, V2I(0, 20), "Module");
+        // ShowMemoryCounter(Console, Memory, V2I(0, 10), "Main");
+        // ShowMemoryCounter(Console, GameState->ModuleMemory, V2I(0, 20), "Module");
         SetConsoleMode(Console, PixelOrder);
 
 // #define RUNONCE 1

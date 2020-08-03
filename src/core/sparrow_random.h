@@ -11,7 +11,7 @@ local s32  RandomRange(struct rng_state* State, s32 Min, s32 Max);
 // Implementations
 #define GameRand 1
 #define PCG 2
-#define GENERATOR GameRand
+#define GENERATOR PCG
 
 #if GENERATOR == GameRand
 struct rng_state
@@ -59,6 +59,18 @@ RandomNext01(struct rng_state* State)
     u32 Result_U32 = (Exponent << 23) | Mantissa;
     f32 Result     = *(f32*)(&Result_U32);
     return (Result - 1.0f);
+}
+
+local f32
+RandomRangeF(struct rng_state* State, f32 Min, f32 Max)
+{
+    s32 Result = Min;
+    s32 Range  = (Max - Min) + 1;
+    if (Range > 0) {
+        f32 Value = RandomNext01(State) * Range;
+        Result    = Min + Value;
+    }
+    return (Result);
 }
 
 // Returns a random integer N in the range:
@@ -130,6 +142,20 @@ RandomNext01(struct rng_state* State)
     u32 Result_U32 = (Exponent << 23) | Mantissa;
     f32 Result     = *(f32*)(&Result_U32);
     return (Result - 1.0f);
+}
+
+local f32
+RandomRangeF(struct rng_state* State, f32 Min, f32 Max)
+{
+    Assert(Min < Max);
+    f32 Result = Min;
+    f32 Range  = Max - Min;
+    f32 Value  = RandomNext01(State) * Range;
+    Result     = Min + Value;
+
+    Assert(Result >= Min);
+    Assert(Result < Max);
+    return (Result);
 }
 
 local s32

@@ -1,4 +1,4 @@
-#if !defined(MOD_RAYCAST_GEOMETRY_H)
+#if !defined(RAYCAST_GEOMETRY_H)
 
 struct hit_record
 {
@@ -38,20 +38,20 @@ RayHit(ray* Ray, sphere Sphere, f32 MinDistance, f32 MaxDistance, ray_hit_info* 
     // Attempt to throw the ray at the sphere center
     // assume ax² + bx + c = 0 quadratic equation
     Validate(Ray->Direction);
-    v3  DirectHitVector   = Ray->Origin - Sphere.Center;
-    f32 RayDirectionLenSq = Ray->DirectionLenSquared;                      // a
-    f32 AngleCoefficient  = Inner(DirectHitVector, Ray->Direction);        // h (b/2)
-    f32 SphereNormalLenSq = LenSquared(DirectHitVector) - Sphere.RadiusSq; // c
+    v3  OC    = Ray->Origin - Sphere.Center;      // Direct Hit Vector
+    f32 A     = Ray->DirectionLenSquared;         // Ray direction, Len squared
+    f32 HalfB = Inner(OC, Ray->Direction);        // Angle Coefficient
+    f32 C     = LenSquared(OC) - Sphere.RadiusSq; // Sphere Normal, Len squared
 
     // find the discriminant based on formula h² - ac
-    f32 Discriminant = Square(AngleCoefficient) - (RayDirectionLenSq * SphereNormalLenSq);
+    f32 Discriminant = Square(HalfB) - (A * C);
 
     if (Discriminant > 0) {
         f32 DiscRoot = SquareRoot(Discriminant);
 
         // Find the ray length at hit
-        f32 HitPoint1 = (-AngleCoefficient - DiscRoot) * Ray->DirectionInvLenSquared;
-        f32 HitPoint2 = (-AngleCoefficient + DiscRoot) * Ray->DirectionInvLenSquared;
+        f32 HitPoint1 = (-HalfB - DiscRoot) * Ray->DirectionInvLenSquared;
+        f32 HitPoint2 = (-HalfB + DiscRoot) * Ray->DirectionInvLenSquared;
         // Check if any hit is valid and record it
         if (MinDistance < HitPoint1 && HitPoint1 < MaxDistance) {
             HitInfo->DistanceFromOrigin = HitPoint1;

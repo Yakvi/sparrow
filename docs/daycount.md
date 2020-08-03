@@ -524,16 +524,64 @@ Anyway, my code contribution for today consisted in taking a few random number g
 
 ## 37. August 2, 2020 - Multisampling and Diffuse mapping
 
-I started looking in multisampling-based antializing. In the [guide](https://raytracing.github.io/books/RayTracingInOneWeekend.html#antialiasing), Shirley suggested using ~100 samples per pixel on our 400x225 screen. I quickly discovered that the numbers tend to explode: even on our tiny resolution, 90,000 pixels quickly become 9,000,000 samples. This both tanks the performance and destroys our memory (since we're keeping the rays in the memory for performance reasons). 
+I started looking in multisampling-based antializing. In the [guide](https://raytracing.github.io/books/RayTracingInOneWeekend.html#antialiasing), Shirley suggested using ~100 samples per pixel on our 400x225 screen. I quickly discovered that the numbers tend to explode: even on our tiny resolution, 90,000 pixels quickly become 9,000,000 samples. This both tanks the performance and destroys our memory (since we're keeping the rays in the memory for performance reasons).
 
 While this is an interesting problem to solve, I'm starting to understand where do all the teraflops go nowadays in the "RTX-enabled" cards. I'm not even hitting "half-HD", 720p! Of course, I'm sure my math is janky and my structs are bloated... Still, it's pretty clear why we preferred raster triangle rendering for so long. To render my 90k pixel scene I'm using almost 5 gigs of memory! And it's only to store the rays!
 
-![A cool bug I encountered while implementing multisampling. It was produced from incorrect calculation of the ray index. It's achieved by mutiplying the x index (Y * Width + X) by the sample index](media/day37/multisampling_bug.png) 
+![A cool bug I encountered while implementing multisampling. It was produced from incorrect calculation of the ray index. It's achieved by mutiplying the x index (Y * Width + X) by the sample index](media/day37/multisampling_bug.png)
 
-I still don't have enough profiling power to be able to safely say "this thing eats most of my performance power", or "that thing might be smaller" or something. On the other hand, I'm not _really_ that concerned about it. Fun thing about Sparrow, is that it allows me to follow exercises like this, and then simply jump off this module to a next one, while bringing over the pieces I enjoyed (like the yesterday's random number generator, vector3 library or a camera system I've been slowly bulding). 
+I still don't have enough profiling power to be able to safely say "this thing eats most of my performance power", or "that thing might be smaller" or something. On the other hand, I'm not _really_ that concerned about it. Fun thing about Sparrow, is that it allows me to follow exercises like this, and then simply jump off this module to a next one, while bringing over the pieces I enjoyed (like the yesterday's random number generator, vector3 library or a camera system I've been slowly bulding).
 
 Oh, I also implemented another random generator from the [same library](https://raw.githubusercontent.com/mattiasgustavsson/libs/main/rnd.h)
 
 Lastly, I finally moved away from drawing normals to something more interesting: diffuse lighting! I did however encounter some weird bug which I'm not exactly sure what's it's caused by. Maybe because I prenormalize the ray direction? Will need to experiment more with it.
 
-![Another cool bug I encountered while implementing diffuse lighting. This one is a bit more frustrating.](media/day37/diffuse_bug.png) 
+![Another cool bug I encountered while implementing diffuse lighting. This one is a bit more frustrating.](media/day37/diffuse_bug.png)
+
+## 38. August 3, 2020 - Debugging Diffuse mapping
+
+I started the day by chasing the yesterday's graphical bug. I soon confirmed that it's indeed called "[Shadow Acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm)" and can be pretty nasty. It seems that here finally we come to the point where the double precision arithmetic prevails over the floating point.
+
+![Shadow acne bug in the glorious 1080p](media/day38/shadow_acne_1.png)
+
+At the end, I cranked up the epsilon to 0.1f and moved on.
+
+![Shadow acne with 0.01f epsilon](media/day38/shadow_acne_2.png)
+
+Another interesting bug that I found is however more mysterious. From time to time, the rendering freaks out completely and shows an outworldly bogus output:
+
+![Bogus output](media/day38/rendering_bug.png)
+
+I suspect that this has to do with the way random number generator operates, or something. Honestly, I have no idea about what's going on, and why is it sporadic. In any case, this project so far has gifted us a truly marvellous collection of graphical bugs.
+
+Going back to shadow acne, after applying a different diffuse method ("True Lambertian Reflection"), I realized that it's still present there, maybe even clearer:
+
+![Shadow acne in Lambertian reflection](media/day38/shadow_acne_3.png)
+
+Everything became clear once I removed the diffusing at all:
+
+![True reflection](media/day38/shadow_acne_4.png)
+
+It's not about the diffuse at all! We were somehow receiving data with a terrible precision. It wasn't sure if it was about float vs double anymore, but it kind of was the biggest offender so I dug deeper to investigate the bug.
+
+Right now we are getting pure reflections and shadows by polling multiple levels of recursion depth. If I gradually increase it, we get the following progression:
+
+![Effect of the recursion depth increase](media/day38/depth-evolution.gif)
+
+What we see here that yes, increasing depth does improve the visual fidelity of the output, but there's more to it. There's no difference between recursion depth 20 and 1000.
+
+Next, what we see from this is, that the sky is reflected accurately, it's the normals of the sphere which are flat-shaded until they hit the next "tier". This may be explained in the following manner:
+
+- We use truncation somewhere and information is lost
+- The floating point precision is insufficient
+- ???
+
+I tried to visualize different information that I receive with the first hit (depth = 1). Seems in order, and I understood that this trail was fine. I had only one avenue remaining: the diffuse algorithm itself.
+
+![Hit record](media/day38/hit-record.png)
+
+So, at the end, I realized that my random number generator was returning garbage. It _was_ a truncation error, and by adding a couple assertions the problem was quickly identified and resolved. It was a fun journey.
+
+![Perfect Diffuse](media/day38/perfect_diffuse.png)
+
+On a completely unrelated note, I'll have to move to compute shaders on my graphics card, if I'm to continue this journey. Already now I'm only rendering in release mode, unless I want to wait for 15 seconds+ to draw a single frame.

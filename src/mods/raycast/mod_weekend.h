@@ -5,23 +5,9 @@
 #include "math/sparrow_math.h"
 #include "console/console_platform.h"
 
-#include "mod_raycast_ray.h"
-#include "mod_raycast_geometry.h"
-
-struct camera
-{
-    b32 IsInitialized;
-    s32 SamplesPerPixel;
-    f32 Scale;
-
-    v3 Origin;
-    v3 Horizontal;
-    v3 Vertical;
-    v3 LowerLeftCorner;
-    v3 Base;
-
-    ray* Rays;
-};
+#include "raycast_ray.h"
+#include "raycast_diffuse.h"
+#include "raycast_geometry.h"
 
 struct collider
 {
@@ -66,7 +52,7 @@ SpawnCollider(memory* Memory, world* World)
 }
 
 inline void
-RemoveCollider(memory* Memory, world* World, collider* Collider)
+RemoveCollider(world* World, collider* Collider)
 {
     collider* Temp                = World->FirstAvailableCollider;
     World->FirstAvailableCollider = Collider;

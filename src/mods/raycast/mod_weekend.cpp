@@ -1,6 +1,8 @@
 #include "mod_weekend.h"
 #include "console/console_update.c"
 
+#define PREMADE_RAYS 0
+
 local void
 SetColor(console* Console, v2i Coords, rgb Color, f32 Scale)
 {
@@ -28,25 +30,6 @@ UpdateEntities(user_input* Input, world* World)
     Sphere->Center.y = -(Input->CursorNorm.y - 0.5f) * 4;
 }
 
-// We need a way to pick a random point in a unit radius sphere.
-// We’ll use what is usually the easiest algorithm: a rejection method.
-// First, pick a random point in the unit cube where x, y, and z all range from −1 to +1.
-// Reject this point and try again if the point is outside the sphere.
-local v3
-RandomInUnitSphere(rng_state* State)
-{
-    v3 Result;
-
-    while (1) {
-        Result = RandomRangeV3(State, -1, 1);
-        if (LenSquared(Result) >= 1) {
-            break;
-        }
-    }
-
-    return (Result);
-}
-
 inline u32
 GetRayIndex(console* Console, s32 X, s32 Y, s32 Sample, s32 SamplesPerPixel)
 {
@@ -59,7 +42,7 @@ GetRayIndex(console* Console, s32 X, s32 Y, s32 Sample, s32 SamplesPerPixel)
 }
 
 local void
-InitCamera(memory* Memory, camera* Camera, console* Console, rng_state* RNG,
+InitCamera(memory* Memory, camera* Camera, console* Console, rng_state* RNGState,
            dim_2i ImageSize, f32 AspectRatio, s32 SamplesPerPixel)
 {
     // Init Camera
@@ -80,15 +63,18 @@ InitCamera(memory* Memory, camera* Camera, console* Console, rng_state* RNG,
                               - V3(0.0f, 0.0f, FocalLength);
     Camera->Base = Camera->LowerLeftCorner - Camera->Origin;
 
+#if PREMADE_RAYS
     //NOTE: Init all rays
     memory_index RaySize = ImageSize.Width * ImageSize.Height;
     if (!Camera->Rays || RaySize > Console->PixelCount) {
         RaySize *= sizeof(ray) * Square(Camera->SamplesPerPixel);
         Camera->Rays = (ray*)GetSize(Memory, RaySize, 4, MemoryFlag_NoClear);
     }
+#endif
 
     InitConsole(Console, ImageSize.Width, ImageSize.Height, Console_BottomUp, Color_White);
 
+#if PREMADE_RAYS
     for (s32 Y = 0;
          Y < Console->Size.Height;
          ++Y) {
@@ -100,16 +86,16 @@ InitCamera(memory* Memory, camera* Camera, console* Console, rng_state* RNG,
                  ++Sample) {
                 u32 RayIndex = GetRayIndex(Console, X, Y, Sample, Camera->SamplesPerPixel);
 
-                f32 u = (X + RandomNext01(RNG)) * Console->InvertedSize.Width;
-                f32 v = (Y + RandomNext01(RNG)) * Console->InvertedSize.Height;
+                f32 u = (X + RandomNext01(RNGState)) * Console->InvertedSize.Width;
+                f32 v = (Y + RandomNext01(RNGState)) * Console->InvertedSize.Height;
 
-                v3 Direction           = Camera->Base + Camera->Horizontal * u + Camera->Vertical * v;
-                Camera->Rays[RayIndex] = CreateRay(Camera->Origin, Direction);
+                Camera->Rays[RayIndex] = CreateRay(Camera, u, v);
 
                 color3 PixelColor = Color_Cyan;
             }
         }
     }
+#endif
 
     Camera->IsInitialized = true;
 }
@@ -131,12 +117,11 @@ InitWorld(memory* Memory, world* World, console* Console)
 }
 
 local b32
-DetectCollisions(world* World, ray* Ray, f32 MinDistance, f32 MaxDistance, ray_hit_info* HitInfo)
+HitDetected(world* World, ray* Ray, f32 MinDistance, f32 MaxDistance, ray_hit_info* HitInfo)
 {
-    b32          HitDetected  = false;
+    b32          Result       = false;
     f32          ClosestSoFar = MaxDistance;
     ray_hit_info LatestHit;
-    u32          x = true;
 
     for (collider* Collider = World->ColliderSentinel->Next;
          Collider != World->ColliderSentinel;
@@ -144,38 +129,49 @@ DetectCollisions(world* World, ray* Ray, f32 MinDistance, f32 MaxDistance, ray_h
 
         if (RayHit(Ray, Collider->Sphere, MinDistance, ClosestSoFar, &LatestHit)) {
             ClosestSoFar = LatestHit.DistanceFromOrigin;
-            if (Collider->Sphere.Radius != 100.0f) {
-                x = false;
-            }
-            HitDetected = true;
+            Result       = true;
         }
     }
     *HitInfo = LatestHit;
 
-    return (HitDetected);
+    return (Result);
 }
 
 local color3
-RayColor(world* World, ray Ray, rng_state* RNGState, s32 RecurseDepth)
+RayColor(memory* Memory, world* World, ray Ray, rng_state* RNGState, s32 RecurseDepth)
 {
     color3 Result = Color_Black;
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
+    ray* RecurseRay = SpawnRay(Memory, &World->MainCamera);
     if (RecurseDepth > 0) {
         ray_hit_info HitInfo;
-        f32          MinEpsilon = 0.001f;
-        if (DetectCollisions(World, &Ray, MinEpsilon, 2000.0f, &HitInfo)) {
-            p3 Target = HitInfo.Pos + HitInfo.Normal + RandomInUnitSphere(RNGState);
-            // recursive land
-            ray RecurseRay = CreateRay(HitInfo.Pos, Target - HitInfo.Pos);
-            Result         = RayColor(World, RecurseRay, RNGState, RecurseDepth - 1) * 0.5f;
+        f32          MinEpsilon = 0.01f;
+        if (HitDetected(World, &Ray, MinEpsilon, 1000.0f, &HitInfo)) {
+#if 0
+            Result = RGB(1, 1, 1);
+            Result += HitInfo.Normal;
+            // Result += HitInfo.Pos;
+            // Result *= HitInfo.DistanceFromOrigin;
+            // Result += HitInfo.Pos + HitInfo.Normal;
+            Result *= 0.5f;
+#else
+            // Diffuse map, recursive land
+            v3 Target = HitInfo.Pos + HitInfo.Normal;
+            Target += Diffuse(RNGState, HitInfo.Normal);
+
+            CreateRay(RecurseRay, HitInfo.Pos, Target - HitInfo.Pos);
+            Result = RayColor(Memory, World, *RecurseRay, RNGState, RecurseDepth - 1) * 0.5f;
+#endif
         }
         else {
             // No hit, draw background
-            f32 Pos = 0.5f * (Ray.Direction.y + 1.0f);
+            f32 Pos = 0.5f * (Ray.Normal.y + 1.0f);
             Result  = ColorLerp(RGB(1, 1, 1), RGB(0.5, 0.7, 1.0), Pos);
         }
     }
+
+    RemoveRay(&World->MainCamera, RecurseRay);
 
     return (Result);
 }
@@ -189,7 +185,7 @@ MODULE_MAIN()
         InitRandomizer(&RNGState, 123);
     }
 
-    UpdateEntities(Input, World);
+    // UpdateEntities(Input, World);
 
     camera* Camera = &World->MainCamera;
     if (!Camera->IsInitialized) {
@@ -197,10 +193,10 @@ MODULE_MAIN()
         dim_2i ImageSize;
         ImageSize.Width     = 400;
         ImageSize.Height    = (s32)(ImageSize.Width / AspectRatio);
-        s32 SamplesPerPixel = 50;
+        s32 SamplesPerPixel = 100;
         InitCamera(Memory, Camera, Console, &RNGState, ImageSize, AspectRatio, SamplesPerPixel);
     }
-    s32 MaxRecurseDepth = 50;
+    s32 MaxRecurseDepth = 20;
 
     for (s32 Y = 0;
          Y < Console->Size.Height;
@@ -214,9 +210,17 @@ MODULE_MAIN()
             for (s32 Sample = 0;
                  Sample < Camera->SamplesPerPixel;
                  ++Sample) {
-
+                ray Ray;
+#if PREMADE_RAYS
                 u32 RayIndex = GetRayIndex(Console, X, Y, Sample, Camera->SamplesPerPixel);
-                PixelColor += RayColor(World, Camera->Rays[RayIndex], &RNGState, MaxRecurseDepth);
+                Ray          = Camera->Rays[RayIndex];
+#else
+                f32 u = (X + RandomNext01(&RNGState)) * Console->InvertedSize.Width;
+                f32 v = (Y + RandomNext01(&RNGState)) * Console->InvertedSize.Height;
+
+                Ray = CreateRay(Camera, u, v);
+#endif
+                PixelColor += RayColor(Memory, World, Ray, &RNGState, MaxRecurseDepth);
             }
 
             SetColor(Console, V2I(X, Y), PixelColor, Camera->Scale);

@@ -764,12 +764,12 @@ Clamp01V3(v3 A)
 }
 
 inline v3
-RandomRangeV3(struct rng_state* State, s32 Min, s32 Max)
+RandomRangeV3(struct rng_state* State, f32 Min, f32 Max)
 {
     v3 Result;
-    Result.x = RandomRange(State, Min, Max);
-    Result.y = RandomRange(State, Min, Max);
-    Result.z = RandomRange(State, Min, Max);
+    Result.x = RandomRangeF(State, Min, Max);
+    Result.y = RandomRangeF(State, Min, Max);
+    Result.z = RandomRangeF(State, Min, Max);
 
     return (Result);
 }
