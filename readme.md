@@ -5,3 +5,5 @@ Project Sparrow is all about freedom. Freedom of lag, freedom of expensive hardw
 Performance is not an option.
 
 The sky is the limit. 
+
+![Logo](docs/sparrow.png)
