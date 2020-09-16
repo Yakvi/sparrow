@@ -57,13 +57,15 @@ $debug += '-MTd'                       #Creates debug multithreaded executable
 $debug += '-Zo'                        #Enhance Optimized Debugging
 $debug += '-Z7'                        #Generates C 7.0–compatible debugging information.
 $debug += '-WX'                        #Treats all warnings as errors (except the ones below).
-$debug += '-W3' #'-Wall'                        #Displays all warnings (except the ones below).
+$debug += '-W4' #'-Wall'                        #Displays all warnings (except the ones below).
 # NOTE: Ignoring selected warnings:
 $debug += '-wd4100'                  #Unreferenced variable
 # $debug += '-wd4711'                  #Function inlined by optimizer
 # $debug += '-wd4189'                  #Local variable initialized but not used
-# $debug += '-wd4505'                  #Unreferenced local function
-# $debug += '-wd4201'                  #Nonstandard extension used: nameless struct/union
+$debug += '-wd4514'                  #Unreferenced inline function removed
+$debug += '-wd4505'                  #Unreferenced local function removed
+# $debug += '-wd4515'                  #Unreferenced local function removed
+$debug += '-wd4201'                  #Nonstandard extension used: nameless struct/union
 # $debug += '-wd4127'                  #
 # $debug += '-wd4302'                  #pointer truncation
 # $debug += '-wd4311'                  #truncation
@@ -102,8 +104,8 @@ Write-Host ""
 
 ### BOOKMARK: Actual compiler calls
 $win32file = "win32\win32_sparrow.c"
-# $debug = "-O2"
-$debug = "-O2", "-DSPARROW_DEV=1"
+$debug = "-O2"
+# $debug = "-O2", "-DSPARROW_DEV=1"
 $optimized = '', ''
 
 $CompileTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -131,7 +133,7 @@ Output-Logs -data $sparrow -title "sparrow dll"
 # $everscroll = & cl $c $dllc $debug $srcDir\mods\everscroll\mod_everscroll.c $optimized $linker -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 # Output-Logs -data $everscroll -title "everscroll dll"
 
-$raycast = & cl $c $dllc $debug -Tp $srcDir\mods\raycast\mod_weekend.cpp $optimized $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
+$raycast = & cl $c $dllc $debug -O2 -Tp $srcDir\mods\raycast\mod_weekend.cpp $optimized $linker sparrow.lib -EXPORT:ModuleMain -PDB:mod-$(Get-Date -Format mm-ss-ms).pdb
 Output-Logs -data $raycast -title "raycast dll"
 
 # NOTE Live code editing: resume running

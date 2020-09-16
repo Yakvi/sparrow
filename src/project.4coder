@@ -1,38 +1,44 @@
 version(1);
 project_name = "Sparrow";
 patterns = {
-"*.c",
-"*.cpp",
-"*.h",
-"*.m",
-"*.bat",
-"*.ps1",
-"*.sh",
-"*.4coder",
+    "*.c",
+    "*.cpp",
+    "*.h",
+    "*.m",
+    "*.bat",
+    "*.ps1",
+    "*.sh",
+    "*.4coder",
 };
 blacklist_patterns = {
-".*",
+    ".*",
 };
 load_paths_base = {
- { ".", .relative = true, .recursive = true, },
+    { ".", .relative = true, .recursive = true, },
 };
 load_paths = {
- { load_paths_base, .os = "win", },
- { load_paths_base, .os = "linux", },
- { load_paths_base, .os = "mac", },
+    { load_paths_base, .os = "win", },
+    { load_paths_base, .os = "linux", },
+    { load_paths_base, .os = "mac", },
 };
 
 command_list = {
- { .name = "build",
-   .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,
-   .cmd = { { "build.bat" , .os = "win"   },
+    { .name = "build",
+        .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,
+        .cmd = { { "build.bat" , .os = "win"   },
             { "./build.sh", .os = "linux" },
             { "./build.sh", .os = "mac"   }, }, },
- { .name = "run",
-   .out = "*run*", .footer_panel = false, .save_dirty_files = false,
-   .cmd = { { "..\build\\win32_sparrow.exe", .os = "win"   },
+    { .name = "run",
+        .out = "*run*", .footer_panel = false, .save_dirty_files = false,
+        .cmd = { { "..\build\\win32_sparrow.exe", .os = "win"   },
             { "../build/win32_sparrow.exe" , .os = "linux" },
             { "../build/win32_sparrow.exe" , .os = "mac"   }, }, },
+    { .name = "debug",
+        .out = "*debug*", .footer_panel = true, .save_dirty_files = false,
+        .cmd = { { "debug.bat" , .os = "win"   },
+            { "./debug.sh", .os = "linux" },
+            { "./debug.sh", .os = "mac"   }, }, },
 };
 fkey_command[1] = "build";
 fkey_command[2] = "run";
+fkey_command[3] = "debug";

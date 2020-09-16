@@ -1,5 +1,5 @@
 {
-  "terminal.integrated.shellArgs.windows": ["cd ./src; qsetup"],
+  "terminal.integrated.shellArgs.windows": ["cd ./src; qsetup_ps"],
   "multiCommand.commands": [
     {
       "command": "multiCommand.compile",

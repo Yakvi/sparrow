@@ -103,7 +103,6 @@ ClearConsole(struct console* Console, struct user_input* Input)
 local void
 VerticalGradient(struct console* Console, color3 Start, color3 End)
 {
-    struct pixel* Pixels = Console->Pixels;
     // f32 InvertedWidth = 1.0f / Console->Size.Width;
     f32 InvertedHeight = 1.0f / Console->Size.Height;
 
@@ -236,7 +235,9 @@ Box(struct console* Console, v2i TopLeft, dim_2i Dim, color3 BoxColor)
 local dim_2i
 TextBox(struct console* Console, v2i TopLeft, color3 BoxColor, char* Input, color3 StringColor)
 {
-    dim_2i Dim = {(s32)(4 + GLYPH_WIDTH * StringLength(Input)), (s32)(3 + GLYPH_HEIGHT)};
+    dim_2i Dim = {0};
+    Dim.Width  = (s32)(4 + GLYPH_WIDTH * StringLength(Input));
+    Dim.Height = (s32)(3 + GLYPH_HEIGHT);
     Box(Console, TopLeft, Dim, BoxColor);
     PrintString(Console, Input, AddV2i(TopLeft, V2I(2, 2)), StringColor);
     return (Dim);

@@ -9,9 +9,9 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2i ConsoleSize, 
         Assert(Pixel->Pos.x < ConsoleSize.Width);
         Assert(Pixel->Pos.y < ConsoleSize.Height);
 
-        v2i PixelBase = {
-            (u32)(Pixel->Pos.x * RealSize.Width),
-            (u32)(Pixel->Pos.y * RealSize.Height)};
+        v2i PixelBase = {0};
+        PixelBase.x   = (u32)(Pixel->Pos.x * RealSize.Width);
+        PixelBase.y   = (u32)(Pixel->Pos.y * RealSize.Height);
 
         s32 OverflowX = (PixelBase.x + Size.Width) - Buffer->Width;
         if (OverflowX >= 0) { Size.Width -= OverflowX; }
@@ -25,13 +25,13 @@ DrawPixel(struct frame_buffer* Buffer, struct pixel* Pixel, dim_2i ConsoleSize, 
 local void
 DrawAllPixels(struct frame_buffer* Buffer, struct console* Console)
 {
-    dim RealSize = {
-        (f32)Buffer->Width / (f32)Console->Size.Width,
-        (f32)Buffer->Height / (f32)Console->Size.Height};
+    dim RealSize    = {0};
+    RealSize.Width  = (f32)Buffer->Width / (f32)Console->Size.Width;
+    RealSize.Height = (f32)Buffer->Height / (f32)Console->Size.Height;
 
-    dim_2i Size = {
-        (u32)(RealSize.Width + 1),
-        (u32)(RealSize.Height + 1)};
+    dim_2i Size = {0};
+    Size.Width  = (u32)(RealSize.Width + 1);
+    Size.Height = (u32)(RealSize.Height + 1);
 
     struct pixel* Row = Console->Pixels;
     for (s32 Y = 0;

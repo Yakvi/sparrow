@@ -121,7 +121,7 @@ HitDetected(world* World, ray* Ray, f32 MinDistance, f32 MaxDistance, ray_hit_in
 {
     b32          Result       = false;
     f32          ClosestSoFar = MaxDistance;
-    ray_hit_info LatestHit;
+    ray_hit_info LatestHit    = {};
 
     for (collider* Collider = World->ColliderSentinel->Next;
          Collider != World->ColliderSentinel;
@@ -185,7 +185,7 @@ MODULE_MAIN()
         InitRandomizer(&RNGState, 123);
     }
 
-    // UpdateEntities(Input, World);
+    UpdateEntities(Input, World);
 
     camera* Camera = &World->MainCamera;
     if (!Camera->IsInitialized) {

@@ -17,9 +17,9 @@ LoadGameState(struct memory* Memory)
         Assert(Memory->Size > sizeof(struct game_state));
         if (!Result->IsInitialized) {
             Result = GetStruct(Memory, struct game_state);
-            InitConsole(&Result->Console, 140, 50, Console_BottomUp, Color_Black);
+            InitConsole(&Result->Console, 600, 200, Console_BottomUp, Color_Black);
             Result->Player.Pos = V2F(0, 0);
-
+            
             Result->UpdateCompleted = false;
             Result->IsInitialized   = true;
             Result->ModuleMemory    = MemoryInit(Memory, GiB(5));
@@ -29,7 +29,7 @@ LoadGameState(struct memory* Memory)
         InvalidCodePath;
         Result = &StubGameState;
     }
-
+    
     return (Result);
 }
 
@@ -80,9 +80,9 @@ UpdateState(struct memory*   Memory,
     if (!GameState->UpdateCompleted) {
         struct console* Console = &GameState->Console;
         ClearConsole(Console, Input);
-
+        
         VerticalGradient(Console, RGB(20, 130, 200), RGB(6, 146, 180));
-
+        
 #if 1
         Main(GameState->ModuleMemory, Input, Console);
 #else
@@ -92,20 +92,20 @@ UpdateState(struct memory*   Memory,
         InitConsole(Console, ImageWidth, ImageHeight, Console_BottomUp, Color_White);
         VerticalGradient(Console, RGB(20, 130, 200), RGB(6, 146, 180));
 #endif
-
+        
         // NOTE: "Post-processing"
         u32 PixelOrder = Console->PixelOrder;
         SetConsoleMode(Console, Console_TopDown);
 #if 0
         RunConsoleTests(Console, Input);
 #endif
-
+        
         ShowFPSCounter(Console, Platform->FrameDeltaMs, Platform->FrameDeltaCycles);
         // ShowMemoryCounter(Console, Memory, V2I(0, 10), "Main");
         // ShowMemoryCounter(Console, GameState->ModuleMemory, V2I(0, 20), "Module");
         SetConsoleMode(Console, PixelOrder);
-
-// #define RUNONCE 1
+        
+        // #define RUNONCE 1
 #ifdef RUNONCE
         GameState->UpdateCompleted = true;
 #endif
@@ -118,7 +118,7 @@ void
 Render(struct memory* Memory, struct frame_buffer* Buffer)
 {
     struct game_state* GameState = LoadGameState(Memory);
-
+    
     Clear(Buffer, Color_Pink);
     DrawAllPixels(Buffer, &GameState->Console);
 }

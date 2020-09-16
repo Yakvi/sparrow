@@ -33,6 +33,12 @@ global_variable u8 GlobalRunning;
 #define PATH_BUFFER_LENGTH STR_MAX
 global_variable struct frame_buffer Win32_FrameBuffer;
 
+#define BIT_BLT_PATH 1
+#if BIT_BLT_PATH
+global_variable void* BitmapDeviceContext;
+global_variable void* BitmapHandle;
+#endif
+
 inline dim_2i
 Win32_DimFromRect(rect Source)
 {
@@ -65,17 +71,33 @@ Win32_AllocateFrameBuffer(struct frame_buffer* Buffer, dim_2i Dim)
     if (Dim.Width > 0 && Dim.Height > 0) {
         u16 BytesPerPixel = 4;
 
+        Buffer->Width         = (u16)Dim.Width;
+        Buffer->Height        = (u16)Dim.Height;
+        Buffer->BytesPerPixel = BytesPerPixel;
+        Buffer->Pitch         = (u16)Dim.Width * BytesPerPixel;
+#if BIT_BLT_PATH
+        if (!BitmapDeviceContext) {
+            BitmapDeviceContext = CreateCompatibleDC(0);
+            Assert(BitmapDeviceContext);
+        }
+        bitmap_info bi = {0};
+
+        bi.header.size         = sizeof(bi.header);
+        bi.header.width        = Buffer->Width;
+        bi.header.height       = Buffer->Height; // rows will go top-down
+        bi.header.planes       = 1;
+        bi.header.bitsPerPixel = Buffer->BytesPerPixel * 8;
+        bi.header.compression  = BI_RGB;
+
+        BitmapHandle = CreateDIBSection(BitmapDeviceContext, &bi, DIB_RGB_COLORS, &Buffer->Pixels, 0, 0);
+        Assert(BitmapHandle);
+#else
         if (Buffer->Pixels) {
             Win32_MemoryFree(Buffer->Pixels);
         }
-
-        u32 PixelSize         = Dim.Height * Dim.Width * BytesPerPixel;
-        Buffer->Width         = Dim.Width;
-        Buffer->Height        = Dim.Height;
-        Buffer->BytesPerPixel = BytesPerPixel;
-        Buffer->Pitch         = Dim.Width * BytesPerPixel;
-        Buffer->Pixels        = Win32_MemoryAlloc(PixelSize);
-
+        u32 PixelSize  = Dim.Height * Dim.Width * BytesPerPixel;
+        Buffer->Pixels = Win32_MemoryAlloc(PixelSize);
+#endif
         Assert(Buffer->Pixels);
     }
 }
@@ -89,20 +111,28 @@ Win32_UpdateBuffer(void* DeviceContext, struct frame_buffer* Buffer, dim_2i Wind
     Assert(Buffer->Height > 0);
     Assert(Buffer->BytesPerPixel > 0);
 
+#if BIT_BLT_PATH
+    Assert(BitmapDeviceContext);
+    Assert(BitmapHandle);
+    SelectObject(BitmapDeviceContext, BitmapHandle);
+    u32 BltResult = BitBlt(DeviceContext, 0, 0, Buffer->Width, Buffer->Height,
+                           BitmapDeviceContext, 0, 0, SRCCOPY);
+    BltResult     = 0;
+#else
     bitmap_info bi = {0};
 
-    bi.header.size         = sizeof(bi.header);
-    bi.header.width        = Buffer->Width;
-    bi.header.height       = Buffer->Height; // rows will go top-down
-    bi.header.planes       = 1;
+    bi.header.size = sizeof(bi.header);
+    bi.header.width = Buffer->Width;
+    bi.header.height = Buffer->Height; // rows will go top-down
+    bi.header.planes = 1;
     bi.header.bitsPerPixel = Buffer->BytesPerPixel * 8;
-    bi.header.compression  = BI_RGB;
-
+    bi.header.compression = BI_RGB;
     StretchDIBits(DeviceContext,
                   0, 0, Window.Width, Window.Height,
                   0, 0, Buffer->Width, Buffer->Height,
                   Buffer->Pixels, &bi,
                   DIB_RGB_COLORS, SRCCOPY);
+#endif
 }
 
 void* __stdcall Win32_DefaultWindowProc(void* Window, u32 Message, u32 WParam, s64 LParam)
@@ -320,7 +350,11 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
     TextConcat(&LockfilePath, "lock.tmp");
 
     struct win32_module Game = Win32_InitModule(&ModuleDirectory, "sparrow.dll");
-    struct win32_module Mod  = Win32_InitModule(&ModuleDirectory, "mod_weekend.dll");
+
+    // char* Modname = "mod_everscroll.dll";
+    // char* Modname = "mod_writer.dll";
+    char*               Modname = "mod_weekend.dll";
+    struct win32_module Mod     = Win32_InitModule(&ModuleDirectory, Modname);
 
     s64 CyclesPerSecond;
     QueryPerformanceFrequency(&CyclesPerSecond);
@@ -351,6 +385,11 @@ int __stdcall WinMain(void* Instance, void* PrevInstance, char* CmdLine, int Sho
             FrameEndTime = Win32_GetWallClock();
         }
         else {
+#if SPARROW_DEV
+            OutputDebugStringA("Module not loaded: ");
+            OutputDebugStringA(Modname);
+            OutputDebugStringA("\n");
+#endif
             // NOTE(yakvi): Game not loaded (waiting for DLL)
             // Assert(!"Game DLL not loaded!");
             // TODO(yakvi): Some softer logging maybe?

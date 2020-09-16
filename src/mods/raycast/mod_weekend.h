@@ -54,7 +54,6 @@ SpawnCollider(memory* Memory, world* World)
 inline void
 RemoveCollider(world* World, collider* Collider)
 {
-    collider* Temp                = World->FirstAvailableCollider;
     World->FirstAvailableCollider = Collider;
     Collider->Prev->Next          = Collider->Next;
     Collider->Next->Prev          = Collider->Prev;

@@ -209,7 +209,7 @@ typedef struct
     rbg_quad           colors[1];
 } bitmap_info;
 
-// NOTE: UI
+// NOTE: GDI
 b32 __stdcall GetCursorPos(v2i* Point);
 b32 __stdcall ScreenToClient(void* Window, v2i* Point);
 void* __stdcall BeginPaint(void* Window, paint_struct* PaintStruct);
@@ -219,6 +219,9 @@ b32 __stdcall GetWindowRect(void* Window, rect* OutRect);
 b32 __stdcall PatBlt(void* HDC, s32 X, s32 Y, s32 Width, s32 Height, u64 RasterOp);
 void* __stdcall CreateDIBSection(void* HDC, bitmap_info* info, u32 mode, void** bits, void* section, u32 offset);
 s32 __stdcall StretchDIBits(void* HDC, u32 xDest, u32 yDest, u32 destWidth, u32 destHeight, u32 xSrc, u32 ySrc, u32 srcWidth, u32 srcHeight, void* bits, bitmap_info* bitsInfo, u32 mode, u32 rop);
+s32 __stdcall BitBlt(void* HDCdest, s32 xDest, s32 yDest, s32 destWidth, s32 destHeight, void* HDCSrc,
+                     s32 xSrc, s32 ySrc, u32 rop);
+void* __stdcall SelectObject(void* HDC, void* Obj);
 b32 __stdcall DeleteObject(void* GDIHandle);
 void* __stdcall CreateCompatibleDC(s32);
 void* __stdcall GetDC(void* Window);

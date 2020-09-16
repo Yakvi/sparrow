@@ -75,7 +75,7 @@ extern "C"
 
 #if _WIN32
 // NOTE(yakvi): Required entry point for all win32 dlls (with stripped down items)
-int __stdcall _DllMainCRTStartup()
+int __stdcall _DllMainCRTStartup(void)
 {
     return 1;
 }

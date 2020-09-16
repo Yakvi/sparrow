@@ -15,9 +15,7 @@ DrawSolidColorRectangle(struct frame_buffer* Buffer, color3 Color, v2i Base, dim
             for (s32 X = 0;
                  X < Size.Width;
                  ++X) {
-                *Pixel++ = (((u8)Color.r << 16) |
-                            ((u8)Color.g << 8) |
-                            (u8)Color.b | 0);
+                *Pixel++ = (((u8)Color.r << 16) | ((u8)Color.g << 8) | (u8)Color.b | 0);
             }
             Row += Buffer->Pitch;
         }
@@ -27,6 +25,8 @@ DrawSolidColorRectangle(struct frame_buffer* Buffer, color3 Color, v2i Base, dim
 local void
 Clear(struct frame_buffer* Buffer, color3 Color)
 {
-    dim_2i Size = {Buffer->Width, Buffer->Height};
+    dim_2i Size = {0};
+    Size.Width  = Buffer->Width;
+    Size.Height = Buffer->Height;
     DrawSolidColorRectangle(Buffer, Color, V2I(0, 0), Size);
 }
